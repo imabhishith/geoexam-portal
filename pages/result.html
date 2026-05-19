@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Result Analysis — GeoExam Portal</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+  .page-content { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
+  .result-hero { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #fff; border-radius: var(--radius-lg); padding: 32px; margin-bottom: 24px; text-align: center; }
+  .result-hero h1 { font-size: 36px; margin-bottom: 8px; }
+  .score-display { font-size: 72px; font-weight: 800; font-family: 'Rajdhani'; margin: 16px 0 4px; color: var(--accent-light); }
+  .score-max { font-size: 22px; opacity: .8; }
+  .score-pct { font-size: 24px; margin-top: 8px; }
+  .stats-banner { display: grid; grid-template-columns: repeat(5,1fr); gap: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px; }
+  .stat-item { padding: 18px 12px; text-align: center; border-right: 1px solid var(--border); }
+  .stat-item:last-child { border-right: none; }
+  .stat-item .num { font-size: 28px; font-weight: 800; font-family: 'Rajdhani'; }
+  .stat-item .lbl { font-size: 12px; color: var(--text2); font-weight: 600; margin-top: 2px; }
+  .correct-num { color: var(--success); }
+  .wrong-num   { color: var(--danger); }
+  .partial-num { color: var(--warning); }
+  .skip-num    { color: var(--text3); }
+  /* Chart */
+  .donut-wrap { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; padding: 20px; }
+  .donut-svg { width: 160px; height: 160px; }
+  .donut-legend { display: flex; flex-direction: column; gap: 8px; }
+  .legend-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .legend-clr { width: 14px; height: 14px; border-radius: 3px; }
+  /* Q Review */
+  .review-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .review-filters .btn.active { background: var(--primary); color: #fff; }
+  .q-review-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 12px; overflow: hidden; }
+  .q-review-header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--bg); border-bottom: 1px solid var(--border); }
+  .q-review-header:hover { background: var(--bg2); }
+  .q-review-body { padding: 16px; display: none; }
+  .q-review-body.open { display: block; }
+  .result-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .rb-correct { background: #dcfce7; color: #166534; }
+  .rb-wrong   { background: #fee2e2; color: #991b1b; }
+  .rb-partial { background: #fef3c7; color: #92400e; }
+  .rb-skip    { background: var(--bg2); color: var(--text2); }
+  .answer-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .ans-box { border-radius: 8px; padding: 12px 14px; font-size: 13px; }
+  .ans-your { background: #fef3c7; border: 1px solid #fcd34d; }
+  .ans-correct { background: #dcfce7; border: 1px solid #86efac; }
+  .rank-card { display: flex; align-items: center; gap: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px; }
+  .rank-big { font-size: 64px; font-weight: 800; font-family: 'Rajdhani'; color: var(--accent); }
+  .perf-bar { margin: 8px 0; }
+  .perf-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .perf-track { height: 10px; background: var(--bg2); border-radius: 5px; overflow: hidden; }
+  .perf-fill  { height: 100%; border-radius: 5px; transition: width 1s ease; }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span style="font-size:28px;">🪨</span>
+    <div><h1>GeoExam Portal</h1><span>Result Analysis</span></div>
+  </div>
+  <div class="navbar-nav">
+    <a href="dashboard.html" class="nav-link">← Dashboard</a>
+    <a href="ranklist.html" class="nav-link" id="ranklist-link">Ranklist</a>
+  </div>
+</nav>
+
+<div class="page-content">
+  <div id="loading-screen" class="loading-screen" style="min-height:60vh;">
+    <div class="spinner"></div><p>Loading your results…</p>
+  </div>
+  <div id="result-content" class="hidden">
+    <!-- Hero -->
+    <div class="result-hero">
+      <div style="font-size:20px;margin-bottom:4px;" id="res-exam-title">Exam</div>
+      <h1>🎉 Exam Completed!</h1>
+      <div class="score-display" id="res-score">0</div>
+      <div class="score-max" id="res-max">/ 100</div>
+      <div class="score-pct" id="res-pct">0%</div>
+      <div style="margin-top:16px;opacity:.8;font-size:14px;" id="res-date">—</div>
+    </div>
+
+    <!-- Rank -->
+    <div class="rank-card" id="rank-card">
+      <div class="rank-big" id="rank-num">—</div>
+      <div style="flex:1">
+        <div style="font-size:18px;font-weight:700;color:var(--primary);margin-bottom:4px;">Your Rank</div>
+        <div style="font-size:13px;color:var(--text2);" id="rank-out-of">among all candidates</div>
+        <a id="rank-link" href="#" class="btn btn-outline btn-sm mt-1">View Full Ranklist →</a>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;color:var(--text2);">Percentile</div>
+        <div style="font-size:36px;font-weight:700;font-family:'Rajdhani';color:var(--primary)" id="rank-percentile">—</div>
+      </div>
+    </div>
+
+    <!-- Stats Banner -->
+    <div class="stats-banner">
+      <div class="stat-item"><div class="num correct-num" id="s-correct">0</div><div class="lbl">✅ Correct</div></div>
+      <div class="stat-item"><div class="num wrong-num" id="s-wrong">0</div><div class="lbl">❌ Wrong</div></div>
+      <div class="stat-item"><div class="num partial-num" id="s-partial">0</div><div class="lbl">⚡ Partial</div></div>
+      <div class="stat-item"><div class="num skip-num" id="s-skip">0</div><div class="lbl">⬜ Skipped</div></div>
+      <div class="stat-item"><div class="num" id="s-total">0</div><div class="lbl">📋 Total</div></div>
+    </div>
+
+    <!-- Performance Chart + Bars -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      <div class="card">
+        <div class="card-header"><h3 style="font-size:16px">Score Distribution</h3></div>
+        <div class="card-body">
+          <div class="donut-wrap">
+            <svg class="donut-svg" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f4f8" stroke-width="16"/>
+              <circle id="donut-correct" cx="50" cy="50" r="40" fill="none" stroke="#22c55e" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 251.2" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
+              <circle id="donut-wrong" cx="50" cy="50" r="40" fill="none" stroke="#ef4444" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 251.2" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
+              <circle id="donut-partial" cx="50" cy="50" r="40" fill="none" stroke="#f59e0b" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 251.2" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
+              <text x="50" y="46" text-anchor="middle" font-size="14" font-weight="800" fill="#1e293b" font-family="Rajdhani" id="donut-pct-text">0%</text>
+              <text x="50" y="58" text-anchor="middle" font-size="7" fill="#64748b">Score</text>
+            </svg>
+            <div class="donut-legend">
+              <div class="legend-row"><div class="legend-clr" style="background:#22c55e"></div>Correct</div>
+              <div class="legend-row"><div class="legend-clr" style="background:#ef4444"></div>Wrong</div>
+              <div class="legend-row"><div class="legend-clr" style="background:#f59e0b"></div>Partial</div>
+              <div class="legend-row"><div class="legend-clr" style="background:#e2e8f0"></div>Skipped</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 style="font-size:16px">Performance Breakdown</h3></div>
+        <div class="card-body" id="perf-bars"></div>
+      </div>
+    </div>
+
+    <!-- Question-wise Review -->
+    <div class="card mb-3">
+      <div class="card-header">
+        <h3 style="font-size:16px">Question-wise Analysis</h3>
+      </div>
+      <div class="card-body">
+        <div class="review-filters">
+          <button class="btn btn-outline btn-sm active" onclick="filterReview('all',this)">All</button>
+          <button class="btn btn-outline btn-sm" onclick="filterReview('correct',this)">✅ Correct</button>
+          <button class="btn btn-outline btn-sm" onclick="filterReview('wrong',this)">❌ Wrong</button>
+          <button class="btn btn-outline btn-sm" onclick="filterReview('partial',this)">⚡ Partial</button>
+          <button class="btn btn-outline btn-sm" onclick="filterReview('skip',this)">⬜ Skipped</button>
+        </div>
+        <div id="review-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const attemptId = params.get('id');
+let attempt=null, questions=[];
+
+auth.onAuthStateChanged(async user=>{
+  if(!user){window.location.href='../index.html';return;}
+  try{
+    const attDoc = await db.collection('attempts').doc(attemptId).get();
+    if(!attDoc.exists){Utils.toast('Result not found','error');return;}
+    attempt = attDoc.data();
+    if(attempt.userId!==user.uid){Utils.toast('Access denied','error');return;}
+
+    document.getElementById('ranklist-link').href=`ranklist.html?examId=${attempt.examId}`;
+    document.getElementById('rank-link').href=`ranklist.html?examId=${attempt.examId}`;
+
+    // Load questions
+    const examDoc = await db.collection('exams').doc(attempt.examId).get();
+    const qIds = examDoc.data().questionIds||[];
+    const qDocs = await Promise.all(qIds.map(id=>db.collection('questions').doc(id).get()));
+    questions = qDocs.filter(d=>d.exists).map(d=>({id:d.id,...d.data()}));
+
+    renderResult();
+    loadRank();
+  } catch(e){Utils.toast('Error: '+e.message,'error');}
+});
+
+function renderResult(){
+  document.getElementById('loading-screen').classList.add('hidden');
+  document.getElementById('result-content').classList.remove('hidden');
+  const score = attempt.totalScore||0;
+  const max   = attempt.maxScore||100;
+  const pct   = ((score/max)*100).toFixed(1);
+  document.getElementById('res-exam-title').textContent = attempt.examTitle||'Exam';
+  document.getElementById('res-score').textContent      = score.toFixed(2);
+  document.getElementById('res-max').textContent        = `/ ${max}`;
+  document.getElementById('res-pct').textContent        = `${pct}%`;
+  document.getElementById('res-date').textContent       = attempt.submittedAt?.toDate?.()?.toLocaleString('en-IN')||'—';
+  document.getElementById('s-correct').textContent = attempt.correct||0;
+  document.getElementById('s-wrong').textContent   = attempt.wrong||0;
+  document.getElementById('s-partial').textContent = attempt.partial||0;
+  document.getElementById('s-skip').textContent    = attempt.skipped||0;
+  document.getElementById('s-total').textContent   = questions.length;
+  renderChart(attempt.correct||0, attempt.wrong||0, attempt.partial||0, attempt.skipped||0, questions.length);
+  renderPerfBars(score, max, attempt.correct||0, attempt.wrong||0, questions.length);
+  renderReview('all');
+}
+
+function renderChart(c,w,p,s,total){
+  if(!total)return;
+  const circ = 2*Math.PI*40;
+  const cRatio=c/total, wRatio=w/total, pRatio=p/total;
+  // Stacked stroke-dasharray
+  const cDash=circ*cRatio, wDash=circ*wRatio, pDash=circ*pRatio;
+  const cOffset=0, wOffset=circ*(1-cRatio), pOffset=circ*(1-cRatio-wRatio);
+  const score=parseFloat(document.getElementById('res-score').textContent);
+  const max=parseFloat(document.getElementById('res-max').textContent.replace('/','').trim());
+  document.getElementById('donut-pct-text').textContent=((score/max)*100).toFixed(0)+'%';
+  setTimeout(()=>{
+    const dc=document.getElementById('donut-correct');
+    dc.style.strokeDasharray=`${cDash} ${circ-cDash}`;
+    dc.style.strokeDashoffset=0;
+    const dw=document.getElementById('donut-wrong');
+    dw.style.strokeDasharray=`${wDash} ${circ-wDash}`;
+    dw.style.strokeDashoffset=-cDash;
+    const dp=document.getElementById('donut-partial');
+    dp.style.strokeDasharray=`${pDash} ${circ-pDash}`;
+    dp.style.strokeDashoffset=-(cDash+wDash);
+  },300);
+}
+
+function renderPerfBars(score,max,c,w,total){
+  const acc = total>0?((c/total)*100).toFixed(1):0;
+  const pct = max>0?((score/max)*100).toFixed(1):0;
+  const bars = [
+    {label:'Score %', val:pct, color:'var(--primary)'},
+    {label:'Accuracy', val:acc, color:'var(--success)'},
+    {label:'Correct Rate', val:total?((c/total)*100).toFixed(1):0, color:'var(--success-light)'},
+    {label:'Wrong Rate',   val:total?((w/total)*100).toFixed(1):0, color:'var(--danger)'},
+  ];
+  document.getElementById('perf-bars').innerHTML = bars.map(b=>`
+    <div class="perf-bar">
+      <div class="perf-label"><span>${b.label}</span><span>${b.val}%</span></div>
+      <div class="perf-track"><div class="perf-fill" style="width:0;background:${b.color}" data-w="${b.val}"></div></div>
+    </div>`).join('');
+  setTimeout(()=>{ document.querySelectorAll('.perf-fill').forEach(el=>el.style.width=el.dataset.w+'%'); },400);
+}
+
+function renderReview(filter){
+  const ev = attempt.evaluation||{};
+  const list = document.getElementById('review-list');
+  let html='';
+  questions.forEach((q,i)=>{
+    const ev_ = ev[q.id]||{result:'skip',selected:[],correct:[],score:0};
+    if(filter!=='all'&&ev_.result!==filter)return;
+    const rbCls = {correct:'rb-correct',wrong:'rb-wrong',partial:'rb-partial',skip:'rb-skip'}[ev_.result]||'rb-skip';
+    const rbTxt = {correct:'✅ Correct',wrong:'❌ Wrong',partial:'⚡ Partial',skip:'⬜ Skipped'}[ev_.result]||'—';
+    const optLabels=(arr)=>arr.map(i=>typeof i==='number'?String.fromCharCode(65+i):i).join(', ');
+    html+=`<div class="q-review-item" id="rv-${i}">
+      <div class="q-review-header" onclick="toggleReview(${i})">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-weight:700;color:var(--primary)">Q${i+1}</span>
+          <span style="font-size:13px;color:var(--text2);max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(q.text||'').substring(0,80)}${q.text?.length>80?'…':''}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="result-badge ${rbCls}">${rbTxt}</span>
+          <span style="font-weight:700;color:${ev_.score>=0?'var(--success)':'var(--danger)'}">${ev_.score>=0?'+':''}${(ev_.score||0).toFixed(2)}</span>
+          <span style="color:var(--text2);font-size:13px;">▼</span>
+        </div>
+      </div>
+      <div class="q-review-body" id="rvb-${i}">
+        ${q.imageUrl?`<img src="${q.imageUrl}" style="max-height:200px;border-radius:8px;margin-bottom:12px;">`:''}
+        <p style="font-size:14px;line-height:1.7;margin-bottom:12px;">${q.text||''}</p>
+        <div class="answer-comparison">
+          <div class="ans-box ans-your"><strong>Your Answer:</strong><br>${ev_.selected?.length>0?optLabels(ev_.selected):'Not attempted'}</div>
+          <div class="ans-box ans-correct"><strong>Correct Answer:</strong><br>${ev_.correct?.length>0?optLabels(ev_.correct):'—'}</div>
+        </div>
+        ${q.solution?`<div style="margin-top:12px;background:#f0fdf4;border-left:3px solid var(--success);padding:12px;border-radius:6px;font-size:13px;"><strong>Solution:</strong><br>${q.solution}</div>`:''}
+      </div>
+    </div>`;
+  });
+  list.innerHTML = html || '<div class="empty-state"><div class="icon">✅</div><p>No questions match this filter.</p></div>';
+}
+
+function toggleReview(i){
+  document.getElementById(`rvb-${i}`).classList.toggle('open');
+}
+
+function filterReview(f,btn){
+  document.querySelectorAll('.review-filters .btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderReview(f);
+}
+
+async function loadRank(){
+  try{
+    const snap = await db.collection('attempts')
+      .where('examId','==',attempt.examId)
+      .where('status','==','submitted')
+      .orderBy('totalScore','desc').get();
+    const all=snap.docs;
+    const myIdx=all.findIndex(d=>d.id===attemptId);
+    const rank=myIdx+1, total=all.length;
+    const pct=total>1?((total-rank)/(total-1)*100).toFixed(1):'100.0';
+    document.getElementById('rank-num').textContent=`#${rank}`;
+    document.getElementById('rank-out-of').textContent=`out of ${total} candidates`;
+    document.getElementById('rank-percentile').textContent=`${pct}%`;
+  }catch(e){}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — GeoExam Portal</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+  .page-content { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .welcome-banner { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #fff; border-radius: var(--radius-lg); padding: 28px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+  .welcome-banner h2 { font-size: 28px; margin-bottom: 4px; }
+  .welcome-banner p { opacity: .85; font-size: 15px; }
+  .welcome-icon { font-size: 64px; }
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border-radius: var(--radius-lg); padding: 20px; border: 1px solid var(--border); text-align: center; }
+  .stat-card .num { font-size: 32px; font-weight: 700; font-family: 'Rajdhani'; color: var(--primary); }
+  .stat-card .lbl { color: var(--text2); font-size: 13px; font-weight: 600; margin-top: 4px; }
+  .stat-card .icon { font-size: 24px; margin-bottom: 8px; }
+  .exam-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; transition: box-shadow .2s; }
+  .exam-card:hover { box-shadow: var(--shadow-lg); }
+  .exam-card h3 { font-size: 18px; color: var(--primary); margin-bottom: 8px; }
+  .exam-meta { display: flex; gap: 16px; font-size: 13px; color: var(--text2); margin-bottom: 14px; flex-wrap: wrap; }
+  .exam-meta span { display: flex; align-items: center; gap: 4px; }
+  .exam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .status-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .status-upcoming { background: #dbeafe; color: #1e40af; }
+  .status-live { background: #dcfce7; color: #166534; }
+  .status-completed { background: var(--bg2); color: var(--text2); }
+  .score-bar { height: 8px; background: var(--bg2); border-radius: 4px; overflow: hidden; margin: 8px 0; }
+  .score-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width .5s; }
+  .section-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-title h2 { font-size: 22px; color: var(--primary); }
+  .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #fff; border: 2px solid rgba(255,255,255,.4); }
+  .attempts-table td:last-child { display: flex; gap: 8px; }
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--text2); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span style="font-size:28px;">🪨</span>
+    <div><h1>GeoExam Portal</h1><span>GATE Geology · CBT Platform</span></div>
+  </div>
+  <div class="navbar-nav">
+    <a href="dashboard.html" class="nav-link active">Dashboard</a>
+    <a href="my-results.html" class="nav-link">My Results</a>
+    <a href="ranklist.html" class="nav-link">Ranklist</a>
+    <div id="user-avatar" class="user-avatar" title="" style="cursor:pointer;">?</div>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,.8)">Logout</button>
+  </div>
+</nav>
+
+<div class="page-content">
+  <div class="welcome-banner">
+    <div>
+      <h2 id="welcome-name">Welcome back!</h2>
+      <p>Ready to practice? Choose an exam below to get started.</p>
+      <div style="margin-top:12px;display:flex;gap:10px;">
+        <span style="background:rgba(255,255,255,.2);padding:4px 12px;border-radius:20px;font-size:13px;">🎯 GATE Geology</span>
+        <span style="background:rgba(255,255,255,.2);padding:4px 12px;border-radius:20px;font-size:13px;">📅 8 Years PYQs</span>
+      </div>
+    </div>
+    <div class="welcome-icon">🪨</div>
+  </div>
+
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card"><div class="icon">📝</div><div class="num" id="stat-attempts">0</div><div class="lbl">Exams Attempted</div></div>
+    <div class="stat-card"><div class="icon">⭐</div><div class="num" id="stat-best">—</div><div class="lbl">Best Score</div></div>
+    <div class="stat-card"><div class="icon">📊</div><div class="num" id="stat-avg">—</div><div class="lbl">Average Score</div></div>
+    <div class="stat-card"><div class="icon">🏆</div><div class="num" id="stat-rank">—</div><div class="lbl">Best Rank</div></div>
+  </div>
+
+  <div class="section-title">
+    <h2>Available Exams</h2>
+  </div>
+  <div id="exams-grid" class="exam-grid">
+    <div class="loading-screen"><div class="spinner"></div><p>Loading exams…</p></div>
+  </div>
+
+  <div class="section-title mt-3">
+    <h2>My Recent Attempts</h2>
+    <a href="my-results.html" class="btn btn-outline btn-sm">View All</a>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table id="attempts-table">
+        <thead><tr><th>Exam</th><th>Date</th><th>Score</th><th>Rank</th><th>Actions</th></tr></thead>
+        <tbody id="attempts-tbody"><tr><td colspan="5" class="text-center text-muted">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script>
+let currentUser = null;
+
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = '../index.html'; return; }
+  currentUser = user;
+  const doc = await db.collection('users').doc(user.uid).get();
+  if (doc.exists && doc.data().role === 'admin') { window.location.href = '../admin/index.html'; return; }
+  const data = doc.data();
+  document.getElementById('welcome-name').textContent = `Welcome back, ${data.firstName || user.displayName || 'Student'}!`;
+  const av = document.getElementById('user-avatar');
+  av.textContent = (data.firstName || 'S')[0].toUpperCase();
+  loadExams();
+  loadAttempts();
+  loadStats();
+});
+
+async function loadExams() {
+  const grid = document.getElementById('exams-grid');
+  try {
+    const snap = await db.collection('exams').where('published','==',true).orderBy('createdAt','desc').get();
+    if (snap.empty) { grid.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No exams available yet. Check back soon!</p></div>'; return; }
+    grid.innerHTML = '';
+    snap.forEach(doc => {
+      const e = doc.data(); const eid = doc.id;
+      const now = Date.now();
+      const startTs = e.startTime?.toMillis?.() || 0;
+      const endTs   = e.endTime?.toMillis?.() || Infinity;
+      let statusClass='status-upcoming', statusText='Upcoming';
+      if (now >= startTs && now <= endTs) { statusClass='status-live'; statusText='🟢 Live'; }
+      else if (now > endTs) { statusClass='status-completed'; statusText='Completed'; }
+      grid.innerHTML += `
+        <div class="exam-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+            <h3>${e.title}</h3>
+            <span class="status-badge ${statusClass}">${statusText}</span>
+          </div>
+          <div class="exam-meta">
+            <span>⏱ ${e.durationMinutes} min</span>
+            <span>❓ ${e.totalQuestions || 0} Questions</span>
+            <span>📋 ${e.subject || 'GATE Geology'}</span>
+          </div>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">${e.description || ''}</p>
+          <div style="display:flex;gap:8px;">
+            ${now >= startTs && now <= endTs
+              ? `<button class="btn btn-primary btn-sm" onclick="startExam('${eid}')">Start Exam →</button>`
+              : now > endTs
+              ? `<button class="btn btn-outline btn-sm" disabled>Exam Ended</button>`
+              : `<button class="btn btn-ghost btn-sm" disabled>Not Yet Open</button>`}
+            <button class="btn btn-ghost btn-sm" onclick="window.location='exam-instructions.html?id=${eid}'">View Details</button>
+          </div>
+        </div>`;
+    });
+  } catch(e) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Error loading exams: ${e.message}</p></div>`;
+  }
+}
+
+async function loadAttempts() {
+  const tbody = document.getElementById('attempts-tbody');
+  try {
+    const snap = await db.collection('attempts')
+      .where('userId','==',currentUser.uid)
+      .orderBy('submittedAt','desc').limit(5).get();
+    if (snap.empty) { tbody.innerHTML='<tr><td colspan="5" class="text-center text-muted">No attempts yet. Take your first exam!</td></tr>'; return; }
+    tbody.innerHTML = '';
+    snap.forEach(doc => {
+      const a = doc.data();
+      const date = a.submittedAt?.toDate?.()?.toLocaleDateString('en-IN') || '—';
+      tbody.innerHTML += `<tr>
+        <td><strong>${a.examTitle||'Exam'}</strong></td>
+        <td>${date}</td>
+        <td><strong style="color:var(--primary)">${(a.totalScore||0).toFixed(2)}</strong> / ${a.maxScore||100}</td>
+        <td>${a.rank ? `#${a.rank}` : '—'}</td>
+        <td>
+          <a href="result.html?id=${doc.id}" class="btn btn-outline btn-sm">View Result</a>
+          <a href="ranklist.html?examId=${a.examId}" class="btn btn-ghost btn-sm">Ranklist</a>
+        </td>
+      </tr>`;
+    });
+  } catch(e) {
+    tbody.innerHTML='<tr><td colspan="5" class="text-center text-muted">—</td></tr>';
+  }
+}
+
+async function loadStats() {
+  try {
+    const snap = await db.collection('attempts').where('userId','==',currentUser.uid).get();
+    if (snap.empty) return;
+    let best=0, total=0, count=0;
+    snap.forEach(d => { const s=d.data().totalScore||0; total+=s; count++; if(s>best)best=s; });
+    document.getElementById('stat-attempts').textContent = count;
+    document.getElementById('stat-best').textContent = best.toFixed(1);
+    document.getElementById('stat-avg').textContent = (total/count).toFixed(1);
+  } catch(e) {}
+}
+
+function startExam(examId) { window.location.href = `exam-instructions.html?id=${examId}`; }
+
+async function doLogout() {
+  await auth.signOut();
+  window.location.href = '../index.html';
+}
+</script>
+</body>
+</html>

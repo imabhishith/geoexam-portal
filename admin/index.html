@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Portal — GeoExam</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+  body { display: flex; min-height: 100vh; }
+  /* Sidebar */
+  .admin-sidebar { width: 240px; background: var(--primary-dark); color: #fff; flex-shrink: 0; display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; }
+  .admin-logo { padding: 20px 16px 16px; border-bottom: 1px solid rgba(255,255,255,.1); }
+  .admin-logo h1 { font-size: 18px; color: #fff; }
+  .admin-logo p { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 2px; }
+  .admin-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+  .nav-section { padding: 0 12px; margin-bottom: 4px; }
+  .nav-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.4); padding: 10px 8px 4px; font-weight: 700; }
+  .admin-nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; color: rgba(255,255,255,.75); font-size: 14px; font-weight: 500; cursor: pointer; transition: all .2s; border: none; background: none; width: 100%; text-align: left; }
+  .admin-nav-link:hover { background: rgba(255,255,255,.1); color: #fff; }
+  .admin-nav-link.active { background: rgba(255,255,255,.15); color: #fff; border-left: 3px solid var(--accent); }
+  .admin-nav-link .icon { font-size: 18px; flex-shrink: 0; }
+  .admin-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,.1); }
+  /* Main */
+  .admin-main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+  .admin-topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+  .admin-topbar h2 { font-size: 20px; color: var(--primary); }
+  .admin-content { padding: 24px; flex: 1; }
+  /* Panels */
+  .admin-panel { display: none; }
+  .admin-panel.active { display: block; }
+  /* Stats */
+  .admin-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
+  .admin-stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; display: flex; align-items: center; gap: 16px; }
+  .admin-stat .ico { font-size: 36px; }
+  .admin-stat .num { font-size: 30px; font-weight: 800; font-family: 'Rajdhani'; color: var(--primary); }
+  .admin-stat .lbl { font-size: 12px; color: var(--text2); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- Admin Sidebar -->
+<div class="admin-sidebar">
+  <div class="admin-logo">
+    <h1>🪨 GeoExam Admin</h1>
+    <p>Portal Management System</p>
+  </div>
+  <div class="admin-nav">
+    <div class="nav-section">
+      <div class="nav-section-title">Overview</div>
+      <button class="admin-nav-link active" onclick="showPanel('dashboard')" data-panel="dashboard">
+        <span class="icon">📊</span> Dashboard
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Questions</div>
+      <button class="admin-nav-link" onclick="showPanel('qbank')" data-panel="qbank">
+        <span class="icon">📚</span> Question Bank
+      </button>
+      <button class="admin-nav-link" onclick="showPanel('add-single')" data-panel="add-single">
+        <span class="icon">➕</span> Add Single Question
+      </button>
+      <button class="admin-nav-link" onclick="showPanel('add-bulk')" data-panel="add-bulk">
+        <span class="icon">📄</span> Bulk Upload (PDF)
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Exams</div>
+      <button class="admin-nav-link" onclick="showPanel('exams')" data-panel="exams">
+        <span class="icon">📝</span> Manage Exams
+      </button>
+      <button class="admin-nav-link" onclick="showPanel('create-exam')" data-panel="create-exam">
+        <span class="icon">🆕</span> Create Exam
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Analytics</div>
+      <button class="admin-nav-link" onclick="showPanel('attempts')" data-panel="attempts">
+        <span class="icon">🏆</span> All Attempts
+      </button>
+      <button class="admin-nav-link" onclick="showPanel('users')" data-panel="users">
+        <span class="icon">👥</span> Users
+      </button>
+    </div>
+  </div>
+  <div class="admin-footer">
+    <button class="admin-nav-link" onclick="doLogout()" style="color:rgba(255,100,100,.9)">
+      <span class="icon">🚪</span> Logout
+    </button>
+  </div>
+</div>
+
+<!-- Admin Main -->
+<div class="admin-main">
+  <div class="admin-topbar">
+    <h2 id="panel-title">Dashboard</h2>
+    <div style="display:flex;align-items:center;gap:12px;font-size:14px;color:var(--text2);">
+      <span id="admin-name">Admin</span>
+      <span class="badge badge-primary">Admin</span>
+    </div>
+  </div>
+  <div class="admin-content">
+    <!-- DASHBOARD -->
+    <div id="panel-dashboard" class="admin-panel active">
+      <div class="admin-stats" id="admin-stats-row">
+        <div class="admin-stat"><div class="ico">❓</div><div><div class="num" id="st-q">—</div><div class="lbl">Total Questions</div></div></div>
+        <div class="admin-stat"><div class="ico">📝</div><div><div class="num" id="st-e">—</div><div class="lbl">Total Exams</div></div></div>
+        <div class="admin-stat"><div class="ico">👥</div><div><div class="num" id="st-u">—</div><div class="lbl">Registered Users</div></div></div>
+        <div class="admin-stat"><div class="ico">📊</div><div><div class="num" id="st-a">—</div><div class="lbl">Total Attempts</div></div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3 style="font-size:16px">Recent Exams</h3><button class="btn btn-outline btn-sm" onclick="showPanel('exams')">View All</button></div>
+          <div class="card-body"><div id="recent-exams">Loading…</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3 style="font-size:16px">Quick Actions</h3></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
+            <button class="btn btn-primary btn-block" onclick="showPanel('add-single')">➕ Add Single Question</button>
+            <button class="btn btn-accent btn-block" onclick="showPanel('add-bulk')">📄 Bulk Upload PDF</button>
+            <button class="btn btn-success btn-block" onclick="showPanel('create-exam')">🆕 Create New Exam</button>
+            <button class="btn btn-outline btn-block" onclick="showPanel('qbank')">📚 Browse Question Bank</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUESTION BANK -->
+    <div id="panel-qbank" class="admin-panel">
+      <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+        <input type="text" id="qbank-search" class="form-control" style="max-width:300px;" placeholder="Search questions…" oninput="filterQBank()">
+        <select class="form-control" style="max-width:180px;" id="qbank-type" onchange="filterQBank()">
+          <option value="">All Types</option>
+          <option value="scq">Single Correct</option>
+          <option value="mcq">Multiple Correct</option>
+          <option value="nat">Numerical</option>
+        </select>
+        <select class="form-control" style="max-width:200px;" id="qbank-year" onchange="filterQBank()">
+          <option value="">All Years</option>
+          <option>2024</option><option>2023</option><option>2022</option>
+          <option>2021</option><option>2020</option><option>2019</option>
+          <option>2018</option><option>2017</option>
+        </select>
+        <button class="btn btn-primary" onclick="showPanel('add-single')">➕ Add Question</button>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3 style="font-size:16px">Question Bank</h3>
+          <span class="badge badge-muted" id="qbank-count">0 questions</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Question Preview</th><th>Type</th><th>Year</th><th>+Marks</th><th>−Marks</th><th>Actions</th></tr></thead>
+            <tbody id="qbank-tbody"><tr><td colspan="7" class="text-center text-muted">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="card-footer" id="qbank-pagination" style="display:flex;gap:8px;align-items:center;"></div>
+      </div>
+    </div>
+
+    <!-- ADD SINGLE QUESTION -->
+    <div id="panel-add-single" class="admin-panel">
+      <div class="card" style="max-width:780px;">
+        <div class="card-header"><h3 style="font-size:16px">Add Single Question</h3></div>
+        <div class="card-body">
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Question Type</label>
+              <select class="form-control" id="q-type" onchange="renderOptionFields()">
+                <option value="scq">Single Correct (SCQ)</option>
+                <option value="mcq">Multiple Correct (MCQ)</option>
+                <option value="nat">Numerical Answer (NAT)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>GATE Year (optional)</label>
+              <select class="form-control" id="q-year">
+                <option value="">—</option>
+                <option>2024</option><option>2023</option><option>2022</option>
+                <option>2021</option><option>2020</option><option>2019</option>
+                <option>2018</option><option>2017</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Question Text (supports HTML)</label>
+            <textarea class="form-control" id="q-text" rows="4" placeholder="Enter the question text here…"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Question Image (optional — JPEG/PNG)</label>
+            <input type="file" class="form-control" id="q-image" accept="image/*">
+            <div id="q-img-preview" style="margin-top:8px;"></div>
+          </div>
+          <div id="options-section"></div>
+          <div class="grid-3 mt-2">
+            <div class="form-group">
+              <label>Positive Marks</label>
+              <input type="number" class="form-control" id="q-pos" value="1" min="0" step="0.5">
+            </div>
+            <div class="form-group">
+              <label>Negative Marks</label>
+              <input type="number" class="form-control" id="q-neg" value="0.33" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>Tolerance (NAT only)</label>
+              <input type="number" class="form-control" id="q-tol" value="0" min="0" step="any">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Solution / Explanation (optional)</label>
+            <textarea class="form-control" id="q-solution" rows="3" placeholder="Detailed solution for this question…"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Tags / Topic (comma separated)</label>
+            <input type="text" class="form-control" id="q-tags" placeholder="e.g. Structural Geology, GATE 2023">
+          </div>
+          <button class="btn btn-primary btn-lg" onclick="saveQuestion()">💾 Save Question</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BULK UPLOAD -->
+    <div id="panel-add-bulk" class="admin-panel">
+      <div class="card" style="max-width:720px;">
+        <div class="card-header"><h3 style="font-size:16px">📄 Bulk Upload via PDF</h3></div>
+        <div class="card-body">
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:20px;font-size:13px;">
+            <strong>How it works:</strong> Upload a PDF of questions. The system will extract text from each page and attempt to auto-identify and split questions. You can then review, edit, and confirm each question before saving to the Question Bank.
+          </div>
+          <div class="form-group">
+            <label>Upload PDF File</label>
+            <div id="pdf-drop-zone" style="border:3px dashed var(--border);border-radius:12px;padding:40px;text-align:center;cursor:pointer;transition:border-color .2s;" onclick="document.getElementById('pdf-input').click()">
+              <div style="font-size:48px;margin-bottom:12px;">📄</div>
+              <div style="font-size:16px;font-weight:600;margin-bottom:6px;">Drop PDF here or click to browse</div>
+              <div style="font-size:13px;color:var(--text2);">Supports multi-page PDFs. Max 50 MB.</div>
+              <input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="handlePDFUpload(this)">
+            </div>
+          </div>
+          <div id="pdf-progress" class="hidden">
+            <div style="background:var(--bg2);border-radius:6px;overflow:hidden;height:10px;margin-bottom:8px;">
+              <div id="pdf-prog-fill" style="height:100%;background:var(--primary);transition:width .3s;width:0%"></div>
+            </div>
+            <div id="pdf-prog-text" style="font-size:13px;color:var(--text2);text-align:center;">Processing…</div>
+          </div>
+          <div id="pdf-questions-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANAGE EXAMS -->
+    <div id="panel-exams" class="admin-panel">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="showPanel('create-exam')">🆕 Create New Exam</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 style="font-size:16px">All Exams</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Title</th><th>Questions</th><th>Duration</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="exams-tbody"><tr><td colspan="5" class="text-center text-muted">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREATE EXAM -->
+    <div id="panel-create-exam" class="admin-panel">
+      <div class="card" style="max-width:800px;">
+        <div class="card-header"><h3 style="font-size:16px" id="create-exam-title">Create New Exam</h3></div>
+        <div class="card-body">
+          <input type="hidden" id="exam-edit-id">
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Exam Title</label>
+              <input type="text" class="form-control" id="ex-title" placeholder="e.g. GATE Geology 2024 Mock Test">
+            </div>
+            <div class="form-group">
+              <label>Subject</label>
+              <input type="text" class="form-control" id="ex-subject" value="GATE Geology" placeholder="GATE Geology">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea class="form-control" id="ex-desc" rows="2" placeholder="Brief description of this exam…"></textarea>
+          </div>
+          <div class="grid-3">
+            <div class="form-group">
+              <label>Duration (minutes)</label>
+              <input type="number" class="form-control" id="ex-dur" value="180" min="10">
+            </div>
+            <div class="form-group">
+              <label>Start Time</label>
+              <input type="datetime-local" class="form-control" id="ex-start">
+            </div>
+            <div class="form-group">
+              <label>End Time</label>
+              <input type="datetime-local" class="form-control" id="ex-end">
+            </div>
+          </div>
+
+          <!-- Sections -->
+          <div class="form-group">
+            <label>Exam Sections</label>
+            <div id="sections-builder" style="border:1px solid var(--border);border-radius:8px;padding:16px;background:var(--bg);">
+              <div id="sections-list"></div>
+              <button class="btn btn-outline btn-sm mt-2" onclick="addSection()">+ Add Section</button>
+            </div>
+          </div>
+
+          <!-- Question Picker -->
+          <div class="form-group">
+            <label>Add Questions to Exam</label>
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+              <input type="text" class="form-control" id="qpick-search" placeholder="Search questions…" oninput="filterQPicker()">
+              <select class="form-control" style="max-width:160px;" id="qpick-type" onchange="filterQPicker()">
+                <option value="">All Types</option>
+                <option value="scq">SCQ</option>
+                <option value="mcq">MCQ</option>
+                <option value="nat">NAT</option>
+              </select>
+              <select class="form-control" style="max-width:130px;" id="qpick-section" title="Add to section">
+                <option value="0">Section 1</option>
+              </select>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;">Available Questions</div>
+                <div id="qpick-available" style="height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--bg);"></div>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;">Selected Questions <span id="sel-count" class="badge badge-primary">0</span></div>
+                <div id="qpick-selected" style="height:280px;overflow-y:auto;border:2px solid var(--primary);border-radius:8px;padding:8px;background:var(--bg);"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;align-items:center;margin-top:8px;">
+            <button class="btn btn-primary btn-lg" onclick="saveExam()">💾 Save Exam</button>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
+              <input type="checkbox" id="ex-published"> Publish immediately
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTEMPTS -->
+    <div id="panel-attempts" class="admin-panel">
+      <div class="card">
+        <div class="card-header"><h3 style="font-size:16px">All Exam Attempts</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="attempts-tbody"><tr><td colspan="6" class="text-center text-muted">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div id="panel-users" class="admin-panel">
+      <div class="card">
+        <div class="card-header"><h3 style="font-size:16px">Registered Users</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+            <tbody id="users-tbody"><tr><td colspan="6" class="text-center text-muted">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Question Edit Modal -->
+<div class="modal-overlay" id="edit-q-modal">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-header"><h3>Edit Question</h3><button class="modal-close" onclick="closeModal('edit-q-modal')">✕</button></div>
+    <div class="modal-body" id="edit-q-body"></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('edit-q-modal')">Cancel</button><button class="btn btn-primary" onclick="updateQuestion()">Save Changes</button></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

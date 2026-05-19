@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Instructions — GeoExam Portal</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+  .page-content { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+  .inst-header { background: var(--primary); color: #fff; padding: 20px 28px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+  .inst-body   { background: var(--surface); border: 1px solid var(--border); border-top: none; padding: 28px; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+  .inst-section { margin-bottom: 24px; }
+  .inst-section h3 { font-size: 16px; color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 6px; margin-bottom: 12px; }
+  .inst-list { padding-left: 20px; }
+  .inst-list li { margin-bottom: 8px; font-size: 14px; color: var(--text); line-height: 1.7; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .legend-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+  .dot-nv  { background: var(--q-not-visited); }
+  .dot-na  { background: var(--q-not-answered); }
+  .dot-ans { background: var(--q-answered); }
+  .dot-mrk { background: var(--q-marked); }
+  .dot-am  { background: var(--q-answered-marked); }
+  .marking-table td, .marking-table th { padding: 8px 12px; }
+  .confirm-check { display: flex; align-items: flex-start; gap: 10px; padding: 16px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; margin: 20px 0; }
+  .confirm-check input { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; }
+  .exam-info-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
+  .info-box2 { background: var(--bg); border-radius: 8px; padding: 12px 16px; text-align: center; }
+  .info-box2 .val { font-size: 20px; font-weight: 700; color: var(--primary); font-family: 'Rajdhani'; }
+  .info-box2 .lbl { font-size: 12px; color: var(--text2); font-weight: 600; }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span style="font-size:28px;">🪨</span>
+    <div><h1>GeoExam Portal</h1><span>GATE Geology · CBT Platform</span></div>
+  </div>
+  <div class="navbar-nav">
+    <a href="dashboard.html" class="nav-link">← Back to Dashboard</a>
+  </div>
+</nav>
+
+<div class="page-content">
+  <div class="inst-header">
+    <h2 id="exam-title" style="font-size:24px;margin-bottom:4px;">Loading exam…</h2>
+    <p id="exam-subtitle" style="opacity:.8;font-size:14px;">Please read all instructions carefully before proceeding.</p>
+  </div>
+  <div class="inst-body">
+    <div class="exam-info-grid" id="exam-info-grid">
+      <div class="info-box2"><div class="val" id="info-dur">—</div><div class="lbl">Duration (min)</div></div>
+      <div class="info-box2"><div class="val" id="info-qs">—</div><div class="lbl">Total Questions</div></div>
+      <div class="info-box2"><div class="val" id="info-marks">—</div><div class="lbl">Maximum Marks</div></div>
+    </div>
+
+    <div class="inst-section">
+      <h3>General Instructions</h3>
+      <ol class="inst-list">
+        <li>The clock will be set at the server. The countdown timer in the top right corner of screen will display the remaining time available for you to complete the examination. When the timer reaches zero, the examination will end by itself.</li>
+        <li>The Question Palette displayed on the right side of screen will show the status of each question using one of the following symbols.</li>
+      </ol>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot dot-nv">1</div> Not Visited</div>
+        <div class="legend-item"><div class="legend-dot dot-na">2</div> Not Answered</div>
+        <div class="legend-item"><div class="legend-dot dot-ans">3</div> Answered</div>
+        <div class="legend-item"><div class="legend-dot dot-mrk">4</div> Marked for Review</div>
+        <div class="legend-item"><div class="legend-dot dot-am">5</div> Answered &amp; Marked for Review</div>
+      </div>
+    </div>
+
+    <div class="inst-section">
+      <h3>Navigating to a Question</h3>
+      <ol class="inst-list">
+        <li>Click on the question number in the Question Palette at the right of your screen to go to that numbered question directly.</li>
+        <li>Click on <strong>Save &amp; Next</strong> to save your answer for the current question and then go to the next question.</li>
+        <li>Click on <strong>Mark for Review &amp; Next</strong> to save your answer for the current question, mark it for review, and then go to the next question.</li>
+        <li>Click on <strong>Clear Response</strong> to clear the selection for the current question.</li>
+      </ol>
+    </div>
+
+    <div class="inst-section">
+      <h3>Marking Scheme</h3>
+      <ol class="inst-list">
+        <li><strong>Single Correct (SCQ):</strong> Full marks if correct. Negative marks for wrong answer. No marks for unattempted.</li>
+        <li><strong>Multiple Correct (MCQ):</strong> If ANY selected option is wrong → full negative marks. If only correct options selected (partial or full) → proportional positive marks based on coverage. Unattempted = 0.</li>
+        <li><strong>Numerical Answer Type (NAT):</strong> Full marks if answer matches. No negative marking. No partial marking.</li>
+      </ol>
+      <div class="table-wrap">
+        <table class="marking-table" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+          <thead><tr><th>Question Type</th><th>Correct</th><th>Wrong</th><th>Unattempted</th></tr></thead>
+          <tbody id="marking-tbody">
+            <tr><td>Varies per question (see exam)</td><td style="color:var(--success)">+marks</td><td style="color:var(--danger)">−marks</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="inst-section">
+      <h3>Important Points</h3>
+      <ol class="inst-list">
+        <li>Do not close or refresh the browser window during the exam. Your progress is saved automatically.</li>
+        <li>You can change your answer by clicking on another option for MCQ questions.</li>
+        <li>An on-screen scientific calculator is available during the exam.</li>
+        <li>Ensure you have a stable internet connection throughout the exam.</li>
+        <li>Submit the exam only when you are sure you have answered all questions.</li>
+        <li>Once the exam is submitted, you <strong>cannot</strong> re-attempt it.</li>
+      </ol>
+    </div>
+
+    <div class="confirm-check">
+      <input type="checkbox" id="agree-check" onchange="toggleStart()">
+      <label for="agree-check" style="font-size:14px;cursor:pointer;">
+        <strong>I have read and understood all the instructions.</strong> I agree to the exam rules and confirm that I will not use any unfair means during the examination.
+      </label>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:8px;">
+      <a href="dashboard.html" class="btn btn-outline btn-lg">← Go Back</a>
+      <button class="btn btn-primary btn-lg" id="btn-start" disabled onclick="startExam()">
+        🚀 Start Examination
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const examId = params.get('id');
+let examData = null;
+
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = '../index.html'; return; }
+  if (!examId) { Utils.toast('No exam selected','error'); return; }
+  try {
+    const doc = await db.collection('exams').doc(examId).get();
+    if (!doc.exists) { Utils.toast('Exam not found','error'); return; }
+    examData = doc.data();
+    document.getElementById('exam-title').textContent = examData.title;
+    document.getElementById('exam-subtitle').textContent = examData.description || 'Read instructions carefully.';
+    document.getElementById('info-dur').textContent = examData.durationMinutes || '—';
+    document.getElementById('info-qs').textContent = examData.totalQuestions || '—';
+    document.getElementById('info-marks').textContent = examData.maxMarks || '—';
+  } catch(e) { Utils.toast('Error loading exam: '+e.message,'error'); }
+});
+
+function toggleStart() {
+  document.getElementById('btn-start').disabled = !document.getElementById('agree-check').checked;
+}
+
+async function startExam() {
+  const user = auth.currentUser;
+  // Check if already attempted
+  const existing = await db.collection('attempts')
+    .where('userId','==',user.uid)
+    .where('examId','==',examId)
+    .where('status','==','submitted')
+    .get();
+  if (!existing.empty) {
+    Utils.toast('You have already submitted this exam. View your result.','warning');
+    setTimeout(() => window.location.href = `result.html?id=${existing.docs[0].id}`, 2000);
+    return;
+  }
+  window.location.href = `exam.html?id=${examId}`;
+}
+</script>
+</body>
+</html>

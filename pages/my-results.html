@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Results — GeoExam Portal</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+  .page-content { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+  .page-header { margin-bottom: 24px; }
+  .page-header h1 { font-size: 28px; color: var(--primary); }
+  .page-header p  { color: var(--text2); font-size: 14px; }
+  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 16px; margin-bottom: 28px; }
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; transition: box-shadow .2s; }
+  .result-card:hover { box-shadow: var(--shadow-lg); }
+  .result-card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .result-card-header h3 { font-size: 15px; color: var(--primary); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .result-card-header .date { font-size: 12px; color: var(--text3); }
+  .result-card-body { padding: 14px 18px; }
+  .score-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .big-score { font-size: 32px; font-weight: 800; font-family: 'Rajdhani'; color: var(--primary); }
+  .score-pct-badge { background: var(--primary); color: #fff; border-radius: 20px; padding: 4px 12px; font-weight: 700; font-size: 13px; }
+  .mini-stats { display: flex; gap: 12px; font-size: 12px; margin-bottom: 12px; }
+  .mini-stat { display: flex; align-items: center; gap: 4px; }
+  .prog-bar { height: 8px; background: var(--bg2); border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+  .prog-fill { height: 100%; border-radius: 4px; }
+  .result-card-footer { padding: 10px 18px; border-top: 1px solid var(--border); background: var(--bg); display: flex; gap: 8px; }
+  .summary-banner { background: linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%); color:#fff; border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
+  .sb-stat { text-align: center; }
+  .sb-stat .num { font-size: 32px; font-weight: 800; font-family: 'Rajdhani'; color: var(--accent-light); }
+  .sb-stat .lbl { font-size: 12px; opacity: .8; font-weight: 600; }
+  .filter-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .empty-state { text-align: center; padding: 64px 24px; }
+  .empty-state .icon { font-size: 64px; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 20px; color: var(--primary); margin-bottom: 8px; }
+  .empty-state p { color: var(--text2); font-size: 14px; }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span style="font-size:28px;">🪨</span>
+    <div><h1>GeoExam Portal</h1><span>GATE Geology · CBT Platform</span></div>
+  </div>
+  <div class="navbar-nav">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="my-results.html" class="nav-link active">My Results</a>
+    <a href="ranklist.html" class="nav-link">Ranklist</a>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,.8)">Logout</button>
+  </div>
+</nav>
+
+<div class="page-content">
+  <div class="page-header">
+    <h1>📊 My Results</h1>
+    <p>All your exam attempts and performance analysis.</p>
+  </div>
+
+  <!-- Summary Banner -->
+  <div class="summary-banner" id="summary-banner">
+    <div class="sb-stat"><div class="num" id="sum-attempts">—</div><div class="lbl">Total Attempts</div></div>
+    <div class="sb-stat"><div class="num" id="sum-best">—</div><div class="lbl">Best Score</div></div>
+    <div class="sb-stat"><div class="num" id="sum-avg">—</div><div class="lbl">Average Score</div></div>
+    <div class="sb-stat"><div class="num" id="sum-accuracy">—</div><div class="lbl">Avg Accuracy</div></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-row">
+    <select class="form-control" style="max-width:220px;" id="filter-exam" onchange="applyFilter()">
+      <option value="">All Exams</option>
+    </select>
+    <select class="form-control" style="max-width:160px;" id="filter-sort" onchange="applyFilter()">
+      <option value="date-desc">Newest First</option>
+      <option value="date-asc">Oldest First</option>
+      <option value="score-desc">Highest Score</option>
+      <option value="score-asc">Lowest Score</option>
+    </select>
+  </div>
+
+  <div id="results-grid" class="results-grid">
+    <div class="loading-screen" style="grid-column:1/-1;min-height:200px;">
+      <div class="spinner"></div><p>Loading your results…</p>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script>
+let currentUser = null;
+let allAttempts = [];
+
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = '../index.html'; return; }
+  currentUser = user;
+  await loadResults();
+});
+
+async function loadResults() {
+  try {
+    const snap = await db.collection('attempts')
+      .where('userId', '==', currentUser.uid)
+      .where('status', '==', 'submitted')
+      .orderBy('submittedAt', 'desc')
+      .get();
+
+    allAttempts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Populate exam filter
+    const examNames = [...new Set(allAttempts.map(a => a.examTitle).filter(Boolean))];
+    const filterEl = document.getElementById('filter-exam');
+    examNames.forEach(n => {
+      const o = document.createElement('option');
+      o.value = n; o.textContent = n;
+      filterEl.appendChild(o);
+    });
+
+    // Summary stats
+    if (allAttempts.length > 0) {
+      const scores = allAttempts.map(a => a.totalScore || 0);
+      const maxScores = allAttempts.map(a => a.maxScore || 100);
+      const best = Math.max(...scores);
+      const avg  = scores.reduce((s,x)=>s+x,0) / scores.length;
+      const totalQ = allAttempts.reduce((s,a)=>(s+(a.correct||0)+(a.wrong||0)+(a.skipped||0)),0);
+      const totalC = allAttempts.reduce((s,a)=>s+(a.correct||0),0);
+      const acc = totalQ > 0 ? ((totalC/totalQ)*100).toFixed(1)+'%' : '—';
+      document.getElementById('sum-attempts').textContent = allAttempts.length;
+      document.getElementById('sum-best').textContent     = best.toFixed(1);
+      document.getElementById('sum-avg').textContent      = avg.toFixed(1);
+      document.getElementById('sum-accuracy').textContent = acc;
+    }
+
+    applyFilter();
+  } catch(e) {
+    document.getElementById('results-grid').innerHTML =
+      `<div class="empty-state" style="grid-column:1/-1"><div class="icon">⚠️</div><h3>Error loading results</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function applyFilter() {
+  const examFilter = document.getElementById('filter-exam').value;
+  const sort       = document.getElementById('filter-sort').value;
+
+  let filtered = allAttempts.filter(a => !examFilter || a.examTitle === examFilter);
+
+  filtered.sort((a, b) => {
+    if (sort === 'date-desc')  return (b.submittedAt?.seconds||0) - (a.submittedAt?.seconds||0);
+    if (sort === 'date-asc')   return (a.submittedAt?.seconds||0) - (b.submittedAt?.seconds||0);
+    if (sort === 'score-desc') return (b.totalScore||0) - (a.totalScore||0);
+    if (sort === 'score-asc')  return (a.totalScore||0) - (b.totalScore||0);
+    return 0;
+  });
+
+  renderResults(filtered);
+}
+
+function renderResults(list) {
+  const grid = document.getElementById('results-grid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="icon">📭</div>
+      <h3>No exam attempts yet</h3>
+      <p>Head to the dashboard and take your first exam!</p>
+      <a href="dashboard.html" class="btn btn-primary mt-2">Go to Dashboard →</a>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(a => {
+    const score   = a.totalScore || 0;
+    const maxSc   = a.maxScore   || 100;
+    const pct     = maxSc > 0 ? ((score / maxSc) * 100).toFixed(1) : 0;
+    const date    = a.submittedAt?.toDate?.()?.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) || '—';
+    const correct = a.correct  || 0;
+    const wrong   = a.wrong    || 0;
+    const partial = a.partial  || 0;
+    const skipped = a.skipped  || 0;
+    const total   = correct + wrong + partial + skipped;
+    const acc     = total > 0 ? ((correct/total)*100).toFixed(0) : 0;
+
+    // Color code by score %
+    const color = pct >= 75 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)';
+
+    return `<div class="result-card">
+      <div class="result-card-header">
+        <h3 title="${a.examTitle||'Exam'}">${a.examTitle||'Exam'}</h3>
+        <div class="date">📅 ${date}</div>
+      </div>
+      <div class="result-card-body">
+        <div class="score-row">
+          <div>
+            <div class="big-score" style="color:${color}">${score.toFixed(2)}</div>
+            <div style="font-size:12px;color:var(--text2);">out of ${maxSc}</div>
+          </div>
+          <div class="score-pct-badge" style="background:${color}">${pct}%</div>
+        </div>
+        <div class="prog-bar">
+          <div class="prog-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat" style="color:var(--success)">✅ ${correct} Correct</div>
+          <div class="mini-stat" style="color:var(--danger)">❌ ${wrong} Wrong</div>
+          <div class="mini-stat" style="color:var(--warning)">⚡ ${partial} Partial</div>
+          <div class="mini-stat" style="color:var(--text3)">⬜ ${skipped} Skip</div>
+        </div>
+        <div style="font-size:12px;color:var(--text2);">Accuracy: <strong>${acc}%</strong></div>
+      </div>
+      <div class="result-card-footer">
+        <a href="result.html?id=${a.id}" class="btn btn-primary btn-sm">📊 View Analysis</a>
+        <a href="ranklist.html?examId=${a.examId}" class="btn btn-outline btn-sm">🏆 Ranklist</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function doLogout() { await auth.signOut(); window.location.href = '../index.html'; }
+</script>
+</body>
+</html>

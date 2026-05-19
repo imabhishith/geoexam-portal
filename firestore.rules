@@ -1,0 +1,83 @@
+// ============================================================
+// FIREBASE FIRESTORE SECURITY RULES
+// Copy this into your Firebase Console → Firestore → Rules
+// ============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: check if user is admin
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Helper: check if user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Helper: check if this is the user's own document
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Users ──
+    match /users/{userId} {
+      allow read: if isAuth();                    // any logged-in user can read profiles
+      allow create: if isOwner(userId);           // users can create their own profile
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── Questions ──
+    match /questions/{questionId} {
+      allow read: if isAuth();                    // all logged-in users can read questions
+      allow create, update, delete: if isAdmin(); // only admins can manage questions
+    }
+
+    // ── Exams ──
+    match /exams/{examId} {
+      allow read: if isAuth();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Attempts ──
+    match /attempts/{attemptId} {
+      // Students can read/write their own attempts; admins can read all
+      allow read: if isAuth() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuth() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAuth() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+  }
+}
+
+// ============================================================
+// FIREBASE STORAGE RULES
+// Copy this into Firebase Console → Storage → Rules
+// ============================================================
+//
+// rules_version = '2';
+// service firebase.storage {
+//   match /b/{bucket}/o {
+//     match /questions/{allPaths=**} {
+//       allow read: if request.auth != null;
+//       allow write: if request.auth != null &&
+//         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+//     }
+//     match /options/{allPaths=**} {
+//       allow read: if request.auth != null;
+//       allow write: if request.auth != null &&
+//         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+//     }
+//     match /pdfs/{allPaths=**} {
+//       allow read, write: if request.auth != null &&
+//         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+//     }
+//   }
+// }
