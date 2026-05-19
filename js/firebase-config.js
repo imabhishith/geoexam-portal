@@ -3,12 +3,13 @@
 // Replace with your actual Firebase project config
 // ============================================================
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyA280RE5lycIE-MVxMvzWdb__Lwa0OzNBg",
+  authDomain: "geoexam-portal.firebaseapp.com",
+  projectId: "geoexam-portal",
+  storageBucket: "geoexam-portal.firebasestorage.app",
+  messagingSenderId: "203992322500",
+  appId: "1:203992322500:web:e21f36d5c3f71c46715491",
+  measurementId: "G-GM07Z8LPVH"
 };
 
 // Initialize Firebase
