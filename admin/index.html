@@ -55,13 +55,13 @@
     <div class="nav-section">
       <div class="nav-section-title">Questions</div>
       <button class="admin-nav-link" onclick="showPanel('qbank')" data-panel="qbank">
-        <span class="icon">📚</span> Question Bank
+        <span class="icon"><i class="fas fa-book"></i></span> Question Bank
       </button>
       <button class="admin-nav-link" onclick="showPanel('add-single')" data-panel="add-single">
-        <span class="icon">➕</span> Add Single Question
+        <span class="icon"><i class="fas fa-plus"></i></span> Add Single Question
       </button>
       <button class="admin-nav-link" onclick="showPanel('add-bulk')" data-panel="add-bulk">
-        <span class="icon">📄</span> Bulk Upload (PDF)
+        <span class="icon"><i class="fas fa-file"></i></span> Bulk Upload (PDF)
       </button>
     </div>
     <div class="nav-section">
@@ -70,7 +70,7 @@
         <span class="icon"><i class="fas fa-file-alt"></i></span> Manage Exams
       </button>
       <button class="admin-nav-link" onclick="showPanel('create-exam')" data-panel="create-exam">
-        <span class="icon">🆕</span> Create Exam
+        <span class="icon"><i class="fas fa-plus-circle"></i></span> Create Exam
       </button>
     </div>
     <div class="nav-section">
@@ -79,13 +79,13 @@
         <span class="icon"><i class="fas fa-trophy"></i></span> All Attempts
       </button>
       <button class="admin-nav-link" onclick="showPanel('users')" data-panel="users">
-        <span class="icon">👥</span> Users
+        <span class="icon"><i class="fas fa-users"></i></span> Users
       </button>
     </div>
   </div>
   <div class="admin-footer">
     <button class="admin-nav-link" onclick="doLogout()" style="color:rgba(255,100,100,.9)">
-      <span class="icon">🚪</span> Logout
+      <span class="icon"><i class="fas fa-sign-out-alt"></i></span> Logout
     </button>
   </div>
 </div>
@@ -105,7 +105,7 @@
       <div class="admin-stats" id="admin-stats-row">
         <div class="admin-stat"><div class="ico"><i class="fas fa-question-circle"></i></div><div><div class="num" id="st-q">—</div><div class="lbl">Total Questions</div></div></div>
         <div class="admin-stat"><div class="ico"><i class="fas fa-file-alt"></i></div><div><div class="num" id="st-e">—</div><div class="lbl">Total Exams</div></div></div>
-        <div class="admin-stat"><div class="ico">👥</div><div><div class="num" id="st-u">—</div><div class="lbl">Registered Users</div></div></div>
+        <div class="admin-stat"><div class="ico"><i class="fas fa-users"></i></div><div><div class="num" id="st-u">—</div><div class="lbl">Registered Users</div></div></div>
         <div class="admin-stat"><div class="ico"><i class="fas fa-chart-bar"></i></div><div><div class="num" id="st-a">—</div><div class="lbl">Total Attempts</div></div></div>
       </div>
       <div class="grid-2">
@@ -116,10 +116,10 @@
         <div class="card">
           <div class="card-header"><h3 style="font-size:16px">Quick Actions</h3></div>
           <div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
-            <button class="btn btn-primary btn-block" onclick="showPanel('add-single')">➕ Add Single Question</button>
-            <button class="btn btn-accent btn-block" onclick="showPanel('add-bulk')">📄 Bulk Upload PDF</button>
-            <button class="btn btn-success btn-block" onclick="showPanel('create-exam')">🆕 Create New Exam</button>
-            <button class="btn btn-outline btn-block" onclick="showPanel('qbank')">📚 Browse Question Bank</button>
+            <button class="btn btn-primary btn-block" onclick="showPanel('add-single')"><i class="fas fa-plus"></i> Add Single Question</button>
+            <button class="btn btn-accent btn-block" onclick="showPanel('add-bulk')"><i class="fas fa-file"></i> Bulk Upload PDF</button>
+            <button class="btn btn-success btn-block" onclick="showPanel('create-exam')"><i class="fas fa-plus-circle"></i> Create New Exam</button>
+            <button class="btn btn-outline btn-block" onclick="showPanel('qbank')"><i class="fas fa-book"></i> Browse Question Bank</button>
           </div>
         </div>
       </div>
@@ -141,7 +141,7 @@
           <option>2021</option><option>2020</option><option>2019</option>
           <option>2018</option><option>2017</option>
         </select>
-        <button class="btn btn-primary" onclick="showPanel('add-single')">➕ Add Question</button>
+        <button class="btn btn-primary" onclick="showPanel('add-single')"><i class="fas fa-plus"></i> Add Question</button>
       </div>
       <div class="card">
         <div class="card-header">
@@ -210,7 +210,7 @@
             <label>Tags / Topic (comma separated)</label>
             <input type="text" class="form-control" id="q-tags" placeholder="e.g. Structural Geology, GATE 2023">
           </div>
-          <button class="btn btn-primary btn-lg" onclick="saveQuestion()">💾 Save Question</button>
+          <button class="btn btn-primary btn-lg" onclick="saveQuestion()"><i class="fas fa-save"></i> Save Question</button>
         </div>
       </div>
     </div>
@@ -218,7 +218,7 @@
     <!-- BULK UPLOAD -->
     <div id="panel-add-bulk" class="admin-panel">
       <div class="card" style="max-width:720px;">
-        <div class="card-header"><h3 style="font-size:16px">📄 Bulk Upload via PDF</h3></div>
+        <div class="card-header"><h3 style="font-size:16px"><i class="fas fa-file"></i> Bulk Upload via PDF</h3></div>
         <div class="card-body">
           <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:20px;font-size:13px;">
             <strong>How it works:</strong> Upload a PDF of questions. The system will extract text from each page and attempt to auto-identify and split questions. You can then review, edit, and confirm each question before saving to the Question Bank.
@@ -226,7 +226,7 @@
           <div class="form-group">
             <label>Upload PDF File</label>
             <div id="pdf-drop-zone" style="border:3px dashed var(--border);border-radius:12px;padding:40px;text-align:center;cursor:pointer;transition:border-color .2s;" onclick="document.getElementById('pdf-input').click()">
-              <div style="font-size:48px;margin-bottom:12px;">📄</div>
+              <div style="font-size:48px;margin-bottom:12px;"><i class="fas fa-file"></i></div>
               <div style="font-size:16px;font-weight:600;margin-bottom:6px;">Drop PDF here or click to browse</div>
               <div style="font-size:13px;color:var(--text2);">Supports multi-page PDFs. Max 50 MB.</div>
               <input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="handlePDFUpload(this)">
@@ -246,7 +246,7 @@
     <!-- MANAGE EXAMS -->
     <div id="panel-exams" class="admin-panel">
       <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
-        <button class="btn btn-primary" onclick="showPanel('create-exam')">🆕 Create New Exam</button>
+        <button class="btn btn-primary" onclick="showPanel('create-exam')"><i class="fas fa-plus-circle"></i> Create New Exam</button>
       </div>
       <div class="card">
         <div class="card-header"><h3 style="font-size:16px">All Exams</h3></div>
@@ -331,7 +331,7 @@
           </div>
 
           <div style="display:flex;gap:12px;align-items:center;margin-top:8px;">
-            <button class="btn btn-primary btn-lg" onclick="saveExam()">💾 Save Exam</button>
+            <button class="btn btn-primary btn-lg" onclick="saveExam()"><i class="fas fa-save"></i> Save Exam</button>
             <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
               <input type="checkbox" id="ex-published"> Publish immediately
             </label>
@@ -371,7 +371,7 @@
 <!-- Question Edit Modal -->
 <div class="modal-overlay" id="edit-q-modal">
   <div class="modal" style="max-width:720px;">
-    <div class="modal-header"><h3>Edit Question</h3><button class="modal-close" onclick="closeModal('edit-q-modal')">✕</button></div>
+    <div class="modal-header"><h3>Edit Question</h3><button class="modal-close" onclick="closeModal('edit-q-modal')"><i class="fas fa-times"></i></button></div>
     <div class="modal-body" id="edit-q-body"></div>
     <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('edit-q-modal')">Cancel</button><button class="btn btn-primary" onclick="updateQuestion()">Save Changes</button></div>
   </div>
