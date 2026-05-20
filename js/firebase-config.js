@@ -1,21 +1,29 @@
 // ============================================================
-// FIREBASE CONFIGURATION
-// Replace with your actual Firebase project config
-// NOTE: Firebase Storage is NOT used — 100% free tier only!
-//       Images are stored as base64 in Firestore OR as URLs.
+// FIREBASE CONFIGURATION — GeoExam Portal
 // ============================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyA280RE5lycIE-MVxMvzWdb__Lwa0OzNBg",
-  authDomain: "geoexam-portal.firebaseapp.com",
-  projectId: "geoexam-portal",
+  apiKey:            "AIzaSyA280RE5lycIE-MVxMvzWdb__Lwa0OzNBg",
+  authDomain:        "geoexam-portal.firebaseapp.com",
+  projectId:         "geoexam-portal",
+  storageBucket:     "geoexam-portal.firebasestorage.app",
   messagingSenderId: "203992322500",
-  appId: "1:203992322500:web:e21f36d5c3f71c46715491"
+  appId:             "1:203992322500:web:e21f36d5c3f71c46715491",
+  measurementId:     "G-GM07Z8LPVH"
 };
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.firestore();
+const db   = firebase.firestore();
+
+// Enable Firestore offline persistence (helps with slow connections)
+db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+  if (err.code === 'failed-precondition') {
+    console.warn('Firestore persistence unavailable (multiple tabs open).');
+  } else if (err.code === 'unimplemented') {
+    console.warn('Firestore persistence not supported in this browser.');
+  }
+});
 
 // ============================================================
 // GLOBAL UTILITIES
@@ -48,8 +56,13 @@ const Utils = {
 
   // Check if admin
   async isAdmin(uid) {
-    const doc = await db.collection('users').doc(uid).get();
-    return doc.exists && doc.data().role === 'admin';
+    try {
+      const doc = await db.collection('users').doc(uid).get();
+      return doc.exists && doc.data().role === 'admin';
+    } catch(e) {
+      console.error('isAdmin check failed:', e);
+      return false;
+    }
   },
 
   // Convert a File object to a base64 data URL string (FREE — no Storage needed!)
@@ -63,7 +76,6 @@ const Utils = {
         const img = new Image();
         img.onerror = reject;
         img.onload = () => {
-          // Resize if needed
           let w = img.width, h = img.height;
           if (w > maxPx || h > maxPx) {
             const ratio = Math.min(maxPx / w, maxPx / h);
@@ -73,7 +85,6 @@ const Utils = {
           const canvas = document.createElement('canvas');
           canvas.width = w; canvas.height = h;
           canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          // JPEG at 82% quality gives good balance of size vs quality
           resolve(canvas.toDataURL('image/jpeg', 0.82));
         };
         img.src = e.target.result;
