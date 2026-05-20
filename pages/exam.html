@@ -2,394 +2,760 @@
 <html lang="en">
 <head>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Rajdhani:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Examination — GeoExam Portal</title>
   <link rel="stylesheet" href="../css/global.css">
   <style>
-    /* ============================================================
-       GATE-STYLE EXAM WINDOW
-    ============================================================ */
-    *, *::before, *::after { box-sizing: border-box; }
-    body { background: #e8edf2; overflow: hidden; margin: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── TOP HEADER BAR (GATE blue) ── */
+    :root {
+      --navy:       #0a2540;
+      --navy2:      #0e3460;
+      --blue:       #1565c0;
+      --blue-light: #1976d2;
+      --accent:     #e65100;
+      --accent2:    #f57c00;
+      --green:      #2e7d32;
+      --red:        #c62828;
+      --purple:     #6a1b9a;
+      --gray-bg:    #eceff1;
+      --gray-50:    #f8f9fa;
+      --gray-100:   #f1f3f4;
+      --gray-200:   #e8eaed;
+      --gray-300:   #dadce0;
+      --gray-600:   #80868b;
+      --gray-800:   #3c4043;
+      --text:       #202124;
+      --border:     #dadce0;
+      --font:       'Noto Sans', 'Segoe UI', Arial, sans-serif;
+      --mono:       'JetBrains Mono', 'Courier New', monospace;
+      --hdr-h:      52px;
+      --sec-h:      36px;
+      --sb-w:       270px;
+    }
+
+    body {
+      background: var(--gray-bg);
+      font-family: var(--font);
+      color: var(--text);
+      overflow: hidden;
+      font-size: 13px;
+    }
+
+    /* ═══════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════ */
     .exam-header {
-      background: linear-gradient(90deg, #1a3c6e 0%, #0d2447 100%);
-      color: #fff;
-      height: 56px;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 16px;
       position: fixed; top: 0; left: 0; right: 0; z-index: 300;
-      box-shadow: 0 2px 8px rgba(0,0,0,.3);
+      height: var(--hdr-h);
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 14px 0 0;
+      border-bottom: 3px solid var(--accent2);
     }
-    .header-left { display: flex; align-items: center; gap: 14px; }
-    .header-logo { font-size: 22px; opacity: .9; }
-    .exam-title-bar { font-size: 15px; font-weight: 700; letter-spacing: .02em; }
-    .exam-title-bar small { display: block; font-size: 11px; font-weight: 400; opacity: .7; }
-    .header-right { display: flex; align-items: center; gap: 12px; }
 
-    /* Timer — prominent like GATE */
-    .timer-wrap { display: flex; flex-direction: column; align-items: flex-end; }
-    .timer-label { font-size: 10px; opacity: .7; letter-spacing: .05em; text-transform: uppercase; }
-    .timer-box {
-      background: #0d2447;
-      border: 2px solid rgba(255,255,255,.4);
-      border-radius: 6px;
-      padding: 3px 14px;
-      font-family: 'IBM Plex Mono', 'Courier New', monospace;
-      font-size: 20px; font-weight: 700;
-      letter-spacing: .08em;
-      min-width: 108px; text-align: center;
-      transition: background .3s, border-color .3s;
+    .hdr-left {
+      display: flex; align-items: stretch; height: 100%;
     }
-    .timer-box.warning { background: #7f1d1d; border-color: #ef4444; animation: blink .9s infinite; }
-    @keyframes blink { 0%,100%{opacity:1}50%{opacity:.6} }
 
-    .calc-toggle-btn {
-      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
-      color: #fff; border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 600;
-      cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background .2s;
-    }
-    .calc-toggle-btn:hover { background: rgba(255,255,255,.2); }
-
-    /* ── SECONDARY BAR: section tabs ── */
-    .section-bar {
-      background: #1e4d8c;
-      display: flex; align-items: stretch;
-      position: fixed; top: 56px; left: 0; right: 280px; z-index: 200;
-      overflow-x: auto;
-      border-bottom: 3px solid #f59e0b;
-    }
-    .sec-tab {
-      padding: 8px 20px; color: rgba(255,255,255,.65);
-      font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
-      border-bottom: 3px solid transparent; margin-bottom: -3px;
-      transition: all .2s; user-select: none;
-    }
-    .sec-tab:hover { color: #fff; background: rgba(255,255,255,.07); }
-    .sec-tab.active { color: #fff; border-bottom-color: #f59e0b; background: rgba(255,255,255,.1); }
-
-    /* ── MAIN LAYOUT ── */
-    .exam-layout {
-      display: flex;
-      margin-top: 56px; /* header */
-      height: calc(100vh - 56px);
-    }
-    .exam-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-    .exam-sidebar { width: 280px; background: #fff; border-left: 2px solid #d1d5db; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
-
-    /* question panel offset for section bar */
-    .question-scroll-wrap {
-      flex: 1; overflow-y: auto;
-      padding-top: 40px; /* height of section bar */
-    }
-    .question-area { padding: 20px 28px 8px; }
-
-    /* ── QUESTION DISPLAY ── */
-    .q-info-row {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      margin-bottom: 12px; padding-bottom: 12px;
-      border-bottom: 2px solid #e5e7eb;
-      flex-wrap: wrap; gap: 8px;
-    }
-    .q-number { font-size: 16px; font-weight: 700; color: #1a3c6e; }
-    .q-section-label { font-size: 12px; color: #6b7280; margin-top: 2px; }
-    .q-type-badge {
-      background: #1a3c6e; color: #fff;
-      font-size: 11px; padding: 4px 12px; border-radius: 4px;
-      font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-      align-self: flex-start;
-    }
-    .q-type-badge.nat { background: #0369a1; }
-    .q-type-badge.mcq { background: #7c3aed; }
-
-    /* Marks bar */
-    .q-marks-bar {
-      display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
-      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
-      padding: 8px 16px; margin-bottom: 16px; font-size: 13px;
-    }
-    .q-marks-bar .pos { color: #16a34a; font-weight: 700; }
-    .q-marks-bar .neg { color: #dc2626; font-weight: 700; }
-    .q-marks-bar .partial-note { color: #7c3aed; font-size: 12px; display: flex; align-items: center; gap: 4px; }
-
-    .q-image { max-width: 100%; max-height: 340px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #e5e7eb; display: block; }
-    .q-text { font-size: 15px; line-height: 1.85; margin-bottom: 22px; color: #1f2937; }
-
-    /* ── OPTIONS ── */
-    .options-list { display: flex; flex-direction: column; gap: 10px; }
-    .option-item {
-      display: flex; align-items: flex-start; gap: 14px;
-      padding: 12px 16px; border: 2px solid #d1d5db;
-      border-radius: 8px; cursor: pointer;
-      transition: border-color .18s, background .18s;
-      user-select: none; background: #fff;
-    }
-    .option-item:hover { border-color: #93c5fd; background: #eff6ff; }
-    .option-item.selected { border-color: #1a3c6e; background: #dbeafe; }
-    .option-item.selected .opt-bubble { background: #1a3c6e; color: #fff; border-color: #1a3c6e; }
-    .opt-bubble {
-      width: 34px; height: 34px; border-radius: 50%;
-      border: 2px solid #9ca3af;
+    .hdr-logo-block {
+      background: var(--accent);
+      width: 52px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 13px; flex-shrink: 0; color: #374151;
-      transition: all .18s;
+      font-size: 20px; color: #fff;
+      flex-shrink: 0;
     }
-    .opt-content { font-size: 14px; line-height: 1.7; flex: 1; padding-top: 5px; }
-    .opt-img { max-width: 220px; max-height: 160px; border-radius: 6px; margin-top: 8px; display: block; }
 
-    /* ── NAT Input ── */
-    .nat-wrap { margin-top: 8px; }
-    .nat-label { font-size: 13px; color: #6b7280; margin-bottom: 10px; }
-    .nat-input {
-      font-size: 20px; font-family: 'IBM Plex Mono', monospace;
-      border: 2px solid #d1d5db; border-radius: 8px;
-      padding: 12px 18px; width: 240px; text-align: center;
-      background: #f9fafb;
+    .hdr-title-block {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 0 16px;
+      border-right: 1px solid rgba(255,255,255,.1);
     }
-    .nat-input:focus { border-color: #1a3c6e; outline: none; background: #fff; }
 
-    /* ── BOTTOM ACTION BAR ── */
-    .exam-actions {
-      background: #f3f4f6;
-      border-top: 2px solid #d1d5db;
-      padding: 10px 20px;
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 8px;
+    .hdr-exam-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px; font-weight: 700;
+      color: #fff; letter-spacing: .02em;
+      line-height: 1.2;
     }
-    .action-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-    /* Button styles — GATE-like */
-    .btn-gate { border: none; border-radius: 6px; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all .2s; letter-spacing: .02em; }
-    .btn-save-next   { background: #1a3c6e; color: #fff; }
-    .btn-save-next:hover   { background: #0d2447; }
-    .btn-mark-review { background: #8b5cf6; color: #fff; }
-    .btn-mark-review:hover { background: #7c3aed; }
-    .btn-clear       { background: #fff; color: #dc2626; border: 2px solid #dc2626; }
-    .btn-clear:hover { background: #fef2f2; }
-    .btn-prev        { background: #fff; color: #374151; border: 2px solid #d1d5db; }
-    .btn-prev:hover  { background: #f3f4f6; }
-    .btn-submit-exam { background: #f59e0b; color: #1a1a1a; font-size: 14px; padding: 9px 22px; }
-    .btn-submit-exam:hover { background: #d97706; }
+    .hdr-portal-name {
+      font-size: 10.5px; color: rgba(255,255,255,.5);
+      letter-spacing: .04em; text-transform: uppercase;
+    }
 
-    /* ── SIDEBAR ── */
-    .sidebar-candidate {
-      background: linear-gradient(135deg, #1a3c6e, #0d2447);
-      color: #fff; padding: 14px 16px;
+    .hdr-right {
       display: flex; align-items: center; gap: 10px;
     }
-    .cand-avatar {
-      width: 38px; height: 38px; border-radius: 50%;
-      background: rgba(255,255,255,.2); border: 2px solid rgba(255,255,255,.4);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 16px; flex-shrink: 0;
-    }
-    .cand-name { font-weight: 700; font-size: 13px; }
-    .cand-role { font-size: 11px; opacity: .65; }
 
-    .sidebar-legend {
-      background: #f9fafb; border-bottom: 1px solid #e5e7eb;
+    /* Timer */
+    .timer-block {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+    }
+    .timer-label {
+      font-size: 9px; color: rgba(255,255,255,.5);
+      text-transform: uppercase; letter-spacing: .08em;
+    }
+    .timer-val {
+      font-family: var(--mono);
+      font-size: 18px; font-weight: 600;
+      color: #fff;
+      background: rgba(0,0,0,.3);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 4px;
+      padding: 2px 12px;
+      letter-spacing: .08em;
+      min-width: 100px; text-align: center;
+      transition: background .3s, border-color .3s, color .3s;
+    }
+    .timer-val.warning {
+      background: #b71c1c;
+      border-color: #ef9a9a;
+      color: #ffcdd2;
+      animation: tblink .9s infinite;
+    }
+    @keyframes tblink { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+    .calc-btn-hdr {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      color: rgba(255,255,255,.85);
+      border-radius: 4px;
+      padding: 5px 12px;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+      font-family: var(--font);
+      transition: background .15s;
+    }
+    .calc-btn-hdr:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+    /* ═══════════════════════════════════════
+       SECTION TABS (NTA-style)
+    ═══════════════════════════════════════ */
+    .section-bar {
+      position: fixed;
+      top: var(--hdr-h); left: 0; right: var(--sb-w);
+      height: var(--sec-h); z-index: 200;
+      background: var(--navy2);
+      display: flex; align-items: stretch;
+      overflow-x: auto;
+      scrollbar-width: none;
+      border-bottom: 2px solid rgba(255,255,255,.08);
+    }
+    .section-bar::-webkit-scrollbar { display: none; }
+
+    .sec-tab {
+      padding: 0 18px;
+      color: rgba(255,255,255,.55);
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+      display: flex; align-items: center;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all .15s;
+      letter-spacing: .01em;
+    }
+    .sec-tab:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.05); }
+    .sec-tab.active {
+      color: #fff;
+      border-bottom-color: var(--accent2);
+      background: rgba(255,255,255,.08);
+    }
+
+    /* ═══════════════════════════════════════
+       LAYOUT
+    ═══════════════════════════════════════ */
+    .exam-layout {
+      display: flex;
+      margin-top: var(--hdr-h);
+      height: calc(100vh - var(--hdr-h));
+    }
+
+    .exam-main {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    .q-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding-top: var(--sec-h);
+      background: var(--gray-50);
+    }
+
+    .q-scroll-area::-webkit-scrollbar { width: 6px; }
+    .q-scroll-area::-webkit-scrollbar-track { background: var(--gray-200); }
+    .q-scroll-area::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+
+    .q-area { padding: 16px 22px 8px; }
+
+    /* ═══════════════════════════════════════
+       QUESTION DISPLAY
+    ═══════════════════════════════════════ */
+    .q-topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 14px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px 6px 0 0;
+      border-bottom: none;
+    }
+
+    .q-num-badge {
+      background: var(--navy);
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px; font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 3px;
+      letter-spacing: .04em;
+    }
+
+    .q-section-tag {
+      font-size: 11px; color: var(--gray-600);
+      background: var(--gray-100);
+      border: 1px solid var(--border);
+      padding: 2px 10px; border-radius: 3px;
+    }
+
+    .q-type-pill {
+      font-size: 10px; font-weight: 700;
+      padding: 3px 9px; border-radius: 3px;
+      letter-spacing: .06em; text-transform: uppercase;
+    }
+    .q-type-pill.scq { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    .q-type-pill.mcq { background: #ede7f6; color: #6a1b9a; border: 1px solid #ce93d8; }
+    .q-type-pill.nat { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+
+    .q-marks-strip {
+      display: flex; gap: 0;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-top: none; border-bottom: none;
+      padding: 6px 14px;
+      align-items: center; flex-wrap: wrap; gap: 16px;
+      font-size: 12px;
+    }
+    .q-marks-strip .pos { color: var(--green); font-weight: 700; }
+    .q-marks-strip .neg { color: var(--red); font-weight: 700; }
+    .q-marks-strip .info-note {
+      color: var(--purple); font-size: 11px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .marks-divider { height: 14px; width: 1px; background: var(--border); }
+
+    .q-body {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      padding: 16px 18px 18px;
+      min-height: 200px;
+    }
+
+    .q-text {
+      font-size: 14px; line-height: 1.9;
+      color: var(--text);
+      margin-bottom: 18px;
+    }
+
+    .q-image {
+      max-width: 100%; max-height: 280px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 16px; display: block;
+    }
+
+    /* Options */
+    .options-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .opt-item {
+      display: flex; align-items: flex-start; gap: 10px;
       padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 5px;
+      cursor: pointer;
+      background: #fff;
+      transition: border-color .15s, background .15s;
+      user-select: none;
     }
-    .legend-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #6b7280; margin-bottom: 8px; }
-    .legend-rows { display: flex; flex-direction: column; gap: 5px; }
-    .leg-it { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #374151; }
-    .leg-dot { width: 22px; height: 22px; border-radius: 50%; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .opt-item:hover { border-color: #90caf9; background: #f0f7ff; }
+    .opt-item.selected {
+      border-color: var(--blue);
+      background: #e3f2fd;
+    }
+    .opt-item.selected .opt-circle {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue);
+    }
 
-    /* Question palette */
-    .palette-scroll { flex: 1; overflow-y: auto; padding: 12px 14px; }
-    .palette-sec { margin-bottom: 14px; }
-    .palette-sec-title { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #e5e7eb; }
-    .palette-grid { display: flex; flex-wrap: wrap; gap: 5px; }
-    .q-btn {
-      width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
-      font-size: 12px; font-weight: 700; color: #fff;
+    .opt-circle {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid var(--gray-300);
       display: flex; align-items: center; justify-content: center;
-      transition: transform .15s, box-shadow .15s;
+      font-size: 12px; font-weight: 700;
+      color: var(--gray-800);
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: all .15s;
     }
-    .q-btn:hover { transform: scale(1.15); box-shadow: 0 2px 8px rgba(0,0,0,.25); }
-    .q-btn.current { outline: 3px solid #f59e0b; outline-offset: 2px; }
-    .qst-nv  { background: #9ca3af; }
-    .qst-na  { background: #ef4444; }
-    .qst-ans { background: #22c55e; }
-    .qst-mrk { background: #8b5cf6; }
-    .qst-am  { background: #8b5cf6; border: 3px solid #22c55e; }
 
-    /* Stats */
-    .sidebar-stats {
-      padding: 10px 14px; border-top: 1px solid #e5e7eb;
-      background: #f9fafb;
-      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    .opt-text { font-size: 13.5px; line-height: 1.7; flex: 1; padding-top: 3px; }
+    .opt-img { max-width: 200px; max-height: 140px; margin-top: 6px; border-radius: 4px; display: block; }
+
+    /* NAT */
+    .nat-wrap { margin-top: 4px; }
+    .nat-label {
+      font-size: 12px; color: var(--gray-600);
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 4px;
     }
-    .stat-cell { background: #fff; border-radius: 6px; padding: 6px 8px; text-align: center; border: 1px solid #e5e7eb; }
-    .stat-cell .sv { font-size: 17px; font-weight: 800; font-family: 'Rajdhani', sans-serif; }
-    .stat-cell .sl { font-size: 10px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .nat-input {
+      font-size: 18px; font-family: var(--mono);
+      border: 2px solid var(--border);
+      border-radius: 5px;
+      padding: 10px 16px;
+      width: 220px; text-align: center;
+      background: var(--gray-50);
+      color: var(--text);
+    }
+    .nat-input:focus { border-color: var(--blue); outline: none; background: #fff; }
 
-    .sidebar-submit { padding: 12px 14px; }
+    /* ═══════════════════════════════════════
+       ACTION BAR (NTA-style bottom)
+    ═══════════════════════════════════════ */
+    .action-bar {
+      background: #fff;
+      border-top: 2px solid var(--border);
+      padding: 8px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 6px;
+      flex-shrink: 0;
+    }
 
-    /* ── SCIENTIFIC CALCULATOR (Light Theme) ── */
+    .action-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+    .btn {
+      border: none; border-radius: 4px;
+      padding: 7px 14px;
+      font-size: 12px; font-weight: 700;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--font);
+      letter-spacing: .01em;
+      transition: filter .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+
+    .btn-save-next   { background: var(--blue); color: #fff; }
+    .btn-save-next:hover { filter: brightness(1.1); }
+    .btn-mark-review { background: var(--purple); color: #fff; }
+    .btn-mark-review:hover { filter: brightness(1.1); }
+    .btn-clear       { background: #fff; color: var(--red); border: 1.5px solid var(--red); }
+    .btn-clear:hover { background: #ffebee; }
+    .btn-prev        { background: var(--gray-100); color: var(--gray-800); border: 1.5px solid var(--border); }
+    .btn-prev:hover  { background: var(--gray-200); }
+    .btn-submit-exam { background: var(--accent); color: #fff; font-size: 13px; padding: 7px 18px; }
+    .btn-submit-exam:hover { filter: brightness(1.1); }
+
+    /* ═══════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════ */
+    .exam-sidebar {
+      width: var(--sb-w);
+      background: #fff;
+      border-left: 2px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* Candidate strip */
+    .sb-cand {
+      background: var(--navy);
+      padding: 10px 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sb-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid rgba(255,255,255,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: #fff;
+      flex-shrink: 0;
+    }
+    .sb-cand-info { }
+    .sb-cand-name { font-size: 12px; font-weight: 700; color: #fff; }
+    .sb-cand-sub  { font-size: 10px; color: rgba(255,255,255,.45); }
+
+    /* Legend */
+    .sb-legend {
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 12px;
+    }
+    .sb-legend-title {
+      font-size: 9.5px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .08em;
+      color: var(--gray-600); margin-bottom: 7px;
+    }
+    .leg-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 4px 6px;
+    }
+    .leg-row { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--gray-800); }
+    .leg-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+
+    /* Stats row */
+    .sb-stats {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--border);
+    }
+    .sb-stat {
+      text-align: center;
+      padding: 7px 4px;
+      border-right: 1px solid var(--border);
+    }
+    .sb-stat:last-child { border-right: none; }
+    .sb-stat-num {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px; font-weight: 700;
+      line-height: 1;
+    }
+    .sb-stat-lbl { font-size: 9px; color: var(--gray-600); text-transform: uppercase; margin-top: 1px; }
+
+    /* Palette */
+    .sb-palette {
+      flex: 1; overflow-y: auto;
+      padding: 10px 12px;
+    }
+    .sb-palette::-webkit-scrollbar { width: 4px; }
+    .sb-palette::-webkit-scrollbar-thumb { background: var(--gray-300); }
+
+    .pal-sec-title {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+      color: var(--gray-600);
+      padding: 4px 0 5px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 7px;
+    }
+    .pal-sec { margin-bottom: 12px; }
+    .pal-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+
+    .q-btn {
+      width: 30px; height: 30px;
+      border-radius: 50%; border: none;
+      cursor: pointer;
+      font-size: 11px; font-weight: 700;
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      transition: transform .12s, box-shadow .12s;
+      font-family: var(--font);
+    }
+    .q-btn:hover { transform: scale(1.18); box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+    .q-btn.current { outline: 2.5px solid var(--accent2); outline-offset: 2px; }
+    .qst-nv  { background: #9e9e9e; }
+    .qst-na  { background: #e53935; }
+    .qst-ans { background: #2e7d32; }
+    .qst-mrk { background: #6a1b9a; }
+    .qst-am  { background: #6a1b9a; border: 3px solid #2e7d32; }
+
+    /* Submit */
+    .sb-submit {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ═══════════════════════════════════════
+       SCIENTIFIC CALCULATOR — compact
+    ═══════════════════════════════════════ */
     .calc-panel {
-      position: fixed; bottom: 78px; right: 290px;
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: 16px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.08);
-      z-index: 400;
-      padding: 0;
-      width: 320px;
+      position: fixed;
+      bottom: 68px; right: calc(var(--sb-w) + 10px);
+      width: 284px;
+      background: #f0f0f0;
+      border: 1px solid #bbb;
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.28), 0 2px 8px rgba(0,0,0,.12);
+      z-index: 500;
       display: none;
       overflow: hidden;
       user-select: none;
+      font-family: var(--font);
     }
     .calc-panel.show { display: block; }
-    .calc-titlebar {
-      background: linear-gradient(90deg, #1a3c6e 0%, #1e4d8c 100%);
+
+    /* Title */
+    .calc-title {
+      background: linear-gradient(180deg, #1a3a6e 0%, #0d2247 100%);
       color: #fff;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 9px 14px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+      padding: 6px 10px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
     }
-    .calc-titlebar button { background: none; border: none; color: rgba(255,255,255,.7); font-size: 15px; cursor: pointer; padding: 0 2px; line-height: 1; }
-    .calc-titlebar button:hover { color: #fff; }
-    .calc-history-line {
-      background: #f1f5f9; border-bottom: 1px solid #e2e8f0;
-      padding: 4px 14px; font-size: 11px; color: #94a3b8;
-      font-family: 'IBM Plex Mono', 'Courier New', monospace;
-      text-align: right; min-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    .calc-title-close {
+      background: none; border: none; color: rgba(255,255,255,.6);
+      font-size: 13px; cursor: pointer; line-height: 1; padding: 0 2px;
     }
-    .calc-display {
+    .calc-title-close:hover { color: #fff; }
+
+    /* History */
+    .calc-hist {
+      background: #e8e8e8;
+      color: #888; font-size: 10px;
+      font-family: var(--mono);
+      text-align: right; padding: 2px 8px;
+      min-height: 17px;
+      border-bottom: 1px solid #ccc;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* Display */
+    .calc-disp {
       background: #fff;
-      border-bottom: 2px solid #e2e8f0;
-      color: #0f172a;
-      font-family: 'IBM Plex Mono', 'Courier New', monospace;
-      font-size: 26px; font-weight: 700;
-      padding: 10px 14px 8px;
+      color: #111;
+      font-family: var(--mono);
+      font-size: 22px; font-weight: 600;
       text-align: right;
-      min-height: 52px;
+      padding: 6px 10px 5px;
+      border-bottom: 2px solid #ddd;
+      min-height: 44px;
       word-break: break-all;
       letter-spacing: .02em;
     }
-    .calc-mode-row {
-      display: flex; gap: 0; background: #f1f5f9; border-bottom: 1px solid #e2e8f0;
+
+    /* Mode row */
+    .calc-modes {
+      display: flex; background: #e0e0e0;
+      border-bottom: 1px solid #ccc;
     }
-    .calc-mode-btn {
-      flex: 1; border: none; background: none; padding: 5px 0;
-      font-size: 11px; font-weight: 700; color: #64748b; cursor: pointer;
-      letter-spacing: .04em; text-transform: uppercase;
-      border-right: 1px solid #e2e8f0; transition: all .15s;
+    .calc-mode {
+      flex: 1; border: none; background: none;
+      padding: 4px 0;
+      font-size: 10px; font-weight: 700;
+      color: #555; cursor: pointer;
+      letter-spacing: .05em; text-transform: uppercase;
+      border-right: 1px solid #ccc;
+      font-family: var(--font);
+      transition: all .12s;
     }
-    .calc-mode-btn:last-child { border-right: none; }
-    .calc-mode-btn.active { background: #1a3c6e; color: #fff; }
-    .calc-mode-btn:hover:not(.active) { background: #e2e8f0; color: #1a3c6e; }
+    .calc-mode:last-child { border-right: none; }
+    .calc-mode.active { background: #1a3a6e; color: #fff; }
+    .calc-mode:hover:not(.active) { background: #d0d0d0; color: #1a3a6e; }
+
+    /* Button grid — 5 columns */
     .calc-grid {
-      display: grid; grid-template-columns: repeat(5,1fr);
-      gap: 0; background: #e2e8f0;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      background: #ccc;
     }
-    .calc-btn {
-      background: #fff; color: #1e293b;
-      border: none; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
-      padding: 0; height: 44px;
-      cursor: pointer; font-size: 12.5px; font-weight: 600;
-      font-family: 'Segoe UI', sans-serif;
-      transition: background .1s, color .1s;
+    /* Each button */
+    .cb {
+      background: #f5f5f5;
+      color: #1a1a1a;
+      border: none;
+      border-right: 1px solid #d0d0d0;
+      border-bottom: 1px solid #d0d0d0;
+      height: 32px;
+      cursor: pointer;
+      font-size: 11px; font-weight: 600;
+      font-family: var(--font);
+      transition: background .08s;
       display: flex; align-items: center; justify-content: center;
+      line-height: 1;
     }
-    .calc-btn:hover { background: #dbeafe; color: #1a3c6e; }
-    .calc-btn:active { background: #bfdbfe; }
-    .calc-btn.fn   { background: #f8fafc; color: #374151; font-size: 11.5px; }
-    .calc-btn.fn:hover { background: #e0f2fe; color: #0369a1; }
-    .calc-btn.op   { background: #fff7ed; color: #c2410c; font-size: 15px; font-weight: 700; }
-    .calc-btn.op:hover { background: #fed7aa; }
-    .calc-btn.eq   { background: #1a3c6e; color: #fff; font-size: 18px; font-weight: 800; }
-    .calc-btn.eq:hover { background: #0d2447; }
-    .calc-btn.clr  { background: #fef2f2; color: #b91c1c; font-weight: 800; }
-    .calc-btn.clr:hover { background: #fee2e2; }
-    .calc-btn.del  { background: #fffbeb; color: #92400e; }
-    .calc-btn.del:hover { background: #fef3c7; }
-    .calc-btn.zero { grid-column: span 2; }
-    .calc-btn.mem  { background: #f5f3ff; color: #6d28d9; font-size: 11px; }
-    .calc-btn.mem:hover { background: #ede9fe; }
-    .calc-btn.const-btn { background: #f0fdf4; color: #166534; font-size: 11.5px; }
-    .calc-btn.const-btn:hover { background: #dcfce7; }
-    .calc-deg-indicator {
-      background: #f1f5f9; padding: 3px 14px; font-size: 10px; color: #64748b;
-      font-weight: 700; text-align: right; letter-spacing: .05em;
-      border-top: 1px solid #e2e8f0;
+    .cb:hover { background: #e0eeff; color: #1a3a6e; }
+    .cb:active { background: #c5d8ff; }
+
+    /* Variants */
+    .cb.fn  { background: #eaeaea; color: #374151; font-size: 10.5px; }
+    .cb.fn:hover  { background: #dbeafe; color: #1565c0; }
+    .cb.op  { background: #fff3e0; color: #bf360c; font-size: 13px; font-weight: 700; }
+    .cb.op:hover { background: #ffe0b2; }
+    .cb.eq  { background: #1a3a6e; color: #fff; font-size: 15px; font-weight: 800; grid-row: span 2; }
+    .cb.eq:hover { background: #0d2247; }
+    .cb.clr { background: #ffebee; color: #b71c1c; font-weight: 800; }
+    .cb.clr:hover { background: #ffcdd2; }
+    .cb.del { background: #fff8e1; color: #795548; }
+    .cb.del:hover { background: #ffe082; }
+    .cb.zero { grid-column: span 2; }
+    .cb.mem { background: #f3e5f5; color: #6a1b9a; font-size: 10px; }
+    .cb.mem:hover { background: #e1bee7; }
+    .cb.cst { background: #e8f5e9; color: #1b5e20; font-size: 10.5px; }
+    .cb.cst:hover { background: #c8e6c9; }
+
+    /* Status bar */
+    .calc-statusbar {
+      background: #e8e8e8;
+      border-top: 1px solid #ccc;
+      padding: 3px 10px;
+      font-size: 9.5px; color: #777;
+      display: flex; justify-content: space-between;
+      font-family: var(--mono);
     }
 
-    /* ── SUBMIT MODAL ── */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 500; align-items: center; justify-content: center; }
+    /* ═══════════════════════════════════════
+       SUBMIT MODAL
+    ═══════════════════════════════════════ */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 700;
+      align-items: center; justify-content: center;
+    }
     .modal-overlay.open { display: flex; }
-    .modal-box { background: #fff; border-radius: 12px; width: 480px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
-    .modal-hdr { padding: 18px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
-    .modal-hdr h3 { font-size: 17px; color: #1a3c6e; display: flex; align-items: center; gap: 8px; }
-    .modal-body { padding: 20px 24px; }
-    .modal-foot { padding: 14px 24px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; }
-    .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: #6b7280; }
-    .submit-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 14px 0; }
-    .sm-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; text-align: center; }
-    .sm-card .n { font-size: 26px; font-weight: 800; font-family: 'Rajdhani', sans-serif; }
-    .sm-card .l { font-size: 12px; color: #6b7280; }
-    .warn-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #92400e; display: flex; align-items: flex-start; gap: 8px; }
+    .modal-box {
+      background: #fff;
+      border-radius: 8px;
+      width: 460px; max-width: 95vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      overflow: hidden;
+    }
+    .modal-hdr {
+      background: var(--navy);
+      padding: 14px 18px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-hdr h3 {
+      font-size: 14px; font-weight: 700; color: #fff;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .modal-close { background: none; border: none; color: rgba(255,255,255,.6); font-size: 16px; cursor: pointer; }
+    .modal-close:hover { color: #fff; }
+    .modal-body { padding: 18px 20px; }
+    .modal-body p { font-size: 13px; color: var(--gray-800); margin-bottom: 12px; }
+    .modal-foot {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: 8px;
+    }
 
-    /* Btn resets for modal */
-    .btn-modal { border: none; border-radius: 8px; padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; }
-    .btn-modal-outline { background: #fff; border: 2px solid #d1d5db; color: #374151; }
-    .btn-modal-outline:hover { background: #f3f4f6; }
-    .btn-modal-danger { background: #dc2626; color: #fff; }
-    .btn-modal-danger:hover { background: #b91c1c; }
+    .submit-stats-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 8px; margin: 12px 0;
+    }
+    .ssc { background: var(--gray-50); border: 1px solid var(--border); border-radius: 5px; padding: 10px 8px; text-align: center; }
+    .ssc .n { font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700; line-height: 1; }
+    .ssc .l { font-size: 11px; color: var(--gray-600); margin-top: 2px; }
 
-    /* Loading */
-    .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; gap: 12px; color: #6b7280; font-size: 14px; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #1a3c6e; border-radius: 50%; animation: spin .8s linear infinite; }
+    .warn-banner {
+      background: #fff8e1;
+      border: 1px solid #ffc107;
+      border-radius: 5px;
+      padding: 10px 12px;
+      font-size: 12px; color: #5d4037;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+
+    .btn-modal { border: none; border-radius: 4px; padding: 8px 18px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); }
+    .btn-modal-outline { background: #fff; border: 1.5px solid var(--border); color: var(--gray-800); }
+    .btn-modal-outline:hover { background: var(--gray-100); }
+    .btn-modal-danger { background: var(--red); color: #fff; }
+    .btn-modal-danger:hover { filter: brightness(1.1); }
+
+    /* ═══════════════════════════════════════
+       LOADING
+    ═══════════════════════════════════════ */
+    .loading-screen {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 60vh; gap: 12px;
+      color: var(--gray-600); font-size: 13px;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── FULLSCREEN WARNING OVERLAY ── */
+    /* ═══════════════════════════════════════
+       FULLSCREEN WARNING
+    ═══════════════════════════════════════ */
     #fs-warning-overlay {
       display: none; position: fixed; inset: 0; z-index: 9999;
-      background: rgba(15, 23, 42, 0.97);
+      background: rgba(10, 20, 40, 0.97);
       flex-direction: column; align-items: center; justify-content: center;
       text-align: center; color: #fff; padding: 32px;
     }
     #fs-warning-overlay.show { display: flex; }
-    .fw-icon { font-size: 72px; margin-bottom: 20px; color: #f59e0b; }
-    #fs-warning-overlay h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; }
-    #fs-warning-overlay p  { font-size: 16px; opacity: .8; max-width: 480px; margin-bottom: 28px; }
-    .fw-count { font-size: 14px; opacity: .55; margin-bottom: 20px; }
-    .fw-btn { background: #f59e0b; color: #1a1a1a; border: none; border-radius: 8px;
-      padding: 14px 32px; font-size: 16px; font-weight: 800; cursor: pointer;
-      display: flex; align-items: center; gap: 10px; }
-    .fw-btn:hover { background: #d97706; }
+    .fw-icon { font-size: 60px; margin-bottom: 16px; color: var(--accent2); }
+    #fs-warning-overlay h2 { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+    #fs-warning-overlay p  { font-size: 14px; opacity: .75; max-width: 440px; margin-bottom: 24px; }
+    .fw-count { font-size: 12px; opacity: .5; margin-bottom: 18px; }
+    .fw-btn {
+      background: var(--accent2); color: #fff; border: none; border-radius: 5px;
+      padding: 12px 28px; font-size: 14px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: 8px; font-family: var(--font);
+    }
+    .fw-btn:hover { background: var(--accent); }
 
-    /* ── IDLE WARNING BAR ── */
+    /* ═══════════════════════════════════════
+       IDLE BAR
+    ═══════════════════════════════════════ */
     #idle-warning-bar {
       display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 600;
       background: linear-gradient(90deg, #7f1d1d, #991b1b);
-      color: #fff; padding: 12px 20px;
-      font-size: 14px; font-weight: 700; text-align: center;
-      border-top: 3px solid #ef4444;
-      animation: pulse-bar 1s ease-in-out infinite;
+      color: #fff; padding: 10px 16px;
+      font-size: 13px; font-weight: 700; text-align: center;
+      border-top: 2px solid #ef4444;
+      animation: pblink 1s ease-in-out infinite;
     }
     #idle-warning-bar.show { display: block; }
-    @keyframes pulse-bar { 0%,100%{opacity:1} 50%{opacity:.7} }
+    @keyframes pblink { 0%,100%{opacity:1} 50%{opacity:.7} }
+
+    /* Instruction/notice panel above question */
+    .q-instruction-bar {
+      background: #e8f5e9;
+      border: 1px solid #a5d6a7;
+      border-radius: 4px;
+      padding: 7px 12px;
+      font-size: 11.5px; color: #1b5e20;
+      margin-bottom: 12px;
+      display: flex; gap: 6px; align-items: flex-start;
+    }
+
+    /* Toast */
+    #toast-container { position: fixed; top: 64px; right: 16px; z-index: 9000; display: flex; flex-direction: column; gap: 6px; }
   </style>
 </head>
 <body>
 
 <!-- ════════════════════ HEADER ════════════════════ -->
 <div class="exam-header">
-  <div class="header-left">
-    <div class="header-logo"><i class="fas fa-gem" style="color:#f59e0b;"></i></div>
-    <div class="exam-title-bar" id="exam-header-title">
-      Loading…
-      <small>GeoExam Portal · GATE Geology & CSIR-NET CBT</small>
+  <div class="hdr-left">
+    <div class="hdr-logo-block"><i class="fas fa-gem"></i></div>
+    <div class="hdr-title-block">
+      <div class="hdr-exam-name" id="exam-header-title">Loading…</div>
+      <div class="hdr-portal-name">GeoExam Portal · GATE / CSIR-NET CBT</div>
     </div>
   </div>
-  <div class="header-right">
-    <button class="calc-toggle-btn" onclick="toggleCalc()"><i class="fas fa-calculator"></i> Calculator</button>
-    <div class="timer-wrap">
+  <div class="hdr-right">
+    <button class="calc-btn-hdr" onclick="toggleCalc()">
+      <i class="fas fa-calculator"></i> Calculator
+    </button>
+    <div class="timer-block">
       <div class="timer-label">Time Remaining</div>
-      <div class="timer-box" id="timer-display">00:00:00</div>
+      <div class="timer-val" id="timer-display">00:00:00</div>
     </div>
   </div>
 </div>
@@ -400,184 +766,207 @@
 <!-- ════════════════════ MAIN LAYOUT ════════════════════ -->
 <div class="exam-layout">
 
-  <!-- ── LEFT: Question Panel ── -->
+  <!-- ── QUESTION PANEL ── -->
   <div class="exam-main">
-    <div class="question-scroll-wrap" id="question-scroll-wrap">
-      <div class="question-area" id="question-area">
+    <div class="q-scroll-area" id="question-scroll-wrap">
+      <div class="q-area" id="question-area">
         <div class="loading-screen"><div class="spinner"></div><p>Loading exam…</p></div>
       </div>
     </div>
 
     <!-- Action Bar -->
-    <div class="exam-actions">
+    <div class="action-bar">
       <div class="action-group">
-        <button class="btn-gate btn-clear" onclick="clearResponse()"><i class="fas fa-times"></i> Clear Response</button>
-        <button class="btn-gate btn-mark-review" onclick="markForReview()"><i class="fas fa-bookmark"></i> Mark for Review &amp; Next</button>
+        <button class="btn btn-clear" onclick="clearResponse()">
+          <i class="fas fa-times-circle"></i> Clear Response
+        </button>
+        <button class="btn btn-mark-review" onclick="markForReview()">
+          <i class="fas fa-bookmark"></i> Mark for Review &amp; Next
+        </button>
       </div>
       <div class="action-group">
-        <button class="btn-gate btn-prev" onclick="navigate(-1)"><i class="fas fa-arrow-left"></i> Previous</button>
-        <button class="btn-gate btn-save-next" onclick="saveAndNext()">Save &amp; Next <i class="fas fa-arrow-right"></i></button>
+        <button class="btn btn-prev" onclick="navigate(-1)">
+          <i class="fas fa-arrow-left"></i> Previous
+        </button>
+        <button class="btn btn-save-next" onclick="saveAndNext()">
+          Save &amp; Next <i class="fas fa-arrow-right"></i>
+        </button>
       </div>
       <div class="action-group">
-        <button class="btn-gate btn-submit-exam" onclick="confirmSubmit()"><i class="fas fa-paper-plane"></i> Submit Exam</button>
+        <button class="btn btn-submit-exam" onclick="confirmSubmit()">
+          <i class="fas fa-paper-plane"></i> Submit
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- ── RIGHT: Sidebar ── -->
+  <!-- ── SIDEBAR ── -->
   <div class="exam-sidebar">
-    <!-- Candidate Info -->
-    <div class="sidebar-candidate">
-      <div class="cand-avatar" id="sb-avatar">?</div>
-      <div>
-        <div class="cand-name" id="sb-name">Candidate</div>
-        <div class="cand-role">GATE Geology / CSIR-NET</div>
+
+    <!-- Candidate -->
+    <div class="sb-cand">
+      <div class="sb-avatar" id="sb-avatar">?</div>
+      <div class="sb-cand-info">
+        <div class="sb-cand-name" id="sb-name">Candidate</div>
+        <div class="sb-cand-sub">GATE Geology / CSIR-NET</div>
       </div>
     </div>
 
     <!-- Legend -->
-    <div class="sidebar-legend">
-      <div class="legend-title">Question Status Legend</div>
-      <div class="legend-rows">
-        <div class="leg-it"><div class="leg-dot" style="background:#9ca3af;">—</div>Not Visited</div>
-        <div class="leg-it"><div class="leg-dot" style="background:#ef4444;">—</div>Not Answered</div>
-        <div class="leg-it"><div class="leg-dot" style="background:#22c55e;">—</div>Answered</div>
-        <div class="leg-it"><div class="leg-dot" style="background:#8b5cf6;">—</div>Marked for Review</div>
-        <div class="leg-it"><div class="leg-dot" style="background:#8b5cf6;border:2px solid #22c55e;">—</div>Answered &amp; Marked</div>
+    <div class="sb-legend">
+      <div class="sb-legend-title">Question Status</div>
+      <div class="leg-grid">
+        <div class="leg-row"><div class="leg-dot" style="background:#9e9e9e;">·</div>Not Visited</div>
+        <div class="leg-row"><div class="leg-dot" style="background:#e53935;">·</div>Not Answered</div>
+        <div class="leg-row"><div class="leg-dot" style="background:#2e7d32;">·</div>Answered</div>
+        <div class="leg-row"><div class="leg-dot" style="background:#6a1b9a;">·</div>For Review</div>
+        <div class="leg-row"><div class="leg-dot" style="background:#6a1b9a;border:2px solid #2e7d32;">·</div>Ans + Review</div>
       </div>
     </div>
 
-    <!-- Palette -->
-    <div class="palette-scroll" id="palette-scroll"></div>
-
     <!-- Stats -->
-    <div class="sidebar-stats" id="sidebar-stats"></div>
+    <div class="sb-stats" id="sidebar-stats"></div>
 
-    <!-- Submit Button -->
-    <div class="sidebar-submit">
-      <button class="btn-gate btn-submit-exam" style="width:100%;justify-content:center;" onclick="confirmSubmit()">
+    <!-- Palette -->
+    <div class="sb-palette" id="palette-scroll"></div>
+
+    <!-- Submit -->
+    <div class="sb-submit">
+      <button class="btn btn-submit-exam" style="width:100%;justify-content:center;" onclick="confirmSubmit()">
         <i class="fas fa-paper-plane"></i> Submit Examination
       </button>
     </div>
+
   </div>
 </div>
 
-<!-- ════════════════════ SCIENTIFIC CALCULATOR ════════════════════ -->
+<!-- ════════════════════════════════════════════
+     SCIENTIFIC CALCULATOR — Compact
+════════════════════════════════════════════ -->
 <div class="calc-panel" id="calc-panel">
-  <div class="calc-titlebar">
-    <span><i class="fas fa-calculator"></i> &nbsp;Scientific Calculator</span>
-    <button onclick="toggleCalc()" title="Close">✕</button>
+  <div class="calc-title">
+    <span><i class="fas fa-calculator" style="margin-right:5px;"></i>Scientific Calculator</span>
+    <button class="calc-title-close" onclick="toggleCalc()">✕</button>
   </div>
-  <div class="calc-history-line" id="calc-history">&nbsp;</div>
-  <div class="calc-display" id="calc-display">0</div>
-  <div class="calc-mode-row">
-    <button class="calc-mode-btn active" id="mode-deg" onclick="calcSetMode('deg')">DEG</button>
-    <button class="calc-mode-btn" id="mode-rad" onclick="calcSetMode('rad')">RAD</button>
-    <button class="calc-mode-btn" id="mode-inv" onclick="calcToggleInv()">INV</button>
+  <div class="calc-hist" id="calc-history">&nbsp;</div>
+  <div class="calc-disp" id="calc-display">0</div>
+  <div class="calc-modes">
+    <button class="calc-mode active" id="mode-deg" onclick="calcSetMode('deg')">DEG</button>
+    <button class="calc-mode" id="mode-rad" onclick="calcSetMode('rad')">RAD</button>
+    <button class="calc-mode" id="mode-inv" onclick="calcToggleInv()">INV</button>
+    <button class="calc-mode" onclick="calcFunc('pct')">%</button>
   </div>
-  <div class="calc-grid" id="calc-grid">
-    <!-- Row 1: Memory + Clear -->
-    <button class="calc-btn mem" onclick="calcMem('mc')" title="Memory Clear">MC</button>
-    <button class="calc-btn mem" onclick="calcMem('mr')" title="Memory Recall">MR</button>
-    <button class="calc-btn mem" onclick="calcMem('ms')" title="Memory Store">MS</button>
-    <button class="calc-btn mem" onclick="calcMem('m+')" title="Memory Add">M+</button>
-    <button class="calc-btn mem" onclick="calcMem('m-')" title="Memory Subtract">M−</button>
 
-    <!-- Row 2: Functions -->
-    <button class="calc-btn fn" id="btn-sin" onclick="calcTrig('sin')">sin</button>
-    <button class="calc-btn fn" id="btn-cos" onclick="calcTrig('cos')">cos</button>
-    <button class="calc-btn fn" id="btn-tan" onclick="calcTrig('tan')">tan</button>
-    <button class="calc-btn fn" onclick="calcFunc('log')">log</button>
-    <button class="calc-btn fn" onclick="calcFunc('ln')">ln</button>
+  <div class="calc-grid">
+    <!-- Row 1: Memory -->
+    <button class="cb mem" onclick="calcMem('mc')">MC</button>
+    <button class="cb mem" onclick="calcMem('mr')">MR</button>
+    <button class="cb mem" onclick="calcMem('ms')">MS</button>
+    <button class="cb mem" onclick="calcMem('m+')">M+</button>
+    <button class="cb mem" onclick="calcMem('m-')">M−</button>
 
-    <!-- Row 3: Powers + brackets -->
-    <button class="calc-btn fn" onclick="calcFunc('pow2')">x²</button>
-    <button class="calc-btn fn" onclick="calcFunc('pow3')">x³</button>
-    <button class="calc-btn fn" id="btn-pow" onclick="calcStartPow()">xʸ</button>
-    <button class="calc-btn fn" onclick="calcParen('(')"> ( </button>
-    <button class="calc-btn fn" onclick="calcParen(')')"> ) </button>
+    <!-- Row 2: Trig -->
+    <button class="cb fn" id="btn-sin" onclick="calcTrig('sin')">sin</button>
+    <button class="cb fn" id="btn-cos" onclick="calcTrig('cos')">cos</button>
+    <button class="cb fn" id="btn-tan" onclick="calcTrig('tan')">tan</button>
+    <button class="cb fn" onclick="calcFunc('log')">log</button>
+    <button class="cb fn" onclick="calcFunc('ln')">ln</button>
 
-    <!-- Row 4: Roots + constants -->
-    <button class="calc-btn fn" onclick="calcFunc('sqrt')">√x</button>
-    <button class="calc-btn fn" onclick="calcFunc('cbrt')">∛x</button>
-    <button class="calc-btn fn" onclick="calcFunc('recip')">1/x</button>
-    <button class="calc-btn const-btn" onclick="calcConst('pi')">π</button>
-    <button class="calc-btn const-btn" onclick="calcConst('e')">e</button>
+    <!-- Row 3: Powers -->
+    <button class="cb fn" onclick="calcFunc('pow2')">x²</button>
+    <button class="cb fn" onclick="calcFunc('pow3')">x³</button>
+    <button class="cb fn" onclick="calcStartPow()">xʸ</button>
+    <button class="cb fn" onclick="calcParen('(')">(</button>
+    <button class="cb fn" onclick="calcParen(')')">)</button>
 
-    <!-- Row 5: AC / DEL / % / ÷ / × -->
-    <button class="calc-btn clr" onclick="calcClear()">AC</button>
-    <button class="calc-btn del" onclick="calcDel()">⌫</button>
-    <button class="calc-btn fn" onclick="calcFunc('pct')">%</button>
-    <button class="calc-btn op" onclick="calcOp('/')">÷</button>
-    <button class="calc-btn op" onclick="calcOp('*')">×</button>
+    <!-- Row 4: Roots + const -->
+    <button class="cb fn" onclick="calcFunc('sqrt')">√x</button>
+    <button class="cb fn" onclick="calcFunc('cbrt')">∛x</button>
+    <button class="cb fn" onclick="calcFunc('recip')">1/x</button>
+    <button class="cb cst" onclick="calcConst('pi')">π</button>
+    <button class="cb cst" onclick="calcConst('e')">e</button>
 
-    <!-- Row 6: 7 8 9 - + -->
-    <button class="calc-btn" onclick="calcNum('7')">7</button>
-    <button class="calc-btn" onclick="calcNum('8')">8</button>
-    <button class="calc-btn" onclick="calcNum('9')">9</button>
-    <button class="calc-btn op" onclick="calcOp('-')">−</button>
-    <button class="calc-btn op" onclick="calcOp('+')">+</button>
+    <!-- Row 5: AC / Del / exp / ÷ / × -->
+    <button class="cb clr" onclick="calcClear()">AC</button>
+    <button class="cb del" onclick="calcDel()">⌫</button>
+    <button class="cb fn" onclick="calcFunc('exp')">eˣ</button>
+    <button class="cb op" onclick="calcOp('/')">÷</button>
+    <button class="cb op" onclick="calcOp('*')">×</button>
 
-    <!-- Row 7: 4 5 6 log10 log2 -->
-    <button class="calc-btn" onclick="calcNum('4')">4</button>
-    <button class="calc-btn" onclick="calcNum('5')">5</button>
-    <button class="calc-btn" onclick="calcNum('6')">6</button>
-    <button class="calc-btn fn" onclick="calcFunc('abs')">|x|</button>
-    <button class="calc-btn fn" onclick="calcFunc('exp')">eˣ</button>
+    <!-- Row 6: 7 8 9 − + -->
+    <button class="cb" onclick="calcNum('7')">7</button>
+    <button class="cb" onclick="calcNum('8')">8</button>
+    <button class="cb" onclick="calcNum('9')">9</button>
+    <button class="cb op" onclick="calcOp('-')">−</button>
+    <button class="cb op" onclick="calcOp('+')">+</button>
 
-    <!-- Row 8: 1 2 3 ± = -->
-    <button class="calc-btn" onclick="calcNum('1')">1</button>
-    <button class="calc-btn" onclick="calcNum('2')">2</button>
-    <button class="calc-btn" onclick="calcNum('3')">3</button>
-    <button class="calc-btn fn" onclick="calcSign()">±</button>
-    <button class="calc-btn eq" onclick="calcEquals()" style="grid-row:span 2">=</button>
+    <!-- Row 7: 4 5 6 |x| n! -->
+    <button class="cb" onclick="calcNum('4')">4</button>
+    <button class="cb" onclick="calcNum('5')">5</button>
+    <button class="cb" onclick="calcNum('6')">6</button>
+    <button class="cb fn" onclick="calcFunc('abs')">|x|</button>
+    <button class="cb fn" onclick="calcFunc('fact')">n!</button>
 
-    <!-- Row 9: 0 . -->
-    <button class="calc-btn zero" onclick="calcNum('0')">0</button>
-    <button class="calc-btn" onclick="calcDot()">.</button>
-    <button class="calc-btn fn" onclick="calcFunc('fact')">n!</button>
-    <button class="calc-btn fn" onclick="calcFunc('floor')">⌊x⌋</button>
+    <!-- Row 8: 1 2 3 ± = (spans 2 rows) -->
+    <button class="cb" onclick="calcNum('1')">1</button>
+    <button class="cb" onclick="calcNum('2')">2</button>
+    <button class="cb" onclick="calcNum('3')">3</button>
+    <button class="cb fn" onclick="calcSign()">±</button>
+    <button class="cb eq" onclick="calcEquals()">=</button>
+
+    <!-- Row 9: 0 . floor -->
+    <button class="cb zero" onclick="calcNum('0')">0</button>
+    <button class="cb" onclick="calcDot()">.</button>
+    <button class="cb fn" onclick="calcFunc('floor')">⌊x⌋</button>
   </div>
-  <div class="calc-deg-indicator" id="calc-deg-ind">DEG &nbsp;|&nbsp; MEM: <span id="calc-mem-disp">0</span></div>
+
+  <div class="calc-statusbar">
+    <span id="calc-deg-ind">DEG</span>
+    <span>MEM: <span id="calc-mem-disp">0</span></span>
+  </div>
 </div>
 
 <!-- ════════════════════ SUBMIT MODAL ════════════════════ -->
 <div class="modal-overlay" id="submit-modal">
   <div class="modal-box">
     <div class="modal-hdr">
-      <h3><i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> Submit Examination</h3>
+      <h3><i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i>&nbsp; Submit Examination</h3>
       <button class="modal-close" onclick="closeModal('submit-modal')">✕</button>
     </div>
     <div class="modal-body">
-      <p style="font-size:14px;color:#374151;margin-bottom:4px;">You are about to submit your examination. This action <strong>cannot be undone.</strong></p>
-      <div class="submit-stats" id="submit-stats"></div>
-      <div class="warn-box">
-        <i class="fas fa-info-circle" style="margin-top:2px;color:#d97706;"></i>
-        <span>Questions marked for review <em>(without answer)</em> will be treated as <strong>Not Answered</strong> and carry <strong>0 marks</strong>. Questions that are <em>Answered &amp; Marked for Review</em> will be evaluated.</span>
+      <p>You are about to submit your examination. This action <strong>cannot be undone.</strong></p>
+      <div class="submit-stats-grid" id="submit-stats"></div>
+      <div class="warn-banner">
+        <i class="fas fa-info-circle" style="color:#f59e0b;margin-top:2px;"></i>
+        <span>Questions marked for review <em>(without answer)</em> will be treated as <strong>Not Answered</strong> (0 marks). <em>Answered &amp; Marked</em> questions will be evaluated.</span>
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn-modal btn-modal-outline" onclick="closeModal('submit-modal')"><i class="fas fa-arrow-left"></i> Go Back &amp; Review</button>
-      <button class="btn-modal btn-modal-danger" onclick="submitExam()"><i class="fas fa-paper-plane"></i> Yes, Submit Now</button>
+      <button class="btn-modal btn-modal-outline" onclick="closeModal('submit-modal')">
+        <i class="fas fa-arrow-left"></i> Go Back &amp; Review
+      </button>
+      <button class="btn-modal btn-modal-danger" onclick="submitExam()">
+        <i class="fas fa-paper-plane"></i> Yes, Submit Now
+      </button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════ FULLSCREEN WARNING OVERLAY ════════════════ -->
+<!-- ════════════════ FULLSCREEN WARNING ════════════════ -->
 <div id="fs-warning-overlay">
   <div class="fw-icon"><i class="fas fa-expand-arrows-alt"></i></div>
-  <h2>Please Return to Full Screen</h2>
-  <p>This exam must be taken in full-screen mode. Exiting full screen is considered a violation and has been logged.</p>
+  <h2>Return to Full Screen</h2>
+  <p>This examination must be taken in full-screen mode. Exiting has been logged and may result in disqualification.</p>
   <div class="fw-count" id="fs-exit-count">Exit count: 0 / 3 allowed</div>
   <button class="fw-btn" onclick="reenterFullscreen()">
     <i class="fas fa-expand"></i> Re-enter Full Screen
   </button>
 </div>
 
-<!-- ════════════════ IDLE WARNING BAR ════════════════ -->
+<!-- ════════════════ IDLE BAR ════════════════ -->
 <div id="idle-warning-bar">
   <i class="fas fa-exclamation-triangle"></i>
-  &nbsp;You appear to be idle. Activity will be flagged after <span id="idle-countdown">60</span>s of inactivity.
+  &nbsp;Idle detected — activity will be flagged in <span id="idle-countdown">60</span>s
 </div>
 
 <div id="toast-container"></div>
@@ -603,30 +992,25 @@ let currentUser = null;
 
 // ── Tab-Switch Detection ──
 let tabSwitchCount = 0;
-const tabSwitchLog = [];          // [{timestamp, count}]
+const tabSwitchLog = [];
 const TAB_SWITCH_FLAG_THRESHOLD = 3;
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     tabSwitchCount++;
     tabSwitchLog.push({ at: new Date().toISOString(), count: tabSwitchCount });
-
-    // Persist to Firestore immediately (non-blocking)
     if (attemptId) {
       db.collection('attempts').doc(attemptId).update({
-        tabSwitchCount,
-        tabSwitchLog,
+        tabSwitchCount, tabSwitchLog,
         flagged: tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD
       }).catch(() => {});
     }
-
-    // Show warning toast to student
     if (tabSwitchCount === 1) {
-      Utils.toast('⚠️ Tab switch detected! Suspicious activity is logged and reviewed by admins.', 'warning', 5000);
+      Utils.toast('⚠️ Tab switch detected! Activity is logged.', 'warning', 5000);
     } else if (tabSwitchCount <= TAB_SWITCH_FLAG_THRESHOLD) {
       Utils.toast(`⚠️ Warning ${tabSwitchCount}/${TAB_SWITCH_FLAG_THRESHOLD}: Repeated tab switching will flag your attempt.`, 'warning', 5000);
     } else {
-      Utils.toast(`🚨 Your attempt has been flagged for admin review (${tabSwitchCount} tab switches).`, 'error', 6000);
+      Utils.toast(`🚨 Attempt flagged for admin review (${tabSwitchCount} tab switches).`, 'error', 6000);
     }
   }
 });
@@ -651,8 +1035,7 @@ async function initExam() {
     const examDoc = await db.collection('exams').doc(examId).get();
     if (!examDoc.exists) { alert('Exam not found.'); window.location.href='dashboard.html'; return; }
     examData = examDoc.data();
-    document.getElementById('exam-header-title').innerHTML =
-      `${examData.title}<small>GeoExam Portal · GATE Geology & CSIR-NET CBT</small>`;
+    document.getElementById('exam-header-title').textContent = examData.title;
     timerSec = (examData.durationMinutes || 180) * 60;
 
     const qIds = examData.questionIds || [];
@@ -689,7 +1072,7 @@ async function initExam() {
     renderPalette();
     startTimer();
     autoSaveInterval();
-    startProctoring(); // ← fullscreen + idle detection
+    startProctoring();
   } catch(e) { console.error(e); Utils.toast('Error loading exam: '+e.message,'error'); }
 }
 
@@ -720,43 +1103,55 @@ function renderQuestion() {
   if(q.type==='nat'){
     const natVal = ans.selected[0]||'';
     optHtml=`<div class="nat-wrap">
-      <p class="nat-label">Enter your answer in the box below. Use decimal point (.) for fractional values.</p>
-      <input type="number" class="nat-input" id="nat-input" value="${natVal}" step="any" placeholder="Type numerical answer">
+      <div class="nat-label"><i class="fas fa-info-circle"></i> Enter numerical answer. Use decimal point (.) for fractional values.</div>
+      <input type="number" class="nat-input" id="nat-input" value="${natVal}" step="any" placeholder="0.000">
     </div>`;
   } else {
     const opts = q.options||[];
     optHtml = `<div class="options-list">`+opts.map((opt,i)=>{
       const label=String.fromCharCode(65+i);
       const sel=ans.selected.includes(i);
-      return `<div class="option-item ${sel?'selected':''}" onclick="toggleOption(${i})">
-        <div class="opt-bubble">${label}</div>
-        <div class="opt-content">
+      return `<div class="opt-item ${sel?'selected':''}" onclick="toggleOption(${i})">
+        <div class="opt-circle">${label}</div>
+        <div class="opt-text">
           ${opt.text||''}
-          ${opt.imageUrl?`<img src="${opt.imageUrl}" class="opt-img" alt="option image">`:''}
+          ${opt.imageUrl?`<img src="${opt.imageUrl}" class="opt-img" alt="">`:''}
         </div>
       </div>`;
     }).join('')+`</div>`;
   }
 
-  const typeName = q.type==='scq'?'Single Correct (SCQ)':q.type==='mcq'?'Multiple Select (MSQ)':'Numerical Answer (NAT)';
-  const typeCls  = q.type==='nat'?'nat':q.type==='mcq'?'mcq':'';
+  const typeMap = {scq:'Single Correct (SCQ)',mcq:'Multiple Select (MSQ)',nat:'Numerical Answer (NAT)'};
+  const typeCls  = {scq:'scq',mcq:'mcq',nat:'nat'}[q.type]||'scq';
+  const instrMap = {
+    scq:'Choose the single best answer.',
+    mcq:'One or more options may be correct. Partial marking applies.',
+    nat:'Type the exact numerical value. No options to select.'
+  };
 
   document.getElementById('question-area').innerHTML=`
-    <div class="q-info-row">
-      <div>
-        <div class="q-number">Question ${currentQ+1} <span style="color:#9ca3af;font-weight:400;">of ${questions.length}</span></div>
-        <div class="q-section-label">${getSectionName(q.id)}</div>
+    <div class="q-instruction-bar">
+      <i class="fas fa-info-circle"></i>
+      <span>${instrMap[q.type]||''}</span>
+    </div>
+    <div class="q-topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="q-num-badge">Q${currentQ+1} / ${questions.length}</span>
+        <span class="q-section-tag">${getSectionName(q.id)}</span>
       </div>
-      <span class="q-type-badge ${typeCls}">${typeName}</span>
+      <span class="q-type-pill ${typeCls}">${typeMap[q.type]||q.type}</span>
     </div>
-    <div class="q-marks-bar">
+    <div class="q-marks-strip">
       <span>Marks: <span class="pos">+${posM}</span></span>
-      ${negM>0?`<span>Negative: <span class="neg">−${negM}</span></span>`:`<span style="color:#6b7280;font-size:12px;">No Negative Marking</span>`}
-      ${q.type==='mcq'?`<span class="partial-note"><i class="fas fa-info-circle"></i> Partial marks applicable</span>`:''}
+      <span class="marks-divider"></span>
+      ${negM>0?`<span>Negative: <span class="neg">−${negM}</span></span>`:`<span style="color:var(--gray-600);font-size:11.5px;">No Negative Marking</span>`}
+      ${q.type==='mcq'?`<span class="marks-divider"></span><span class="info-note"><i class="fas fa-star"></i> Partial marking</span>`:''}
     </div>
-    ${q.imageUrl?`<img src="${q.imageUrl}" class="q-image" alt="question figure">`:''}
-    ${q.text?`<div class="q-text">${q.text}</div>`:''}
-    ${optHtml}
+    <div class="q-body">
+      ${q.imageUrl?`<img src="${q.imageUrl}" class="q-image" alt="figure">`:''}
+      ${q.text?`<div class="q-text">${q.text}</div>`:''}
+      ${optHtml}
+    </div>
   `;
 }
 
@@ -810,26 +1205,26 @@ function renderPalette(){
   let h='';
   sections.forEach(sec=>{
     const sQs=questions.filter(q=>sec.questionIds?.includes(q.id));
-    h+=`<div class="palette-sec"><div class="palette-sec-title">${sec.title}</div><div class="palette-grid">`;
+    h+=`<div class="pal-sec"><div class="pal-sec-title">${sec.title}</div><div class="pal-grid">`;
     sQs.forEach(q=>{
       const gi=questions.indexOf(q);
       const s=(answers[q.id]||{status:'nv'}).status;
       const cls={nv:'qst-nv',na:'qst-na',ans:'qst-ans',mrk:'qst-mrk',am:'qst-am'}[s]||'qst-nv';
-      h+=`<button class="q-btn ${cls} ${gi===currentQ?'current':''}" onclick="goTo(${gi})" title="Q${gi+1}">${gi+1}</button>`;
+      h+=`<button class="q-btn ${cls} ${gi===currentQ?'current':''}" onclick="goTo(${gi})">${gi+1}</button>`;
     });
     h+=`</div></div>`;
   });
   c.innerHTML=h;
 
   const vals=Object.values(answers);
-  const ans=vals.filter(a=>a.status==='ans'||a.status==='am').length;
-  const na =vals.filter(a=>a.status==='na'||a.status==='nv').length;
-  const mrk=vals.filter(a=>a.status==='mrk'||a.status==='am').length;
+  const ans =vals.filter(a=>a.status==='ans'||a.status==='am').length;
+  const na  =vals.filter(a=>a.status==='na'||a.status==='nv').length;
+  const mrk =vals.filter(a=>a.status==='mrk'||a.status==='am').length;
   document.getElementById('sidebar-stats').innerHTML=`
-    <div class="stat-cell"><div class="sv" style="color:#22c55e;">${ans}</div><div class="sl">Answered</div></div>
-    <div class="stat-cell"><div class="sv" style="color:#ef4444;">${na}</div><div class="sl">Not Ans.</div></div>
-    <div class="stat-cell"><div class="sv" style="color:#8b5cf6;">${mrk}</div><div class="sl">Marked</div></div>
-    <div class="stat-cell"><div class="sv">${questions.length}</div><div class="sl">Total</div></div>
+    <div class="sb-stat"><div class="sb-stat-num" style="color:#2e7d32;">${ans}</div><div class="sb-stat-lbl">Answered</div></div>
+    <div class="sb-stat"><div class="sb-stat-num" style="color:#c62828;">${na}</div><div class="sb-stat-lbl">Not Ans</div></div>
+    <div class="sb-stat"><div class="sb-stat-num" style="color:#6a1b9a;">${mrk}</div><div class="sb-stat-lbl">Review</div></div>
+    <div class="sb-stat"><div class="sb-stat-num">${questions.length}</div><div class="sb-stat-lbl">Total</div></div>
   `;
 }
 
@@ -860,9 +1255,9 @@ function confirmSubmit(){
   const notAns  =vals.filter(a=>a.status==='na'||a.status==='nv').length;
   const marked  =vals.filter(a=>a.status==='mrk'||a.status==='am').length;
   document.getElementById('submit-stats').innerHTML=`
-    <div class="sm-card"><div class="n" style="color:#22c55e;">${answered}</div><div class="l">Answered</div></div>
-    <div class="sm-card"><div class="n" style="color:#ef4444;">${notAns}</div><div class="l">Not Answered</div></div>
-    <div class="sm-card"><div class="n" style="color:#8b5cf6;">${marked}</div><div class="l">Marked for Review</div></div>
+    <div class="ssc"><div class="n" style="color:#2e7d32;">${answered}</div><div class="l">Answered</div></div>
+    <div class="ssc"><div class="n" style="color:#c62828;">${notAns}</div><div class="l">Not Answered</div></div>
+    <div class="ssc"><div class="n" style="color:#6a1b9a;">${marked}</div><div class="l">Marked for Review</div></div>
   `;
   document.getElementById('submit-modal').classList.add('open');
 }
@@ -870,10 +1265,8 @@ function confirmSubmit(){
 async function submitExam(){
   closeModal('submit-modal'); clearInterval(timerInt); clearInterval(idleInterval);
   Utils.toast('Evaluating answers…','info');
-
   let totalScore=0,maxScore=0,correct=0,wrong=0,partial=0,skipped=0;
   const evaluation={};
-
   for(const q of questions){
     const qAns=answers[q.id]||{selected:[]};
     const posM=parseFloat(q.posMarks||q.marks||1);
@@ -882,7 +1275,6 @@ async function submitExam(){
     const correctNat=q.correctAnswer;
     maxScore+=posM;
     let qScore=0,qResult='skip';
-
     if(q.type==='nat'){
       const sel=parseFloat(qAns.selected[0]);
       const cor=parseFloat(correctNat);
@@ -911,7 +1303,6 @@ async function submitExam(){
     totalScore+=qScore;
     evaluation[q.id]={selected:qAns.selected,correct:correctOpts.length>0?correctOpts:[correctNat],score:qScore,result:qResult};
   }
-
   try{
     await db.collection('attempts').doc(attemptId).update({
       status:'submitted',answers,evaluation,
@@ -929,11 +1320,13 @@ async function submitExam(){
 
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
-// ── Scientific Calculator ──
+// ══════════════════════════════════════
+// SCIENTIFIC CALCULATOR
+// ══════════════════════════════════════
 let calcVal='0', calcOp_=null, calcPrev=null, calcNewNum=true;
 let calcMemory=0, calcDegMode=true, calcInvMode=false;
-let calcPowMode=false;  // waiting for exponent after xʸ
-let calcExpression='';  // history line
+let calcPowMode=false;
+let calcExpression='';
 
 function toggleCalc(){ document.getElementById('calc-panel').classList.toggle('show'); }
 
@@ -941,8 +1334,7 @@ function calcSetMode(m) {
   calcDegMode = (m === 'deg');
   document.getElementById('mode-deg').classList.toggle('active', calcDegMode);
   document.getElementById('mode-rad').classList.toggle('active', !calcDegMode);
-  document.getElementById('calc-deg-ind').innerHTML =
-    (calcDegMode ? 'DEG' : 'RAD') + ' &nbsp;|&nbsp; MEM: <span id="calc-mem-disp">' + calcMemory + '</span>';
+  document.getElementById('calc-deg-ind').textContent = calcDegMode ? 'DEG' : 'RAD';
 }
 
 function calcToggleInv() {
@@ -956,7 +1348,7 @@ function calcToggleInv() {
 function calcDisplay(v) {
   const el = document.getElementById('calc-display');
   const s = String(v);
-  if (s.length > 14) {
+  if (s.length > 13) {
     const n = parseFloat(v);
     el.textContent = isNaN(n) ? 'Error' : n.toPrecision(10).replace(/\.?0+$/, '');
   } else {
@@ -981,30 +1373,19 @@ function calcDot() {
   calcDisplay(calcVal);
 }
 
-function calcSign() {
-  calcVal = String(-parseFloat(calcVal));
-  calcDisplay(calcVal);
-}
+function calcSign() { calcVal = String(-parseFloat(calcVal)); calcDisplay(calcVal); }
 
 function calcOp(op) {
-  if (calcOp_ && !calcNewNum) {
-    // chain calculation
-    calcEquals(true);
-  }
-  calcPrev = parseFloat(calcVal);
-  calcOp_ = op;
+  if (calcOp_ && !calcNewNum) calcEquals(true);
+  calcPrev = parseFloat(calcVal); calcOp_ = op;
   calcExpression = calcVal + ' ' + {'+':'+','-':'−','*':'×','/':'÷'}[op];
-  calcHistory(calcExpression);
-  calcNewNum = true;
+  calcHistory(calcExpression); calcNewNum = true;
 }
 
 function calcStartPow() {
-  calcPrev = parseFloat(calcVal);
-  calcOp_ = 'pow';
+  calcPrev = parseFloat(calcVal); calcOp_ = 'pow';
   calcExpression = calcVal + ' ^ ';
-  calcHistory(calcExpression);
-  calcPowMode = true;
-  calcNewNum = true;
+  calcHistory(calcExpression); calcPowMode = true; calcNewNum = true;
 }
 
 function calcEquals(chain) {
@@ -1020,230 +1401,178 @@ function calcEquals(chain) {
     default: res = cur;
   }
   if (isNaN(res) || !isFinite(res)) res = 'Error';
-  if (!chain) {
-    calcHistory(calcExpression + ' ' + calcVal + ' =');
-  }
+  if (!chain) calcHistory(calcExpression + ' ' + calcVal + ' =');
   calcVal = String(res); calcOp_ = null; calcPrev = null; calcNewNum = true; calcPowMode = false;
   calcDisplay(calcVal);
 }
 
 function calcParen(p) {
-  // Simple: append to expression visually, apply with eval-style later
-  // For now: ( opens new entry, ) closes
   if (p === '(') { calcVal = '0'; calcNewNum = true; }
-  // ) acts like equals for grouped ops
   if (p === ')') calcEquals();
 }
 
 function calcFunc(f) {
   const n = parseFloat(calcVal);
   let res;
-  const toRad = calcDegMode ? (v => v * Math.PI / 180) : (v => v);
-  const fromRad = calcDegMode ? (v => v * 180 / Math.PI) : (v => v);
   switch(f) {
-    case 'sqrt':  res = Math.sqrt(n); calcHistory('√(' + n + ')'); break;
-    case 'cbrt':  res = Math.cbrt(n); calcHistory('∛(' + n + ')'); break;
-    case 'pow2':  res = n * n; calcHistory(n + '²'); break;
-    case 'pow3':  res = n * n * n; calcHistory(n + '³'); break;
-    case 'log':   res = Math.log10(n); calcHistory('log(' + n + ')'); break;
-    case 'ln':    res = Math.log(n); calcHistory('ln(' + n + ')'); break;
-    case 'exp':   res = Math.exp(n); calcHistory('e^(' + n + ')'); break;
-    case 'recip': res = 1 / n; calcHistory('1/' + n); break;
-    case 'abs':   res = Math.abs(n); calcHistory('|' + n + '|'); break;
-    case 'pct':   res = n / 100; calcHistory(n + '%'); break;
-    case 'floor': res = Math.floor(n); calcHistory('⌊' + n + '⌋'); break;
+    case 'sqrt':  res = Math.sqrt(n); calcHistory('√('+n+')'); break;
+    case 'cbrt':  res = Math.cbrt(n); calcHistory('∛('+n+')'); break;
+    case 'pow2':  res = n*n; calcHistory(n+'²'); break;
+    case 'pow3':  res = n*n*n; calcHistory(n+'³'); break;
+    case 'log':   res = Math.log10(n); calcHistory('log('+n+')'); break;
+    case 'ln':    res = Math.log(n); calcHistory('ln('+n+')'); break;
+    case 'exp':   res = Math.exp(n); calcHistory('e^('+n+')'); break;
+    case 'recip': res = 1/n; calcHistory('1/'+n); break;
+    case 'abs':   res = Math.abs(n); calcHistory('|'+n+'|'); break;
+    case 'pct':   res = n/100; calcHistory(n+'%'); break;
+    case 'floor': res = Math.floor(n); calcHistory('⌊'+n+'⌋'); break;
     case 'fact':
-      if (n < 0 || n > 170 || n !== Math.floor(n)) { res = NaN; break; }
-      res = 1; for (let i = 2; i <= n; i++) res *= i;
-      calcHistory(n + '!'); break;
+      if(n<0||n>170||n!==Math.floor(n)){res=NaN;break;}
+      res=1; for(let i=2;i<=n;i++)res*=i;
+      calcHistory(n+'!'); break;
     default: res = n;
   }
-  if (isNaN(res) || !isFinite(res)) res = 'Error';
-  calcVal = String(res); calcNewNum = true; calcDisplay(calcVal);
+  if(isNaN(res)||!isFinite(res)) res='Error';
+  calcVal=String(res); calcNewNum=true; calcDisplay(calcVal);
 }
 
 function calcTrig(fn) {
   const n = parseFloat(calcVal);
-  const toRad = calcDegMode ? n * Math.PI / 180 : n;
+  const toRad = calcDegMode ? n*Math.PI/180 : n;
   let res;
   if (calcInvMode) {
-    switch(fn) {
-      case 'sin': res = Math.asin(n); break;
-      case 'cos': res = Math.acos(n); break;
-      case 'tan': res = Math.atan(n); break;
-    }
-    if (calcDegMode) res = res * 180 / Math.PI;
-    calcHistory(fn + '⁻¹(' + n + ')');
+    res = fn==='sin'?Math.asin(n):fn==='cos'?Math.acos(n):Math.atan(n);
+    if (calcDegMode) res = res*180/Math.PI;
+    calcHistory(fn+'⁻¹('+n+')');
   } else {
-    switch(fn) {
-      case 'sin': res = Math.sin(toRad); break;
-      case 'cos': res = Math.cos(toRad); break;
-      case 'tan': res = Math.tan(toRad); break;
-    }
-    // Clean near-zero float noise
-    if (Math.abs(res) < 1e-10) res = 0;
-    calcHistory(fn + '(' + n + '°)');
+    res = fn==='sin'?Math.sin(toRad):fn==='cos'?Math.cos(toRad):Math.tan(toRad);
+    if(Math.abs(res)<1e-10) res=0;
+    calcHistory(fn+'('+n+(calcDegMode?'°':' rad')+')');
   }
-  if (isNaN(res) || !isFinite(res)) res = 'Error';
-  calcVal = String(res); calcNewNum = true; calcDisplay(calcVal);
+  if(isNaN(res)||!isFinite(res)) res='Error';
+  calcVal=String(res); calcNewNum=true; calcDisplay(calcVal);
 }
 
 function calcConst(c) {
-  if (c === 'pi') { calcVal = String(Math.PI); calcHistory('π = ' + Math.PI); }
-  if (c === 'e')  { calcVal = String(Math.E);  calcHistory('e = ' + Math.E); }
-  calcNewNum = true; calcDisplay(calcVal);
+  if(c==='pi'){calcVal=String(Math.PI);calcHistory('π = '+Math.PI);}
+  if(c==='e') {calcVal=String(Math.E); calcHistory('e = '+Math.E);}
+  calcNewNum=true; calcDisplay(calcVal);
 }
 
 function calcMem(op) {
-  const n = parseFloat(calcVal) || 0;
-  switch(op) {
-    case 'mc': calcMemory = 0; break;
-    case 'mr': calcVal = String(calcMemory); calcNewNum = true; calcDisplay(calcVal); break;
-    case 'ms': calcMemory = n; break;
-    case 'm+': calcMemory += n; break;
-    case 'm-': calcMemory -= n; break;
-  }
-  const memEl = document.getElementById('calc-mem-disp');
-  if (memEl) memEl.textContent = parseFloat(calcMemory.toFixed(8));
+  const n=parseFloat(calcVal)||0;
+  if(op==='mc')calcMemory=0;
+  else if(op==='mr'){calcVal=String(calcMemory);calcNewNum=true;calcDisplay(calcVal);}
+  else if(op==='ms')calcMemory=n;
+  else if(op==='m+')calcMemory+=n;
+  else if(op==='m-')calcMemory-=n;
+  const el=document.getElementById('calc-mem-disp');
+  if(el) el.textContent=parseFloat(calcMemory.toFixed(8));
 }
 
-function calcClear() {
-  calcVal = '0'; calcOp_ = null; calcPrev = null; calcNewNum = true;
-  calcPowMode = false; calcExpression = '';
-  calcDisplay('0'); calcHistory('');
+function calcClear(){
+  calcVal='0';calcOp_=null;calcPrev=null;calcNewNum=true;
+  calcPowMode=false;calcExpression='';
+  calcDisplay('0');calcHistory('');
 }
 
-function calcDel() {
-  if (calcVal.length > 1 && calcVal !== 'Error') calcVal = calcVal.slice(0, -1);
-  else calcVal = '0';
+function calcDel(){
+  if(calcVal.length>1&&calcVal!=='Error') calcVal=calcVal.slice(0,-1);
+  else calcVal='0';
   calcDisplay(calcVal);
 }
 
-window.addEventListener('beforeunload',e=>{ e.preventDefault(); e.returnValue=''; });
+window.addEventListener('beforeunload',e=>{e.preventDefault();e.returnValue='';});
 
-// ═══════════════════════════════════════════════════════
-// ── PROCTORING MODULE ──
-// ═══════════════════════════════════════════════════════
-
-// ── 1. COPY / PASTE / RIGHT-CLICK DISABLE ──────────────
-document.addEventListener('copy',  e => { e.preventDefault(); });
-document.addEventListener('cut',   e => { e.preventDefault(); });
-document.addEventListener('paste', e => { e.preventDefault(); });
-document.addEventListener('contextmenu', e => { e.preventDefault(); });
-document.addEventListener('keydown', e => {
-  // Block Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+A, Ctrl+U (view source), F12, PrintScreen
-  const blocked = (
-    (e.ctrlKey && ['c','v','x','a','u','s','p'].includes(e.key.toLowerCase())) ||
-    e.key === 'F12' ||
-    e.key === 'PrintScreen'
-  );
-  if (blocked) { e.preventDefault(); e.stopPropagation(); }
+// ═══════════════════════════════════════
+// PROCTORING
+// ═══════════════════════════════════════
+document.addEventListener('copy',  e=>e.preventDefault());
+document.addEventListener('cut',   e=>e.preventDefault());
+document.addEventListener('paste', e=>e.preventDefault());
+document.addEventListener('contextmenu', e=>e.preventDefault());
+document.addEventListener('keydown', e=>{
+  const blocked=((e.ctrlKey&&['c','v','x','a','u','s','p'].includes(e.key.toLowerCase()))||e.key==='F12'||e.key==='PrintScreen');
+  if(blocked){e.preventDefault();e.stopPropagation();}
 });
 
-// ── 2. FULL-SCREEN ENFORCEMENT ──────────────────────────
-let fsExitCount = 0;
-const FS_MAX_EXITS = 3;
-const fsOverlay   = document.getElementById('fs-warning-overlay');
-const fsCountEl   = document.getElementById('fs-exit-count');
+let fsExitCount=0;
+const FS_MAX_EXITS=3;
+const fsOverlay=document.getElementById('fs-warning-overlay');
+const fsCountEl=document.getElementById('fs-exit-count');
 
-function enterFullscreen() {
-  const el = document.documentElement;
-  if (el.requestFullscreen)           return el.requestFullscreen();
-  if (el.webkitRequestFullscreen)     return el.webkitRequestFullscreen();
-  if (el.mozRequestFullScreen)        return el.mozRequestFullScreen();
-  if (el.msRequestFullscreen)         return el.msRequestFullscreen();
+function enterFullscreen(){
+  const el=document.documentElement;
+  if(el.requestFullscreen)           return el.requestFullscreen();
+  if(el.webkitRequestFullscreen)     return el.webkitRequestFullscreen();
+  if(el.mozRequestFullScreen)        return el.mozRequestFullScreen();
+  if(el.msRequestFullscreen)         return el.msRequestFullscreen();
 }
 
-function reenterFullscreen() {
-  enterFullscreen().then(() => {
-    fsOverlay.classList.remove('show');
-  }).catch(() => {
-    Utils.toast('Please allow full screen in your browser settings.', 'error');
-  });
+function reenterFullscreen(){
+  enterFullscreen().then(()=>fsOverlay.classList.remove('show'))
+    .catch(()=>Utils.toast('Please allow full screen.','error'));
 }
 
-function isFullscreen() {
-  return !!(document.fullscreenElement || document.webkitFullscreenElement ||
-            document.mozFullScreenElement || document.msFullscreenElement);
+function isFullscreen(){
+  return !!(document.fullscreenElement||document.webkitFullscreenElement||
+            document.mozFullScreenElement||document.msFullscreenElement);
 }
 
-function handleFullscreenChange() {
-  if (!isFullscreen() && attemptId) {
+function handleFullscreenChange(){
+  if(!isFullscreen()&&attemptId){
     fsExitCount++;
-    fsCountEl.textContent = `Exit count: ${fsExitCount} / ${FS_MAX_EXITS} allowed`;
+    fsCountEl.textContent=`Exit count: ${fsExitCount} / ${FS_MAX_EXITS} allowed`;
     fsOverlay.classList.add('show');
-
-    // Log to Firestore
-    const log = { at: new Date().toISOString(), type: 'fullscreen_exit', count: fsExitCount };
-    const flagged = fsExitCount > FS_MAX_EXITS || tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD;
+    const log={at:new Date().toISOString(),type:'fullscreen_exit',count:fsExitCount};
+    const flagged=fsExitCount>FS_MAX_EXITS||tabSwitchCount>TAB_SWITCH_FLAG_THRESHOLD;
     db.collection('attempts').doc(attemptId).update({
-      fullscreenExitCount: fsExitCount,
-      flagged,
-      [`integrityLog`]: firebase.firestore.FieldValue.arrayUnion(log)
-    }).catch(() => {});
-
-    if (fsExitCount > FS_MAX_EXITS) {
-      Utils.toast(`🚨 Flagged: exceeded full-screen exit limit (${fsExitCount} exits).`, 'error', 7000);
-    }
+      fullscreenExitCount:fsExitCount,flagged,
+      [`integrityLog`]:firebase.firestore.FieldValue.arrayUnion(log)
+    }).catch(()=>{});
+    if(fsExitCount>FS_MAX_EXITS) Utils.toast(`🚨 Flagged: exceeded full-screen exit limit.`,'error',7000);
   }
 }
 
-document.addEventListener('fullscreenchange',       handleFullscreenChange);
-document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-document.addEventListener('mozfullscreenchange',    handleFullscreenChange);
-document.addEventListener('MSFullscreenChange',     handleFullscreenChange);
+['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange'].forEach(
+  e=>document.addEventListener(e,handleFullscreenChange)
+);
 
-// ── 3. IDLE DETECTION ───────────────────────────────────
-const IDLE_WARNING_SECS = 5 * 60;   // show warning bar after 5 min idle
-const IDLE_FLAG_SECS    = 6 * 60;   // flag attempt after 6 min idle
-let idleTimer    = 0;                // seconds since last activity
-let idleInterval = null;
-let idleFlagged  = false;
-const idleBar       = document.getElementById('idle-warning-bar');
-const idleCountdown = document.getElementById('idle-countdown');
+const IDLE_WARNING_SECS=5*60, IDLE_FLAG_SECS=6*60;
+let idleTimer=0, idleInterval=null, idleFlagged=false;
+const idleBar=document.getElementById('idle-warning-bar');
+const idleCountdown=document.getElementById('idle-countdown');
 
-function resetIdle() {
-  idleTimer = 0;
-  if (idleBar.classList.contains('show')) {
-    idleBar.classList.remove('show');
-  }
-}
+function resetIdle(){idleTimer=0;if(idleBar.classList.contains('show'))idleBar.classList.remove('show');}
 
-function tickIdle() {
+function tickIdle(){
   idleTimer++;
-  if (idleTimer >= IDLE_WARNING_SECS) {
-    const remaining = IDLE_FLAG_SECS - idleTimer;
-    if (remaining > 0) {
-      idleCountdown.textContent = remaining;
-      idleBar.classList.add('show');
-    } else {
+  if(idleTimer>=IDLE_WARNING_SECS){
+    const remaining=IDLE_FLAG_SECS-idleTimer;
+    if(remaining>0){idleCountdown.textContent=remaining;idleBar.classList.add('show');}
+    else{
       idleBar.classList.remove('show');
-      if (!idleFlagged && attemptId) {
-        idleFlagged = true;
-        const log = { at: new Date().toISOString(), type: 'idle_flag', idleSeconds: idleTimer };
+      if(!idleFlagged&&attemptId){
+        idleFlagged=true;
+        const log={at:new Date().toISOString(),type:'idle_flag',idleSeconds:idleTimer};
         db.collection('attempts').doc(attemptId).update({
-          idleFlagged: true,
-          flagged: true,
-          [`integrityLog`]: firebase.firestore.FieldValue.arrayUnion(log)
-        }).catch(() => {});
-        Utils.toast('🚨 Your attempt has been flagged: prolonged inactivity detected.', 'error', 8000);
+          idleFlagged:true,flagged:true,
+          [`integrityLog`]:firebase.firestore.FieldValue.arrayUnion(log)
+        }).catch(()=>{});
+        Utils.toast('🚨 Attempt flagged: prolonged inactivity.','error',8000);
       }
     }
   }
 }
 
-// Reset idle on any meaningful interaction
-['mousemove','keydown','mousedown','touchstart','scroll'].forEach(ev =>
-  document.addEventListener(ev, resetIdle, { passive: true })
+['mousemove','keydown','mousedown','touchstart','scroll'].forEach(ev=>
+  document.addEventListener(ev,resetIdle,{passive:true})
 );
 
-// Start idle ticker (starts when exam loads, not before)
-function startProctoring() {
-  // Auto-enter fullscreen on exam start
-  enterFullscreen().catch(() => {});
-  idleInterval = setInterval(tickIdle, 1000);
+function startProctoring(){
+  enterFullscreen().catch(()=>{});
+  idleInterval=setInterval(tickIdle,1000);
 }
-
 </script>
 </body>
 </html>
