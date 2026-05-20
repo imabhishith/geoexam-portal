@@ -4,7 +4,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GATE Geology Exam Portal — Login</title>
+<title>GATE & CSIR-NET Geology Exam Portal — Login</title>
 <link rel="stylesheet" href="css/global.css">
 <style>
   body { background: linear-gradient(135deg, #0f2545 0%, #1a3c6e 50%, #2563ab 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
@@ -22,10 +22,6 @@
   .or-divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: var(--text3); font-size: 13px; }
   .or-divider::before, .or-divider::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
   .info-box { background: #eff6ff; border-left: 3px solid var(--primary); padding: 12px 14px; border-radius: 6px; font-size: 13px; color: var(--primary-dark); margin-bottom: 16px; }
-  .exam-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
-  .stat-item { background: rgba(255,255,255,.1); border-radius: 10px; padding: 12px; text-align: center; border: 1px solid rgba(255,255,255,.2); }
-  .stat-item .val { font-size: 22px; font-weight: 700; color: var(--accent-light); font-family: 'Rajdhani', sans-serif; }
-  .stat-item .lbl { font-size: 11px; color: rgba(255,255,255,.7); }
 </style>
 </head>
 <body>
@@ -34,7 +30,7 @@
   <div class="auth-logo">
     <div class="logo-icon"><i class="fas fa-gem"></i></div>
     <h1>GeoExam Portal</h1>
-    <p>GATE Geology · Computer Based Test</p>
+    <p>GATE Geology · CSIR-NET Geology · CBT Platform</p>
   </div>
   <div class="auth-card">
     <div class="auth-tabs">
@@ -95,11 +91,6 @@
     </div>
   </div>
 
-  <div class="exam-stats">
-    <div class="stat-item"><div class="val">8+</div><div class="lbl">Years PYQs</div></div>
-    <div class="stat-item"><div class="val">500+</div><div class="lbl">Questions</div></div>
-    <div class="stat-item"><div class="val">GATE</div><div class="lbl">Geology</div></div>
-  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -188,34 +179,49 @@ async function doSignup() {
   }
 
   // ── STEP 2: Write Firestore user document ──
-  try {
-    await db.collection('users').doc(cred.user.uid).set({
-      uid:       cred.user.uid,
-      firstName: fname,
-      lastName:  lname,
-      email,
-      mobile,
-      role:      'student',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+  // Force a token refresh first — Firebase Auth token sometimes hasn't
+  // propagated to Firestore yet immediately after account creation,
+  // which causes a false "permission-denied" on the very first write.
+  const userPayload = {
+    uid:       cred.user.uid,
+    firstName: fname,
+    lastName:  lname,
+    email,
+    mobile,
+    role:      'student',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
 
+  const writeUserDoc = async () => {
+    await db.collection('users').doc(cred.user.uid).set(userPayload);
+  };
+
+  try {
+    // Force fresh token so Firestore rules see the correct auth.uid
+    await cred.user.getIdToken(true);
+    await writeUserDoc();
     Utils.toast('Account created! Redirecting…', 'success');
     setTimeout(() => window.location.href = 'pages/dashboard.html', 1200);
-
   } catch(fsErr) {
-    // Auth account was created but Firestore write failed.
-    // This almost always means Firestore rules are not published yet.
-    console.error('Firestore write error:', fsErr);
-
-    let hint = '';
-    if (fsErr.code === 'permission-denied') {
-      hint = 'Firestore rules not published yet. Go to Firebase Console <i class="fas fa-arrow-right"></i> Firestore <i class="fas fa-arrow-right"></i> Rules and publish the rules, then try again.';
-    } else {
-      hint = fsErr.message;
+    console.warn('First Firestore write attempt failed, retrying…', fsErr);
+    // Retry once after a short delay (token propagation lag)
+    try {
+      await new Promise(r => setTimeout(r, 1500));
+      await cred.user.getIdToken(true);
+      await writeUserDoc();
+      Utils.toast('Account created! Redirecting…', 'success');
+      setTimeout(() => window.location.href = 'pages/dashboard.html', 1200);
+    } catch(fsErr2) {
+      console.error('Firestore write failed after retry:', fsErr2);
+      let hint = '';
+      if (fsErr2.code === 'permission-denied') {
+        hint = 'Permission denied. Make sure you have published the Firestore security rules in Firebase Console → Firestore → Rules.';
+      } else {
+        hint = fsErr2.message;
+      }
+      Utils.toast('Account created but profile save failed: ' + hint, 'error', 8000);
+      btn.disabled = false; btn.textContent = 'Create Account';
     }
-
-    Utils.toast('Account created in Auth but profile save failed: ' + hint, 'error', 8000);
-    btn.disabled = false; btn.textContent = 'Create Account';
   }
 }
 
