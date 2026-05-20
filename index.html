@@ -1,281 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoExam Portal — Login & Sign Up</title>
-    <style>
-        :root {
-            --primary: #2b6cb0;
-            --primary-hover: #2c5282;
-            --bg: #f7fafc;
-            --card-bg: #ffffff;
-            --text: #2d3748;
-            --border: #e2e8f0;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            width: 100%;
-            max-width: 450px;
-        }
-        h1 {
-            font-size: 28px;
-            text-align: center;
-            margin-bottom: 5px;
-            color: #1a202c;
-        }
-        .subtitle {
-            text-align: center;
-            color: #718096;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 15px;
-            box-sizing: border-box;
-        }
-        input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background-color: var(--primary-hover);
-        }
-        .toggle-link {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: var(--primary);
-            cursor: pointer;
-        }
-        .toggle-link:hover {
-            text-decoration: underline;
-        }
-        .hidden {
-            display: none;
-        }
-        .error {
-            color: #e53e3e;
-            background: #fff5f5;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            margin-bottom: 15px;
-            border: 1px solid #fed7d7;
-        }
-        .success {
-            color: #38a169;
-            background: #f0fff4;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            margin-bottom: 15px;
-            border: 1px solid #c6f6d5;
-        }
-    </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GATE Geology Exam Portal — Login</title>
+<link rel="stylesheet" href="css/global.css">
+<style>
+  body { background: linear-gradient(135deg, #0f2545 0%, #1a3c6e 50%, #2563ab 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .auth-container { width: 100%; max-width: 440px; padding: 16px; }
+  .auth-logo { text-align: center; margin-bottom: 28px; }
+  .auth-logo .logo-icon { width: 72px; height: 72px; background: rgba(255,255,255,.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 36px; border: 2px solid rgba(255,255,255,.3); }
+  .auth-logo h1 { color: #fff; font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .auth-logo p { color: rgba(255,255,255,.7); font-size: 14px; }
+  .auth-card { background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+  .auth-tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
+  .auth-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s; }
+  .auth-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .auth-form { display: none; }
+  .auth-form.active { display: block; }
+  .or-divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: var(--text3); font-size: 13px; }
+  .or-divider::before, .or-divider::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
+  .info-box { background: #eff6ff; border-left: 3px solid var(--primary); padding: 12px 14px; border-radius: 6px; font-size: 13px; color: var(--primary-dark); margin-bottom: 16px; }
+  .exam-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+  .stat-item { background: rgba(255,255,255,.1); border-radius: 10px; padding: 12px; text-align: center; border: 1px solid rgba(255,255,255,.2); }
+  .stat-item .val { font-size: 22px; font-weight: 700; color: var(--accent-light); font-family: 'Rajdhani', sans-serif; }
+  .stat-item .lbl { font-size: 11px; color: rgba(255,255,255,.7); }
+</style>
 </head>
 <body>
-
-<div class="container">
+<div id="toast-container"></div>
+<div class="auth-container">
+  <div class="auth-logo">
+    <div class="logo-icon"><i class="fas fa-gem"></i></div>
     <h1>GeoExam Portal</h1>
-    <p class="subtitle">GATE Geology · CSIR-NET Geology · CBT Platform</p>
-
-    <!-- Message Alerts -->
-    <div id="errorMessage" class="error hidden"></div>
-    <div id="successMessage" class="success hidden"></div>
+    <p>GATE Geology · Computer Based Test</p>
+  </div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchTab('login')">Login</div>
+      <div class="auth-tab" onclick="switchTab('signup')">Sign Up</div>
+    </div>
 
     <!-- LOGIN FORM -->
-    <form id="loginForm">
-        <div class="form-group">
-            <label for="loginEmail">Email Address</label>
-            <input type="email" id="loginEmail" required placeholder="name@example.com">
-        </div>
-        <div class="form-group">
-            <label for="loginPassword">Password</label>
-            <input type="password" id="loginPassword" required placeholder="••••••••">
-        </div>
-        <button type="submit">Login to Portal</button>
-        <p class="toggle-link" onclick="switchForm('signup')">Don't have an account? Sign Up</p>
-    </form>
+    <div class="auth-form active" id="form-login">
+      <div class="info-box"><i class="fas fa-bullhorn"></i> Use your registered email and password to access the exam portal.</div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="login-email" class="form-control" placeholder="yourname@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" class="form-control" placeholder="Enter your password">
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" onclick="doLogin()" id="btn-login">
+        Login to Portal
+      </button>
+      <div class="text-center mt-2">
+        <a href="#" onclick="forgotPassword()" style="font-size:13px;">Forgot Password?</a>
+      </div>
+    </div>
 
-    <!-- SIGN UP FORM (HIDDEN BY DEFAULT) -->
-    <form id="signupForm" class="hidden">
+    <!-- SIGNUP FORM -->
+    <div class="auth-form" id="form-signup">
+      <div class="grid-2">
         <div class="form-group">
-            <label for="firstName">First Name</label>
-            <input type="text" id="firstName" required placeholder="John">
+          <label>First Name</label>
+          <input type="text" id="signup-fname" class="form-control" placeholder="First Name">
         </div>
         <div class="form-group">
-            <label for="lastName">Last Name</label>
-            <input type="text" id="lastName" required placeholder="Doe">
+          <label>Last Name</label>
+          <input type="text" id="signup-lname" class="form-control" placeholder="Last Name">
         </div>
-        <div class="form-group">
-            <label for="signupEmail">Email Address</label>
-            <input type="email" id="signupEmail" required placeholder="john.doe@example.com">
-        </div>
-        <div class="form-group">
-            <label for="mobileNumber">Mobile Number</label>
-            <input type="tel" id="mobileNumber" required placeholder="9876543210">
-        </div>
-        <div class="form-group">
-            <label for="signupPassword">Password</label>
-            <input type="password" id="signupPassword" required placeholder="Min 6 characters">
-        </div>
-        <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" required placeholder="••••••••">
-        </div>
-        <button type="submit">Create Account</button>
-        <p class="toggle-link" onclick="switchForm('login')">Already registered? Login</p>
-    </form>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="signup-email" class="form-control" placeholder="yourname@example.com">
+      </div>
+      <div class="form-group">
+        <label>Mobile Number</label>
+        <input type="tel" id="signup-mobile" class="form-control" placeholder="10-digit mobile number">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signup-password" class="form-control" placeholder="Minimum 8 characters">
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="signup-confirm" class="form-control" placeholder="Re-enter password">
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" onclick="doSignup()" id="btn-signup">
+        Create Account
+      </button>
+    </div>
+  </div>
+
+  <div class="exam-stats">
+    <div class="stat-item"><div class="val">8+</div><div class="lbl">Years PYQs</div></div>
+    <div class="stat-item"><div class="val">500+</div><div class="lbl">Questions</div></div>
+    <div class="stat-item"><div class="val">GATE</div><div class="lbl">Geology</div></div>
+  </div>
 </div>
 
-<!-- FIREBASE INTEGRATION SCRIPT -->
-<script type="module">
-    // Import essential Firebase SDK modules
-    import { initializeApp } from "https://gstatic.com";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://gstatic.com";
-    import { getFirestore, doc, setDoc } from "https://gstatic.com";
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
 
-    // ⚠️ REPLACE THIS CONFIG OBJECT WITH YOUR ACTUAL FIREBASE DETAILS FROM CONSOLE
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT_://firebaseapp.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_://appspot.com",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID"
-    };
+// ── Tab switcher ──────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) =>
+    t.classList.toggle('active', (tab === 'login' ? 0 : 1) === i));
+  document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+  document.getElementById(`form-${tab}`).classList.add('active');
+}
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+// ── Login ─────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  if (!email || !pass) { Utils.toast('Please fill all fields', 'error'); return; }
 
-    // UI Switching Mechanics
-    window.switchForm = function(view) {
-        clearAlerts();
-        if (view === 'signup') {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('signupForm').classList.remove('hidden');
-        } else {
-            document.getElementById('signupForm').classList.add('hidden');
-            document.getElementById('loginForm').classList.remove('hidden');
-        }
-    };
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = 'Logging in…';
 
-    function showAlert(id, msg) {
-        const el = document.getElementById(id);
-        el.innerText = msg;
-        el.classList.remove('hidden');
+  try {
+    const cred    = await auth.signInWithEmailAndPassword(email, pass);
+    const uid     = cred.user.uid;
+    const userDoc = await db.collection('users').doc(uid).get();
+
+    // If Firestore doc is missing (edge-case for old accounts), create it now
+    if (!userDoc.exists) {
+      await db.collection('users').doc(uid).set({
+        uid,
+        firstName: cred.user.displayName ? cred.user.displayName.split(' ')[0] : '',
+        lastName:  cred.user.displayName ? cred.user.displayName.split(' ').slice(1).join(' ') : '',
+        email:     cred.user.email,
+        mobile:    '',
+        role:      'student',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      window.location.href = 'pages/dashboard.html';
+      return;
     }
 
-    function clearAlerts() {
-        document.getElementById('errorMessage').classList.add('hidden');
-        document.getElementById('successMessage').classList.add('hidden');
+    if (userDoc.data().role === 'admin') {
+      window.location.href = 'admin/index.html';
+    } else {
+      window.location.href = 'pages/dashboard.html';
+    }
+  } catch(e) {
+    console.error('Login error:', e);
+    Utils.toast(friendlyError(e.code, e.message), 'error');
+    btn.disabled = false; btn.textContent = 'Login to Portal';
+  }
+}
+
+// ── Sign-up ───────────────────────────────────────────────────
+async function doSignup() {
+  const fname  = document.getElementById('signup-fname').value.trim();
+  const lname  = document.getElementById('signup-lname').value.trim();
+  const email  = document.getElementById('signup-email').value.trim();
+  const mobile = document.getElementById('signup-mobile').value.trim();
+  const pass   = document.getElementById('signup-password').value;
+  const conf   = document.getElementById('signup-confirm').value;
+
+  if (!fname || !lname || !email || !pass || !conf) {
+    Utils.toast('Please fill all fields', 'error'); return;
+  }
+  if (pass !== conf)    { Utils.toast('Passwords do not match', 'error'); return; }
+  if (pass.length < 8)  { Utils.toast('Password must be at least 8 characters', 'error'); return; }
+
+  const btn = document.getElementById('btn-signup');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+
+  // ── STEP 1: Create Firebase Auth account ──
+  let cred;
+  try {
+    cred = await auth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({ displayName: `${fname} ${lname}` });
+  } catch(authErr) {
+    console.error('Auth error:', authErr);
+    Utils.toast(friendlyError(authErr.code, authErr.message), 'error');
+    btn.disabled = false; btn.textContent = 'Create Account';
+    return;
+  }
+
+  // ── STEP 2: Write Firestore user document ──
+  try {
+    await db.collection('users').doc(cred.user.uid).set({
+      uid:       cred.user.uid,
+      firstName: fname,
+      lastName:  lname,
+      email,
+      mobile,
+      role:      'student',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    Utils.toast('Account created! Redirecting…', 'success');
+    setTimeout(() => window.location.href = 'pages/dashboard.html', 1200);
+
+  } catch(fsErr) {
+    // Auth account was created but Firestore write failed.
+    // This almost always means Firestore rules are not published yet.
+    console.error('Firestore write error:', fsErr);
+
+    let hint = '';
+    if (fsErr.code === 'permission-denied') {
+      hint = 'Firestore rules not published yet. Go to Firebase Console <i class="fas fa-arrow-right"></i> Firestore <i class="fas fa-arrow-right"></i> Rules and publish the rules, then try again.';
+    } else {
+      hint = fsErr.message;
     }
 
-    // --- SUBMIT REGISTRATION (SIGN UP) ---
-    document.getElementById('signupForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearAlerts();
+    Utils.toast('Account created in Auth but profile save failed: ' + hint, 'error', 8000);
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+}
 
-        const firstName = document.getElementById('firstName').value;
-        const lastName = document.getElementById('lastName').value;
-        const email = document.getElementById('signupEmail').value;
-        const mobileNumber = document.getElementById('mobileNumber').value;
-        const password = document.getElementById('signupPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
+// ── Forgot password ───────────────────────────────────────────
+async function forgotPassword() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { Utils.toast('Enter your email address first', 'warning'); return; }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    Utils.toast('Password reset email sent!', 'success');
+  } catch(e) {
+    Utils.toast(friendlyError(e.code, e.message), 'error');
+  }
+}
 
-        if (password !== confirmPassword) {
-            showAlert('errorMessage', "Passwords do not match!");
-            return;
-        }
+// ── Friendly error messages ───────────────────────────────────
+function friendlyError(code, fallback) {
+  const map = {
+    'auth/user-not-found':       'No account found with this email.',
+    'auth/wrong-password':       'Incorrect password. Please try again.',
+    'auth/invalid-email':        'Invalid email address.',
+    'auth/email-already-in-use': 'An account with this email already exists.',
+    'auth/weak-password':        'Password is too weak. Use at least 8 characters.',
+    'auth/too-many-requests':    'Too many attempts. Please wait a moment and try again.',
+    'auth/network-request-failed': 'Network error. Check your internet connection.',
+    'permission-denied':         'Firestore permission denied. Please publish Firestore security rules in Firebase Console.',
+  };
+  return map[code] || fallback;
+}
 
-        try {
-            // 1. Create Identity inside Firebase Auth
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            // 2. CRITICAL FIX: Explicitly create profile document targeting /users/{userId} 
-            // using .uid as the explicit key to pass Firestore Rules check.
-            await setDoc(doc(db, "users", user.uid), {
-                userId: user.uid,
-                firstName: firstName,
-                lastName: lastName,
-                email: email.toLowerCase().trim(),
-                mobileNumber: mobileNumber,
-                role: "student", // Matches validation condition
-                createdAt: new Date().toISOString()
-            });
-
-            showAlert('successMessage', "Account registered completely! Redirecting...");
-            document.getElementById('signupForm').reset();
-            
-            // Redirect down to dashboard destination after 1.5 seconds
-            setTimeout(() => { window.location.href = "/dashboard.html"; }, 1500);
-
-        } catch (error) {
-            showAlert('errorMessage', "Registration Failed: " + error.message);
-        }
-    });
-
-    // --- SUBMIT AUTHENTICATION (LOGIN) ---
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearAlerts();
-
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            showAlert('successMessage', "Success! Logging in...");
-            setTimeout(() => { window.location.href = "/dashboard.html"; }, 1000);
-        } catch (error) {
-            showAlert('errorMessage', "Login Error: " + error.message);
-        }
-    });
+// ── Auto-redirect if already logged in ───────────────────────
+auth.onAuthStateChanged(async user => {
+  if (!user) return;
+  try {
+    const doc = await db.collection('users').doc(user.uid).get();
+    if (doc.exists && doc.data().role === 'admin') {
+      window.location.href = 'admin/index.html';
+    } else {
+      window.location.href = 'pages/dashboard.html';
+    }
+  } catch(e) {
+    // If Firestore is unreachable at this point, just go to dashboard
+    console.warn('onAuthStateChanged Firestore read failed:', e);
+    window.location.href = 'pages/dashboard.html';
+  }
+});
 </script>
-
 </body>
 </html>
