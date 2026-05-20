@@ -82,6 +82,12 @@
         <span class="icon"><i class="fas fa-users"></i></span> Users
       </button>
     </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Tools</div>
+      <button class="admin-nav-link" onclick="showPanel('revaluation')" data-panel="revaluation">
+        <span class="icon"><i class="fas fa-sync-alt"></i></span> Revaluation
+      </button>
+    </div>
   </div>
   <div class="admin-footer">
     <button class="admin-nav-link" onclick="doLogout()" style="color:rgba(255,100,100,.9)">
@@ -363,6 +369,148 @@
             <tbody id="users-tbody"><tr><td colspan="6" class="text-center text-muted">Loading…</td></tr></tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- REVALUATION CENTRE -->
+    <div id="panel-revaluation" class="admin-panel">
+      <style>
+        /* ── Reval panel styles ── */
+        .reval-layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
+        .reval-exam-card {
+          padding: 12px 14px; border: 2px solid var(--border); border-radius: 8px;
+          cursor: pointer; margin-bottom: 8px; transition: all .18s; background: var(--surface);
+        }
+        .reval-exam-card:hover { border-color: var(--primary-light); background: #eff6ff; }
+        .reval-exam-card.selected { border-color: var(--primary); background: #dbeafe; }
+        .reval-stat-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+        .reval-chip { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 700; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+        .reval-prog-bar { background: var(--bg); border-radius: 6px; overflow: hidden; height: 10px; margin-bottom: 8px; }
+        .reval-prog-fill { height: 100%; background: var(--primary); transition: width .3s; width: 0%; }
+        .delta-up   { color: var(--success); font-weight:700; }
+        .delta-down { color: var(--danger);  font-weight:700; }
+        .delta-same { color: var(--text2);   font-weight:700; }
+        .reval-warn-box {
+          background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px;
+          padding: 12px 16px; font-size: 13px; color: #92400e;
+          display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px;
+        }
+        .rank-badge { display: inline-flex; align-items:center; justify-content:center; width:30px;height:30px;border-radius:50%;font-weight:800;font-size:12px;color:#fff; }
+        .rank-1 { background: #f59e0b; }
+        .rank-2 { background: #9ca3af; }
+        .rank-3 { background: #b45309; }
+        .rank-n { background: var(--primary); }
+      </style>
+
+      <div class="reval-warn-box">
+        <i class="fas fa-exclamation-triangle" style="font-size:16px;margin-top:1px;"></i>
+        <div>
+          <strong>How Revaluation Works:</strong> Revaluation re-scores each submitted attempt using the
+          <em>current</em> correct answers stored in the Question Bank. If you changed a question's correct answer
+          after the exam was submitted, run revaluation to update all scores, results, and ranks automatically.
+        </div>
+      </div>
+
+      <div class="reval-layout">
+
+        <!-- LEFT: Exam Selector -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h3 style="font-size:14px;"><i class="fas fa-file-alt"></i> Select Exam</h3>
+            </div>
+            <div class="card-body" style="padding:12px;max-height:500px;overflow-y:auto;">
+              <div id="reval-exam-list"><p class="text-muted text-small">Loading exams…</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Attempts + Actions -->
+        <div>
+          <!-- Actions bar -->
+          <div id="reval-attempts-section" style="display:none;">
+            <div class="card" style="margin-bottom:16px;">
+              <div class="card-header" style="flex-wrap:wrap;gap:10px;">
+                <div>
+                  <h3 style="font-size:15px;" id="reval-exam-name">—</h3>
+                  <span style="font-size:12px;color:var(--text2);" id="reval-count">0 attempts</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                  <button class="btn btn-outline btn-sm" onclick="clearRevalLog()">
+                    <i class="fas fa-trash"></i> Clear Log
+                  </button>
+                  <button class="btn btn-primary" id="reval-bulk-btn" onclick="revaluateAll()" disabled>
+                    <i class="fas fa-sync-alt"></i> Revaluate All Attempts
+                  </button>
+                </div>
+              </div>
+
+              <!-- Progress bar (hidden until bulk starts) -->
+              <div id="reval-progress" style="display:none;padding:0 20px 16px;">
+                <div class="reval-prog-bar">
+                  <div class="reval-prog-fill" id="reval-prog-fill"></div>
+                </div>
+                <div style="font-size:12px;color:var(--text2);text-align:center;" id="reval-prog-text">Starting…</div>
+              </div>
+            </div>
+
+            <!-- Attempts table -->
+            <div class="card" style="margin-bottom:16px;">
+              <div class="card-header"><h3 style="font-size:14px;"><i class="fas fa-list"></i> Submitted Attempts</h3></div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Candidate</th>
+                      <th>Score</th>
+                      <th>Max</th>
+                      <th style="text-align:center;">Rank</th>
+                      <th>Submitted</th>
+                      <th>Last Revaluated</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reval-attempts-tbody">
+                    <tr><td colspan="7" class="text-center text-muted">Select an exam to begin.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Revaluation Log (shown after a run) -->
+          <div id="reval-log-section" style="display:none;">
+            <div class="card">
+              <div class="card-header">
+                <h3 style="font-size:14px;"><i class="fas fa-clipboard-list"></i> Revaluation Log</h3>
+                <span class="badge badge-muted">This session only</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Candidate</th>
+                      <th>Old Score</th>
+                      <th>New Score</th>
+                      <th>Change</th>
+                      <th>New Rank</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reval-log-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state when no exam selected -->
+          <div id="reval-empty-state" style="text-align:center;padding:60px 20px;color:var(--text3);">
+            <div style="font-size:48px;margin-bottom:16px;"><i class="fas fa-sync-alt"></i></div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Select an exam to begin</div>
+            <div style="font-size:13px;">Choose an exam from the left panel to view its attempts and run revaluation.</div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
