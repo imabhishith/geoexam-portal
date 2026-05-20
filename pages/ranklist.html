@@ -8,27 +8,35 @@
 <style>
   .page-content { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
   .rank-header { background: linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%); color:#fff; border-radius:var(--radius-lg); padding:24px; margin-bottom:24px; }
-  .top3-row { display:grid; grid-template-columns:1fr 1.2fr 1fr; gap:16px; margin-bottom:24px; }
+  .top3-row { display:grid; grid-template-columns:1fr 1.2fr 1fr; gap:16px; margin-bottom:24px; align-items:flex-end; }
   .top-card { background:var(--surface); border-radius:var(--radius-lg); padding:20px; text-align:center; border:2px solid var(--border); position:relative; }
   .top-card.gold   { border-color:#f59e0b; }
   .top-card.silver { border-color:#94a3b8; }
   .top-card.bronze { border-color:#cd7c2f; }
-  .medal { font-size:40px; }
-  .rank-badge { position:absolute; top:-14px; left:50%; transform:translateX(-50%); background:#f59e0b; color:#fff; width:28px; height:28px; border-radius:50%; display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px; }
-  .top-name { font-size:15px; font-weight:700; margin:8px 0 4px; }
+  .medal { font-size:40px; margin-bottom:8px; }
+  .rank-badge { position:absolute; top:-14px; left:50%; transform:translateX(-50%); width:28px; height:28px; border-radius:50%; display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff; }
+  .rb-gold   { background:#f59e0b; }
+  .rb-silver { background:#94a3b8; }
+  .rb-bronze { background:#cd7c2f; }
+  .top-name { font-size:15px; font-weight:700; margin:4px 0; }
   .top-score { font-size:24px; font-weight:800; font-family:'Rajdhani'; color:var(--primary); }
   .rank-row { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:8px; transition:box-shadow .2s; }
   .rank-row:hover { box-shadow:var(--shadow); }
   .rank-row.my-row { background:#eff6ff; border-color:var(--primary); }
-  .rank-num { width:36px; font-size:16px; font-weight:800; font-family:'Rajdhani'; color:var(--text2); text-align:center; }
+  .rank-num { width:36px; font-size:16px; font-weight:800; font-family:'Rajdhani'; color:var(--text2); text-align:center; flex-shrink:0; }
   .rank-av  { width:38px; height:38px; border-radius:50%; background:var(--primary); color:#fff; display:flex;align-items:center;justify-content:center;font-weight:700; flex-shrink:0; }
-  .rank-info { flex:1; }
-  .rank-info .name { font-weight:700; font-size:15px; }
+  .rank-info { flex:1; min-width:0; }
+  .rank-info .name { font-weight:700; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .rank-info .sub  { font-size:12px; color:var(--text2); }
   .rank-score { font-size:18px; font-weight:800; font-family:'Rajdhani'; color:var(--primary); min-width:80px; text-align:right; }
   .rank-pct   { font-size:13px; color:var(--text2); min-width:50px; text-align:right; }
-  .exam-sel   { display:flex; gap:10px; align-items:center; }
-  select.exam-picker { font-size:15px; padding:8px 12px; border-radius:8px; border:2px solid var(--border); }
+  .exam-sel   { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  select.exam-picker { font-size:15px; padding:8px 12px; border-radius:8px; border:2px solid rgba(255,255,255,.4); background:rgba(255,255,255,.15); color:#fff; }
+  select.exam-picker option { color: var(--text); background: var(--surface); }
+  .empty-state { text-align:center; padding:48px 24px; color:var(--text2); }
+  .empty-state .icon { font-size:48px; margin-bottom:16px; }
+  .my-rank-highlight { background: linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%); color:#fff; border-radius:var(--radius-lg); padding:16px 20px; margin-bottom:20px; display:flex; align-items:center; gap:16px; }
+  .my-rank-num { font-size:48px; font-weight:800; font-family:'Rajdhani'; }
 </style>
 </head>
 <body>
@@ -39,6 +47,7 @@
   </div>
   <div class="navbar-nav">
     <a href="dashboard.html" class="nav-link">← Dashboard</a>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,.8)">Logout</button>
   </div>
 </nav>
 
@@ -54,7 +63,10 @@
   </div>
 
   <div id="rank-content">
-    <div class="loading-screen" style="min-height:200px;"><div class="spinner"></div><p>Select an exam to view ranklist</p></div>
+    <div class="empty-state">
+      <div class="icon">📋</div>
+      <p>Select an exam above to view its ranklist.</p>
+    </div>
   </div>
 </div>
 
@@ -65,91 +77,180 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="../js/firebase-config.js"></script>
 <script>
-let currentUser=null;
-const params=new URLSearchParams(location.search);
+let currentUser = null;
+const params = new URLSearchParams(location.search);
 
-auth.onAuthStateChanged(async user=>{
-  if(!user){window.location.href='../index.html';return;}
-  currentUser=user;
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = '../index.html'; return; }
+  currentUser = user;
   await loadExams();
-  const eid=params.get('examId');
-  if(eid){ document.getElementById('exam-picker').value=eid; loadRanklist(); }
+  const eid = params.get('examId');
+  if (eid) {
+    document.getElementById('exam-picker').value = eid;
+    loadRanklist();
+  }
 });
 
-async function loadExams(){
-  const snap=await db.collection('exams').where('published','==',true).get();
-  const sel=document.getElementById('exam-picker');
-  snap.forEach(d=>{ const o=document.createElement('option'); o.value=d.id; o.textContent=d.data().title; sel.appendChild(o); });
+async function loadExams() {
+  try {
+    const snap = await db.collection('exams').where('published', '==', true).get();
+    const sel = document.getElementById('exam-picker');
+    snap.forEach(d => {
+      const o = document.createElement('option');
+      o.value = d.id;
+      o.textContent = d.data().title;
+      sel.appendChild(o);
+    });
+  } catch(e) {
+    Utils.toast('Error loading exams: ' + e.message, 'error');
+  }
 }
 
-async function loadRanklist(){
-  const examId=document.getElementById('exam-picker').value;
-  const cont=document.getElementById('rank-content');
-  if(!examId){cont.innerHTML='<div class="empty-state"><div class="icon">📋</div><p>Please select an exam.</p></div>';return;}
-  cont.innerHTML='<div class="loading-screen" style="min-height:200px;"><div class="spinner"></div><p>Loading ranklist…</p></div>';
-  try{
-    const snap=await db.collection('attempts')
-      .where('examId','==',examId)
-      .where('status','==','submitted')
-      .orderBy('totalScore','desc')
-      .get();
-    if(snap.empty){cont.innerHTML='<div class="empty-state"><div class="icon">📭</div><p>No attempts yet for this exam.</p></div>';return;}
-    const docs=snap.docs;
-    const maxScore=docs[0]?.data()?.maxScore||100;
-    // Load user names
-    const userIds=[...new Set(docs.map(d=>d.data().userId))];
-    const userMap={};
-    await Promise.all(userIds.map(async uid=>{
-      const ud=await db.collection('users').doc(uid).get();
-      userMap[uid]=ud.data();
-    }));
+async function loadRanklist() {
+  const examId = document.getElementById('exam-picker').value;
+  const cont = document.getElementById('rank-content');
+  if (!examId) {
+    cont.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>Please select an exam.</p></div>';
+    return;
+  }
+  cont.innerHTML = '<div class="loading-screen" style="min-height:200px;"><div class="spinner"></div><p>Loading ranklist…</p></div>';
 
-    // Top 3
-    let html='';
-    const top3=docs.slice(0,3);
-    if(top3.length>=1){
-      html+=`<div class="top3-row">`;
-      const medals=[{cls:'gold',emoji:'🥇',rb:'#f59e0b'},{cls:'gold',emoji:'🥇',rb:'#f59e0b'},{cls:'gold',emoji:'🥇',rb:'#f59e0b'}];
-      const orderedDisplay=top3.length>=3?[top3[1],top3[0],top3[2]]:top3;
-      const rankDisplayNums=top3.length>=3?[2,1,3]:[1,2,3];
-      const emojiArr=['🥈','🥇','🥉'];
-      orderedDisplay.forEach((doc,di)=>{
-        const a=doc.data(); const u=userMap[a.userId]||{};
-        const rn=rankDisplayNums[di];
-        const em=emojiArr[di];
-        html+=`<div class="top-card ${rn===1?'gold':rn===2?'silver':'bronze'}">
-          <div class="rank-badge">${rn}</div>
-          <div class="medal">${em}</div>
-          <div class="top-name">${u.firstName||'Student'} ${u.lastName||''}</div>
-          <div class="top-score">${(a.totalScore||0).toFixed(2)}</div>
-          <div style="font-size:12px;color:var(--text2);">/ ${a.maxScore||maxScore}</div>
-          ${a.userId===currentUser.uid?'<div style="margin-top:8px;"><span class="badge badge-primary">You</span></div>':''}
-        </div>`;
-      });
-      html+=`</div>`;
+  try {
+    // ── FIX: Only filter by examId + status (2 fields = no composite index needed).
+    // We do NOT use orderBy here because examId+status+orderBy requires a composite
+    // index that may not exist. Instead we sort client-side after fetching.
+    const snap = await db.collection('attempts')
+      .where('examId', '==', examId)
+      .where('status', '==', 'submitted')
+      .get();
+
+    if (snap.empty) {
+      cont.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No submissions yet for this exam. Be the first to attempt it!</p></div>';
+      return;
     }
 
-    // Full list
-    html+=`<div class="card"><div class="card-header"><h3 style="font-size:16px">Complete Ranklist</h3><span class="badge badge-muted">${docs.length} candidates</span></div><div class="card-body" style="padding:16px;">`;
-    docs.forEach((doc,i)=>{
-      const a=doc.data(); const u=userMap[a.userId]||{};
-      const isMe=a.userId===currentUser.uid;
-      const pct=a.maxScore>0?((a.totalScore/a.maxScore)*100).toFixed(1):'—';
-      const name=`${u.firstName||'Student'} ${(u.lastName||'')[0]||''}.`;
-      html+=`<div class="rank-row ${isMe?'my-row':''}">
-        <div class="rank-num">#${i+1}</div>
-        <div class="rank-av">${(u.firstName||'S')[0]}</div>
-        <div class="rank-info">
-          <div class="name">${name} ${isMe?'<span class="badge badge-primary">You</span>':''}</div>
-          <div class="sub">Correct: ${a.correct||0} | Wrong: ${a.wrong||0} | Partial: ${a.partial||0}</div>
+    // Sort by totalScore descending (client-side — avoids composite index)
+    const docs = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0));
+
+    // Batch-fetch user names (only unique userIds)
+    const userIds = [...new Set(docs.map(d => d.userId))];
+    const userMap = {};
+    await Promise.all(userIds.map(async uid => {
+      try {
+        const ud = await db.collection('users').doc(uid).get();
+        userMap[uid] = ud.exists ? ud.data() : {};
+      } catch(e) {
+        userMap[uid] = {};
+      }
+    }));
+
+    // Find current user's rank
+    const myIdx = docs.findIndex(d => d.userId === currentUser.uid);
+    const myRank = myIdx >= 0 ? myIdx + 1 : null;
+
+    let html = '';
+
+    // ── My Rank Banner (if user attempted this exam) ──
+    if (myRank) {
+      const myAttempt = docs[myIdx];
+      const myPct = myAttempt.maxScore > 0
+        ? ((myAttempt.totalScore / myAttempt.maxScore) * 100).toFixed(1)
+        : '0.0';
+      const percentile = docs.length > 1
+        ? (((docs.length - myRank) / (docs.length - 1)) * 100).toFixed(1)
+        : '100.0';
+      html += `<div class="my-rank-highlight">
+        <div class="my-rank-num">#${myRank}</div>
+        <div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:4px;">Your Rank</div>
+          <div style="opacity:.85;font-size:14px;">Score: ${(myAttempt.totalScore||0).toFixed(2)} / ${myAttempt.maxScore||0} · ${myPct}%</div>
+          <div style="opacity:.75;font-size:13px;margin-top:2px;">Percentile: ${percentile}% · out of ${docs.length} candidates</div>
         </div>
-        <div class="rank-score">${(a.totalScore||0).toFixed(2)}</div>
+      </div>`;
+    }
+
+    // ── Top 3 Podium ──
+    if (docs.length >= 1) {
+      const top3 = docs.slice(0, Math.min(3, docs.length));
+      // Display order: 2nd, 1st, 3rd (classic podium)
+      const podiumOrder = top3.length === 3
+        ? [top3[1], top3[0], top3[2]]
+        : top3.length === 2
+        ? [top3[1], top3[0]]
+        : [top3[0]];
+      const podiumRanks  = top3.length === 3 ? [2, 1, 3] : top3.length === 2 ? [2, 1] : [1];
+      const podiumStyles = top3.length === 3
+        ? ['silver', 'gold', 'bronze']
+        : top3.length === 2 ? ['silver', 'gold'] : ['gold'];
+      const medals  = top3.length === 3 ? ['🥈', '🥇', '🥉'] : top3.length === 2 ? ['🥈', '🥇'] : ['🥇'];
+      const rbClass = top3.length === 3 ? ['rb-silver','rb-gold','rb-bronze'] : top3.length === 2 ? ['rb-silver','rb-gold'] : ['rb-gold'];
+
+      html += `<div class="top3-row" style="grid-template-columns:${top3.length === 1 ? '1fr' : top3.length === 2 ? '1fr 1.2fr' : '1fr 1.2fr 1fr'}">`;
+      podiumOrder.forEach((attempt, di) => {
+        const u = userMap[attempt.userId] || {};
+        const rn = podiumRanks[di];
+        const fullName = `${u.firstName || 'Student'} ${u.lastName || ''}`.trim();
+        const isMe = attempt.userId === currentUser.uid;
+        html += `<div class="top-card ${podiumStyles[di]}">
+          <div class="rank-badge ${rbClass[di]}">${rn}</div>
+          <div class="medal">${medals[di]}</div>
+          <div class="top-name">${fullName}${isMe ? ' <span class="badge badge-primary">You</span>' : ''}</div>
+          <div class="top-score">${(attempt.totalScore || 0).toFixed(2)}</div>
+          <div style="font-size:12px;color:var(--text2);">/ ${attempt.maxScore || 0}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // ── Full List ──
+    html += `<div class="card">
+      <div class="card-header">
+        <h3 style="font-size:16px">Complete Ranklist</h3>
+        <span class="badge badge-muted">${docs.length} candidate${docs.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="card-body" style="padding:16px;">`;
+
+    docs.forEach((attempt, i) => {
+      const u = userMap[attempt.userId] || {};
+      const isMe = attempt.userId === currentUser.uid;
+      const pct = attempt.maxScore > 0
+        ? ((attempt.totalScore / attempt.maxScore) * 100).toFixed(1)
+        : '0.0';
+      // Show first name + last initial for privacy
+      const displayName = u.firstName
+        ? `${u.firstName} ${u.lastName ? u.lastName[0] + '.' : ''}`.trim()
+        : 'Student';
+
+      html += `<div class="rank-row ${isMe ? 'my-row' : ''}">
+        <div class="rank-num">#${i + 1}</div>
+        <div class="rank-av">${(u.firstName || 'S')[0].toUpperCase()}</div>
+        <div class="rank-info">
+          <div class="name">${displayName} ${isMe ? '<span class="badge badge-primary">You</span>' : ''}</div>
+          <div class="sub">✅ ${attempt.correct || 0} Correct &nbsp;|&nbsp; ❌ ${attempt.wrong || 0} Wrong &nbsp;|&nbsp; ⚡ ${attempt.partial || 0} Partial</div>
+        </div>
+        <div class="rank-score">${(attempt.totalScore || 0).toFixed(2)}</div>
         <div class="rank-pct">${pct}%</div>
       </div>`;
     });
-    html+=`</div></div>`;
-    cont.innerHTML=html;
-  }catch(e){cont.innerHTML=`<div class="empty-state"><div class="icon">⚠️</div><p>Error: ${e.message}</p></div>`;}
+
+    html += `</div></div>`;
+    cont.innerHTML = html;
+
+  } catch(e) {
+    console.error('Ranklist error:', e);
+    let msg = e.message;
+    if (e.code === 'permission-denied') {
+      msg = 'Permission denied. Make sure you have published the updated Firestore security rules (firestore.rules) in Firebase Console → Firestore → Rules.';
+    }
+    cont.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p style="color:var(--danger);font-weight:600;">Error loading ranklist</p><p style="font-size:13px;margin-top:8px;">${msg}</p></div>`;
+  }
+}
+
+async function doLogout() {
+  await auth.signOut();
+  window.location.href = '../index.html';
 }
 </script>
 </body>
