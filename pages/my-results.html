@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Results — GeoExam Portal</title>
@@ -39,7 +40,7 @@
 <body>
 <nav class="navbar">
   <div class="navbar-brand">
-    <span style="font-size:28px;">🪨</span>
+    <span style="font-size:28px;"><i class="fas fa-gem"></i></span>
     <div><h1>GeoExam Portal</h1><span>GATE Geology · CBT Platform</span></div>
   </div>
   <div class="navbar-nav">
@@ -52,7 +53,7 @@
 
 <div class="page-content">
   <div class="page-header">
-    <h1>📊 My Results</h1>
+    <h1><i class="fas fa-chart-bar"></i> My Results</h1>
     <p>All your exam attempts and performance analysis.</p>
   </div>
 
@@ -137,7 +138,7 @@ async function loadResults() {
     applyFilter();
   } catch(e) {
     document.getElementById('results-grid').innerHTML =
-      `<div class="empty-state" style="grid-column:1/-1"><div class="icon">⚠️</div><h3>Error loading results</h3><p>${e.message}</p></div>`;
+      `<div class="empty-state" style="grid-column:1/-1"><div class="icon"><i class="fas fa-exclamation-triangle"></i></div><h3>Error loading results</h3><p>${e.message}</p></div>`;
   }
 }
 
@@ -162,10 +163,10 @@ function renderResults(list) {
   const grid = document.getElementById('results-grid');
   if (!list.length) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
-      <div class="icon">📭</div>
+      <div class="icon"><i class="fas fa-inbox"></i></div>
       <h3>No exam attempts yet</h3>
       <p>Head to the dashboard and take your first exam!</p>
-      <a href="dashboard.html" class="btn btn-primary mt-2">Go to Dashboard →</a>
+      <a href="dashboard.html" class="btn btn-primary mt-2">Go to Dashboard <i class="fas fa-arrow-right"></i></a>
     </div>`;
     return;
   }
@@ -188,7 +189,7 @@ function renderResults(list) {
     return `<div class="result-card">
       <div class="result-card-header">
         <h3 title="${a.examTitle||'Exam'}">${a.examTitle||'Exam'}</h3>
-        <div class="date">📅 ${date}</div>
+        <div class="date"><i class="fas fa-calendar-alt"></i> ${date}</div>
       </div>
       <div class="result-card-body">
         <div class="score-row">
@@ -202,16 +203,16 @@ function renderResults(list) {
           <div class="prog-fill" style="width:${pct}%;background:${color}"></div>
         </div>
         <div class="mini-stats">
-          <div class="mini-stat" style="color:var(--success)">✅ ${correct} Correct</div>
-          <div class="mini-stat" style="color:var(--danger)">❌ ${wrong} Wrong</div>
-          <div class="mini-stat" style="color:var(--warning)">⚡ ${partial} Partial</div>
-          <div class="mini-stat" style="color:var(--text3)">⬜ ${skipped} Skip</div>
+          <div class="mini-stat" style="color:var(--success)"><i class="fas fa-check-circle"></i> ${correct} Correct</div>
+          <div class="mini-stat" style="color:var(--danger)"><i class="fas fa-times-circle"></i> ${wrong} Wrong</div>
+          <div class="mini-stat" style="color:var(--warning)"><i class="fas fa-bolt"></i> ${partial} Partial</div>
+          <div class="mini-stat" style="color:var(--text3)"><i class="far fa-square"></i> ${skipped} Skip</div>
         </div>
         <div style="font-size:12px;color:var(--text2);">Accuracy: <strong>${acc}%</strong></div>
       </div>
       <div class="result-card-footer">
-        <a href="result.html?id=${a.id}" class="btn btn-primary btn-sm">📊 View Analysis</a>
-        <a href="ranklist.html?examId=${a.examId}" class="btn btn-outline btn-sm">🏆 Ranklist</a>
+        <a href="result.html?id=${a.id}" class="btn btn-primary btn-sm"><i class="fas fa-chart-bar"></i> View Analysis</a>
+        <a href="ranklist.html?examId=${a.examId}" class="btn btn-outline btn-sm"><i class="fas fa-trophy"></i> Ranklist</a>
       </div>
     </div>`;
   }).join('');
