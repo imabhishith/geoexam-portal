@@ -4,7 +4,24 @@ A complete **Computer-Based Test (CBT) portal** modelled on the NTA JEE interfac
 
 ---
 
-## 📁 Project Structure
+## 💰 100% Free — No Firebase Storage Used
+
+Images are handled in two free ways:
+1. **Upload JPEG/PNG** → automatically resized and converted to base64, stored directly inside the Firestore document (no Storage bucket needed)
+2. **Paste an image URL** → any publicly hosted image URL (Google Drive, Imgur, your own host) is stored as a string
+
+**Firestore free tier limits** (Spark plan — always free):
+| Resource | Free limit |
+|----------|-----------|
+| Stored data | 1 GiB |
+| Document reads | 50,000 / day |
+| Document writes | 20,000 / day |
+| Document deletes | 20,000 / day |
+| Network egress | 10 GiB / month |
+
+> 💡 **Image size tip:** Each Firestore document is limited to **1 MB**. The portal auto-resizes uploaded images to max 900×900px at 82% JPEG quality, which typically produces files of 50–150 KB — well within limits. For very large diagrams, use the **URL** option instead (host the image on Imgur or Google Drive).
+
+---
 
 ```
 exam-portal/
@@ -56,9 +73,7 @@ Inside your Firebase project:
 2. Click **"Create database"**
 3. Choose **Production mode** → Select your region → Done
 
-#### Storage
-1. Left sidebar → **Build → Storage**
-2. Click **"Get started"** → Production mode → Choose region → Done
+> ✅ That's all you need! **No Storage setup required** — images are stored free inside Firestore.
 
 ---
 
@@ -75,9 +90,9 @@ const firebaseConfig = {
   apiKey:            "YOUR_ACTUAL_API_KEY",
   authDomain:        "your-project.firebaseapp.com",
   projectId:         "your-project-id",
-  storageBucket:     "your-project.appspot.com",
   messagingSenderId: "123456789",
   appId:             "1:123456789:web:abcdef"
+  // No storageBucket — Storage is NOT used (keeps it free!)
 };
 ```
 

@@ -58,26 +58,8 @@ service cloud.firestore {
 }
 
 // ============================================================
-// FIREBASE STORAGE RULES
-// Copy this into Firebase Console → Storage → Rules
+// FIREBASE STORAGE RULES — NOT NEEDED
+// This portal does NOT use Firebase Storage (100% free).
+// Images are stored as base64 inside Firestore documents.
+// You do not need to configure Storage at all.
 // ============================================================
-//
-// rules_version = '2';
-// service firebase.storage {
-//   match /b/{bucket}/o {
-//     match /questions/{allPaths=**} {
-//       allow read: if request.auth != null;
-//       allow write: if request.auth != null &&
-//         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
-//     }
-//     match /options/{allPaths=**} {
-//       allow read: if request.auth != null;
-//       allow write: if request.auth != null &&
-//         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
-//     }
-//     match /pdfs/{allPaths=**} {
-//       allow read, write: if request.auth != null &&
-//         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
-//     }
-//   }
-// }
