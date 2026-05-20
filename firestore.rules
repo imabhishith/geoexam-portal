@@ -1,65 +1,57 @@
-// ============================================================
-// FIREBASE FIRESTORE SECURITY RULES
-// Copy this into your Firebase Console → Firestore → Rules
-// ============================================================
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper: check if user is admin
-    function isAdmin() {
-      return request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // Helper: check if user is authenticated
     function isAuth() {
       return request.auth != null;
     }
 
-    // Helper: check if this is the user's own document
     function isOwner(uid) {
       return request.auth != null && request.auth.uid == uid;
     }
 
+    // KEY FIX: added exists() check before get() so new users
+    // creating their first document don't trigger a read on a
+    // non-existent doc, which previously caused the write to fail.
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     // ── Users ──
     match /users/{userId} {
-      allow read: if isAuth();                    // any logged-in user can read profiles
-      allow create: if isOwner(userId);           // users can create their own profile
+      allow read:   if isAuth();
+      allow create: if isOwner(userId);           // new signup writes their own doc
       allow update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
     }
 
     // ── Questions ──
     match /questions/{questionId} {
-      allow read: if isAuth();                    // all logged-in users can read questions
-      allow create, update, delete: if isAdmin(); // only admins can manage questions
+      allow read:                   if isAuth();
+      allow create, update, delete: if isAdmin();
     }
 
     // ── Exams ──
     match /exams/{examId} {
-      allow read: if isAuth();
+      allow read:                   if isAuth();
       allow create, update, delete: if isAdmin();
     }
 
     // ── Attempts ──
     match /attempts/{attemptId} {
-      // Students can read/write their own attempts; admins can read all
-      allow read: if isAuth() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
+      allow read: if isAuth() && (
+        resource.data.status == 'submitted' ||
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
       allow create: if isAuth() &&
         request.resource.data.userId == request.auth.uid;
-      allow update: if isAuth() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAuth() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
       allow delete: if isAdmin();
     }
   }
 }
-
-// ============================================================
-// FIREBASE STORAGE RULES — NOT NEEDED
-// This portal does NOT use Firebase Storage (100% free).
-// Images are stored as base64 inside Firestore documents.
-// You do not need to configure Storage at all.
-// ============================================================
