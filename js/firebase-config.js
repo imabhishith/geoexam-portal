@@ -5,11 +5,12 @@
 //       Images are stored as base64 in Firestore OR as URLs.
 // ============================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyA280RE5lycIE-MVxMvzWdb__Lwa0OzNBg",
-  authDomain: "geoexam-portal.firebaseapp.com",
-  projectId: "geoexam-portal",
-  messagingSenderId: "203992322500",
-  appId: "1:203992322500:web:e21f36d5c3f71c46715491"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+  // storageBucket intentionally omitted — not needed!
 };
 
 // Initialize Firebase
@@ -82,59 +83,3 @@ const Utils = {
     });
   }
 };
-// ============================================================
-// PASTE THE SIGN UP & ACCOUNT CREATION LOGIC HERE!
-// ============================================================
-document.addEventListener("DOMContentLoaded", () => {
-  // If your HTML template has distinct login and signup forms, 
-  // we look for the form wrapping the "Create Account" button.
-  const signUpForm = document.querySelector("#signup-form") || document.querySelector("form");
-  
-  if (signUpForm) {
-    signUpForm.addEventListener("submit", async (e) => {
-      e.preventDefault(); 
-
-      const firstName = signUpForm.querySelector('input[placeholder="First Name"]')?.value || "";
-      const lastName = signUpForm.querySelector('input[placeholder="Last Name"]')?.value || "";
-      const email = signUpForm.querySelector('input[placeholder="Email Address"]')?.value || "";
-      const mobile = signUpForm.querySelector('input[placeholder="Mobile Number"]')?.value || "";
-      const password = signUpForm.querySelector('input[placeholder="Password"]')?.value || "";
-      const confirmPassword = signUpForm.querySelector('input[placeholder="Confirm Password"]')?.value || "";
-
-      if (password !== confirmPassword) {
-        Utils.toast("Passwords do not match!", "error");
-        return;
-      }
-
-      try {
-        Utils.toast("Creating account...", "info");
-
-        // 1. Create account in Firebase Auth
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-
-        // 2. Write details to your empty Firestore Database 
-        await db.collection("users").doc(user.uid).set({
-          uid: user.uid,
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          mobile: mobile,
-          role: "student", 
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        Utils.toast("Account created successfully!", "success");
-
-        // 3. Move forward to your dashboard
-        setTimeout(() => {
-          window.location.reload(); // Reloads page to update authorization states
-        }, 1500);
-
-      } catch (error) {
-        console.error("Sign up failure details:", error);
-        Utils.toast(error.message, "error");
-      }
-    });
-  }
-});
