@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Exam Instructions — GeoExam Portal</title>
@@ -33,11 +34,11 @@
 <body>
 <nav class="navbar">
   <div class="navbar-brand">
-    <span style="font-size:28px;">🪨</span>
+    <span style="font-size:28px;"><i class="fas fa-gem"></i></span>
     <div><h1>GeoExam Portal</h1><span>GATE Geology · CBT Platform</span></div>
   </div>
   <div class="navbar-nav">
-    <a href="dashboard.html" class="nav-link">← Back to Dashboard</a>
+    <a href="dashboard.html" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
   </div>
 </nav>
 
@@ -82,7 +83,7 @@
       <h3>Marking Scheme</h3>
       <ol class="inst-list">
         <li><strong>Single Correct (SCQ):</strong> Full marks if correct. Negative marks for wrong answer. No marks for unattempted.</li>
-        <li><strong>Multiple Correct (MCQ):</strong> If ANY selected option is wrong → full negative marks. If only correct options selected (partial or full) → proportional positive marks based on coverage. Unattempted = 0.</li>
+        <li><strong>Multiple Correct (MCQ):</strong> If ANY selected option is wrong <i class="fas fa-arrow-right"></i> full negative marks. If only correct options selected (partial or full) <i class="fas fa-arrow-right"></i> proportional positive marks based on coverage. Unattempted = 0.</li>
         <li><strong>Numerical Answer Type (NAT):</strong> Full marks if answer matches. No negative marking. No partial marking.</li>
       </ol>
       <div class="table-wrap">
@@ -115,9 +116,9 @@
     </div>
 
     <div style="display:flex;gap:12px;justify-content:center;margin-top:8px;">
-      <a href="dashboard.html" class="btn btn-outline btn-lg">← Go Back</a>
+      <a href="dashboard.html" class="btn btn-outline btn-lg"><i class="fas fa-arrow-left"></i> Go Back</a>
       <button class="btn btn-primary btn-lg" id="btn-start" disabled onclick="startExam()">
-        🚀 Start Examination
+        <i class="fas fa-rocket"></i> Start Examination
       </button>
     </div>
   </div>
