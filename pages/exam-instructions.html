@@ -2,124 +2,257 @@
 <html lang="en">
 <head>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Exam Instructions — GeoExam Portal</title>
-<link rel="stylesheet" href="../css/global.css">
-<style>
-  .page-content { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
-  .inst-header { background: var(--primary); color: #fff; padding: 20px 28px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
-  .inst-body   { background: var(--surface); border: 1px solid var(--border); border-top: none; padding: 28px; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
-  .inst-section { margin-bottom: 24px; }
-  .inst-section h3 { font-size: 16px; color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 6px; margin-bottom: 12px; }
-  .inst-list { padding-left: 20px; }
-  .inst-list li { margin-bottom: 8px; font-size: 14px; color: var(--text); line-height: 1.7; }
-  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
-  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-  .legend-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
-  .dot-nv  { background: var(--q-not-visited); }
-  .dot-na  { background: var(--q-not-answered); }
-  .dot-ans { background: var(--q-answered); }
-  .dot-mrk { background: var(--q-marked); }
-  .dot-am  { background: var(--q-answered-marked); }
-  .marking-table td, .marking-table th { padding: 8px 12px; }
-  .confirm-check { display: flex; align-items: flex-start; gap: 10px; padding: 16px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; margin: 20px 0; }
-  .confirm-check input { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; }
-  .exam-info-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
-  .info-box2 { background: var(--bg); border-radius: 8px; padding: 12px 16px; text-align: center; }
-  .info-box2 .val { font-size: 20px; font-weight: 700; color: var(--primary); font-family: 'Rajdhani'; }
-  .info-box2 .lbl { font-size: 12px; color: var(--text2); font-weight: 600; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Instructions — GeoExam Portal</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <style>
+    body { background: #f0f4f8; }
+    .page-wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 40px; }
+
+    /* ─── top title bar like GATE ─── */
+    .inst-title-bar {
+      background: linear-gradient(135deg, #1a3c6e 0%, #0d2447 100%);
+      color: #fff;
+      padding: 18px 28px;
+      border-radius: 10px 10px 0 0;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .inst-title-bar h2 { font-size: 20px; font-family: 'Rajdhani', sans-serif; font-weight: 700; margin-bottom: 2px; }
+    .inst-title-bar p  { font-size: 13px; opacity: .8; }
+    .inst-exam-chip { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3); border-radius: 6px; padding: 4px 14px; font-size: 12px; font-weight: 700; letter-spacing: .05em; }
+
+    /* ─── info strip ─── */
+    .info-strip {
+      background: #1a3c6e; color: #fff;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      text-align: center; border-bottom: 3px solid #f59e0b;
+    }
+    .info-cell { padding: 12px 8px; border-right: 1px solid rgba(255,255,255,.2); }
+    .info-cell:last-child { border-right: none; }
+    .info-cell .val { font-size: 22px; font-weight: 800; font-family: 'Rajdhani', sans-serif; }
+    .info-cell .lbl { font-size: 11px; opacity: .75; text-transform: uppercase; letter-spacing: .05em; }
+
+    /* ─── body ─── */
+    .inst-body {
+      background: #fff;
+      border: 1px solid #d1d5db; border-top: none;
+      border-radius: 0 0 10px 10px;
+      padding: 0;
+    }
+
+    /* ─── section block ─── */
+    .inst-section { padding: 20px 28px; border-bottom: 1px solid #e5e7eb; }
+    .inst-section:last-of-type { border-bottom: none; }
+    .inst-section h3 {
+      font-size: 14px; font-weight: 700; color: #1a3c6e;
+      text-transform: uppercase; letter-spacing: .08em;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 2px solid #1a3c6e;
+    }
+    .inst-section h3 i { font-size: 15px; }
+    ol.gate-list { padding-left: 22px; margin: 0; }
+    ol.gate-list li { font-size: 13.5px; color: #374151; line-height: 1.75; margin-bottom: 7px; }
+    ol.gate-list li strong { color: #1a3c6e; }
+
+    /* ─── palette legend ─── */
+    .legend-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #374151; }
+    .legend-dot {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .dot-nv  { background: #9ca3af; }
+    .dot-na  { background: #ef4444; }
+    .dot-ans { background: #22c55e; }
+    .dot-mrk { background: #8b5cf6; }
+    .dot-am  { background: #8b5cf6; border: 3px solid #22c55e; }
+
+    /* ─── marking table ─── */
+    .gate-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    .gate-table th { background: #1a3c6e; color: #fff; padding: 9px 14px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+    .gate-table td { padding: 9px 14px; border-bottom: 1px solid #e5e7eb; }
+    .gate-table tr:last-child td { border-bottom: none; }
+    .gate-table tr:nth-child(even) td { background: #f9fafb; }
+    .pos-mark { color: #16a34a; font-weight: 700; }
+    .neg-mark { color: #dc2626; font-weight: 700; }
+
+    /* ─── important notice ─── */
+    .notice-box {
+      background: #fffbeb; border: 1px solid #f59e0b;
+      border-left: 4px solid #f59e0b; border-radius: 6px;
+      padding: 12px 16px; font-size: 13px; color: #92400e;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .notice-box i { font-size: 16px; margin-top: 2px; flex-shrink: 0; }
+
+    /* ─── confirm section ─── */
+    .confirm-strip { background: #f0f9ff; border-top: 2px solid #bae6fd; padding: 20px 28px; }
+    .confirm-check-wrap { display: flex; align-items: flex-start; gap: 12px; background: #fff; border: 1px solid #93c5fd; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; }
+    .confirm-check-wrap input[type=checkbox] { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; flex-shrink: 0; accent-color: #1a3c6e; }
+    .confirm-check-wrap label { font-size: 13.5px; color: #1e3a5f; cursor: pointer; line-height: 1.65; }
+    .btn-row { display: flex; gap: 12px; justify-content: center; }
+    .btn-gate-start {
+      background: #1a3c6e; color: #fff; border: none; border-radius: 8px;
+      padding: 12px 32px; font-size: 15px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: 8px; transition: background .2s;
+      font-family: 'Rajdhani', sans-serif; letter-spacing: .04em;
+    }
+    .btn-gate-start:disabled { background: #9ca3af; cursor: not-allowed; }
+    .btn-gate-start:not(:disabled):hover { background: #0d2447; }
+    .btn-gate-back {
+      background: #fff; color: #374151; border: 1px solid #d1d5db; border-radius: 8px;
+      padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 8px; transition: all .2s;
+      text-decoration: none;
+    }
+    .btn-gate-back:hover { background: #f3f4f6; }
+  </style>
 </head>
 <body>
 <nav class="navbar">
   <div class="navbar-brand">
-    <span style="font-size:28px;"><i class="fas fa-gem"></i></span>
+    <span style="font-size:26px;"><i class="fas fa-gem" style="color:#f59e0b;"></i></span>
     <div><h1>GeoExam Portal</h1><span>GATE Geology · CBT Platform</span></div>
   </div>
   <div class="navbar-nav">
-    <a href="dashboard.html" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    <a href="dashboard.html" class="nav-link"><i class="fas fa-arrow-left"></i> Dashboard</a>
   </div>
 </nav>
 
-<div class="page-content">
-  <div class="inst-header">
-    <h2 id="exam-title" style="font-size:24px;margin-bottom:4px;">Loading exam…</h2>
-    <p id="exam-subtitle" style="opacity:.8;font-size:14px;">Please read all instructions carefully before proceeding.</p>
+<div class="page-wrap">
+  <!-- Title Bar -->
+  <div class="inst-title-bar">
+    <div>
+      <h2 id="exam-title">Loading exam…</h2>
+      <p id="exam-subtitle">Please read all the instructions carefully before you start the examination.</p>
+    </div>
+    <div class="inst-exam-chip"><i class="fas fa-graduation-cap"></i>&nbsp; GATE GEOLOGY</div>
   </div>
+
+  <!-- Info Strip -->
+  <div class="info-strip">
+    <div class="info-cell"><div class="val" id="info-dur">—</div><div class="lbl">Duration (Minutes)</div></div>
+    <div class="info-cell"><div class="val" id="info-qs">—</div><div class="lbl">Total Questions</div></div>
+    <div class="info-cell"><div class="val" id="info-marks">—</div><div class="lbl">Maximum Marks</div></div>
+  </div>
+
+  <!-- Body -->
   <div class="inst-body">
-    <div class="exam-info-grid" id="exam-info-grid">
-      <div class="info-box2"><div class="val" id="info-dur">—</div><div class="lbl">Duration (min)</div></div>
-      <div class="info-box2"><div class="val" id="info-qs">—</div><div class="lbl">Total Questions</div></div>
-      <div class="info-box2"><div class="val" id="info-marks">—</div><div class="lbl">Maximum Marks</div></div>
-    </div>
 
+    <!-- General Instructions -->
     <div class="inst-section">
-      <h3>General Instructions</h3>
-      <ol class="inst-list">
-        <li>The clock will be set at the server. The countdown timer in the top right corner of screen will display the remaining time available for you to complete the examination. When the timer reaches zero, the examination will end by itself.</li>
-        <li>The Question Palette displayed on the right side of screen will show the status of each question using one of the following symbols.</li>
+      <h3><i class="fas fa-info-circle"></i> General Instructions</h3>
+      <ol class="gate-list">
+        <li>The clock will be set at the server. The countdown timer in the top right corner of the screen will display the remaining time available for you to complete the examination. When the timer reaches zero, the examination will end automatically — no action is required from you.</li>
+        <li>The <strong>Question Palette</strong> displayed on the right side of the screen will show the status of each question using one of the following symbols. The question(s) "Answered and Marked for Review" will also be considered for evaluation.</li>
       </ol>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot dot-nv">1</div> Not Visited</div>
-        <div class="legend-item"><div class="legend-dot dot-na">2</div> Not Answered</div>
-        <div class="legend-item"><div class="legend-dot dot-ans">3</div> Answered</div>
-        <div class="legend-item"><div class="legend-dot dot-mrk">4</div> Marked for Review</div>
-        <div class="legend-item"><div class="legend-dot dot-am">5</div> Answered &amp; Marked for Review</div>
+      <div class="legend-grid">
+        <div class="legend-item"><div class="legend-dot dot-nv">1</div><span><strong>Not Visited</strong> — You have not visited the question yet.</span></div>
+        <div class="legend-item"><div class="legend-dot dot-na">2</div><span><strong>Not Answered</strong> — You have visited but not answered.</span></div>
+        <div class="legend-item"><div class="legend-dot dot-ans">3</div><span><strong>Answered</strong> — You have answered the question.</span></div>
+        <div class="legend-item"><div class="legend-dot dot-mrk">4</div><span><strong>Marked for Review</strong> — Marked for review but NOT answered. Will NOT be evaluated.</span></div>
+        <div class="legend-item"><div class="legend-dot dot-am">5</div><span><strong>Answered &amp; Marked for Review</strong> — Answered and also marked for review. Will be evaluated.</span></div>
       </div>
     </div>
 
+    <!-- Navigating Questions -->
     <div class="inst-section">
-      <h3>Navigating to a Question</h3>
-      <ol class="inst-list">
-        <li>Click on the question number in the Question Palette at the right of your screen to go to that numbered question directly.</li>
+      <h3><i class="fas fa-compass"></i> Navigating to a Question</h3>
+      <ol class="gate-list">
+        <li>Click on the question number in the Question Palette at the right of your screen to go to that numbered question directly. Note that using this option does NOT save your answer for the current question.</li>
         <li>Click on <strong>Save &amp; Next</strong> to save your answer for the current question and then go to the next question.</li>
-        <li>Click on <strong>Mark for Review &amp; Next</strong> to save your answer for the current question, mark it for review, and then go to the next question.</li>
-        <li>Click on <strong>Clear Response</strong> to clear the selection for the current question.</li>
+        <li>Click on <strong>Mark for Review &amp; Next</strong> to save your answer for the current question and also mark it for review, then move to the next question.</li>
+        <li>Clicking <strong>Save &amp; Next</strong> on the last question in the section will take you to the first question of the next section (if any).</li>
+        <li>You can shuffle between sections and questions anytime during the examination as per your convenience.</li>
+        <li>The candidate can click on the <strong>arrow</strong> which apperas to the left of question palette to collapse the question palette thereby maximizing the question window. To view the question palette again, you can click on <strong>arrow</strong> which appears on the right side of question window.</li>
       </ol>
     </div>
 
+    <!-- Answering Questions -->
     <div class="inst-section">
-      <h3>Marking Scheme</h3>
-      <ol class="inst-list">
-        <li><strong>Single Correct (SCQ):</strong> Full marks if correct. Negative marks for wrong answer. No marks for unattempted.</li>
-        <li><strong>Multiple Correct (MCQ):</strong> If ANY selected option is wrong <i class="fas fa-arrow-right"></i> full negative marks. If only correct options selected (partial or full) <i class="fas fa-arrow-right"></i> proportional positive marks based on coverage. Unattempted = 0.</li>
-        <li><strong>Numerical Answer Type (NAT):</strong> Full marks if answer matches. No negative marking. No partial marking.</li>
+      <h3><i class="fas fa-pencil-alt"></i> Answering a Question</h3>
+      <ol class="gate-list">
+        <li><strong>Single Correct (MCQ/SCQ):</strong> Choose one answer from the four options (A, B, C, D) given below each question. Click on the circle button of the chosen option to select your answer. To deselect your chosen answer, click on the button of the chosen option again, or click the <strong>Clear Response</strong> button.</li>
+        <li><strong>Multiple Select Questions (MSQ):</strong> Choose one or more correct answer(s) from the four options (A, B, C, D) given below each question. Click on the checkbox(es) of the chosen option(s) to select your answer(s). To deselect, click the checkbox again or use <strong>Clear Response</strong>.</li>
+        <li><strong>Numerical Answer Type (NAT):</strong> Enter the answer using the virtual numeric keypad. No options will be shown for these questions. There is no negative marking for NAT questions.</li>
+        <li>To change your chosen answer for a question, click on the new answer option you wish to select — the previously chosen option will be deselected automatically.</li>
+        <li>Click the <strong>Clear Response</strong> button to clear your answer and return the question to the "Not Answered" state.</li>
       </ol>
-      <div class="table-wrap">
-        <table class="marking-table" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">
-          <thead><tr><th>Question Type</th><th>Correct</th><th>Wrong</th><th>Unattempted</th></tr></thead>
-          <tbody id="marking-tbody">
-            <tr><td>Varies per question (see exam)</td><td style="color:var(--success)">+marks</td><td style="color:var(--danger)">−marks</td><td>0</td></tr>
-          </tbody>
-        </table>
+    </div>
+
+    <!-- Marking Scheme -->
+    <div class="inst-section">
+      <h3><i class="fas fa-star-half-alt"></i> Marking Scheme</h3>
+      <ol class="gate-list">
+        <li>For questions carrying <strong>1 mark</strong>: +1 for correct answer, −1/3 for wrong answer.</li>
+        <li>For questions carrying <strong>2 marks</strong>: +2 for correct answer, −2/3 for wrong answer.</li>
+        <li>For <strong>Multiple Select Questions (MSQ)</strong>: Full marks if all correct options and no wrong options are selected. Partial marks proportional to the fraction of correct options selected (only if NO wrong option is chosen). Full negative marks if any wrong option is selected.</li>
+        <li>For <strong>Numerical Answer Type (NAT)</strong>: Full marks if the answer lies within the specified tolerance range. <strong>No negative marking.</strong></li>
+        <li>Questions <strong>not answered</strong> will result in zero marks.</li>
+      </ol>
+      <table class="gate-table">
+        <thead>
+          <tr><th>Question Type</th><th>Marks (1-mark Q)</th><th>Marks (2-mark Q)</th><th>Unattempted</th></tr>
+        </thead>
+        <tbody id="marking-tbody">
+          <tr>
+            <td>SCQ (Single Correct)</td>
+            <td><span class="pos-mark">+1</span> / <span class="neg-mark">−1/3</span></td>
+            <td><span class="pos-mark">+2</span> / <span class="neg-mark">−2/3</span></td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>MSQ (Multiple Select)</td>
+            <td><span class="pos-mark">+1</span> (full) / Partial / <span class="neg-mark">−1 (if wrong)</span></td>
+            <td><span class="pos-mark">+2</span> (full) / Partial / <span class="neg-mark">−2 (if wrong)</span></td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>NAT (Numerical Answer)</td>
+            <td><span class="pos-mark">+1</span> / No negative</td>
+            <td><span class="pos-mark">+2</span> / No negative</td>
+            <td>0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Important Points -->
+    <div class="inst-section">
+      <h3><i class="fas fa-exclamation-triangle"></i> Important Points to Note</h3>
+      <ol class="gate-list">
+        <li><strong>Do not close or refresh the browser window during the exam.</strong> Your progress is saved automatically every 15 seconds. Closing the tab may cause loss of recent answers.</li>
+        <li>Only <strong>one login session</strong> is allowed per candidate at any given time. Attempting to login from multiple devices/browsers simultaneously will result in session termination.</li>
+        <li>The use of log table booklets, any written material, electronic devices, mobile phones, or scientific calculators outside the on-screen calculator is strictly prohibited.</li>
+        <li>An <strong>on-screen scientific calculator</strong> is available during the exam — click the Calculator button in the header.</li>
+        <li>Once the examination is submitted, you <strong>cannot re-attempt or modify</strong> your answers.</li>
+        <li>Ensure you have a <strong>stable internet connection</strong> throughout the exam. A brief disconnection will not affect your saved answers, but prolonged disconnection may cause issues.</li>
+        <li>The exam will <strong>auto-submit</strong> when the countdown timer reaches zero.</li>
+      </ol>
+      <div class="notice-box" style="margin-top:12px;">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>Any candidate found resorting to unfair means will be <strong>immediately disqualified</strong>. The examination is being monitored.</span>
       </div>
     </div>
 
-    <div class="inst-section">
-      <h3>Important Points</h3>
-      <ol class="inst-list">
-        <li>Do not close or refresh the browser window during the exam. Your progress is saved automatically.</li>
-        <li>You can change your answer by clicking on another option for MCQ questions.</li>
-        <li>An on-screen scientific calculator is available during the exam.</li>
-        <li>Ensure you have a stable internet connection throughout the exam.</li>
-        <li>Submit the exam only when you are sure you have answered all questions.</li>
-        <li>Once the exam is submitted, you <strong>cannot</strong> re-attempt it.</li>
-      </ol>
-    </div>
-
-    <div class="confirm-check">
-      <input type="checkbox" id="agree-check" onchange="toggleStart()">
-      <label for="agree-check" style="font-size:14px;cursor:pointer;">
-        <strong>I have read and understood all the instructions.</strong> I agree to the exam rules and confirm that I will not use any unfair means during the examination.
-      </label>
-    </div>
-
-    <div style="display:flex;gap:12px;justify-content:center;margin-top:8px;">
-      <a href="dashboard.html" class="btn btn-outline btn-lg"><i class="fas fa-arrow-left"></i> Go Back</a>
-      <button class="btn btn-primary btn-lg" id="btn-start" disabled onclick="startExam()">
-        <i class="fas fa-rocket"></i> Start Examination
-      </button>
+    <!-- Confirm & Start -->
+    <div class="confirm-strip">
+      <div class="confirm-check-wrap">
+        <input type="checkbox" id="agree-check" onchange="toggleStart()">
+        <label for="agree-check">
+          I have read and understood all the instructions mentioned above. I have also read and understood clearly the instructions given on the admit card and shall abide by them. I agree to the examination rules and confirm that I will not use any unfair means during the examination.
+        </label>
+      </div>
+      <div class="btn-row">
+        <a href="dashboard.html" class="btn-gate-back"><i class="fas fa-arrow-left"></i> Go Back</a>
+        <button class="btn-gate-start" id="btn-start" disabled onclick="startExam()">
+          <i class="fas fa-rocket"></i> I am ready to begin
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -143,7 +276,7 @@ auth.onAuthStateChanged(async user => {
     if (!doc.exists) { Utils.toast('Exam not found','error'); return; }
     examData = doc.data();
     document.getElementById('exam-title').textContent = examData.title;
-    document.getElementById('exam-subtitle').textContent = examData.description || 'Read instructions carefully.';
+    document.getElementById('exam-subtitle').textContent = examData.description || 'Please read all instructions carefully before proceeding.';
     document.getElementById('info-dur').textContent = examData.durationMinutes || '—';
     document.getElementById('info-qs').textContent = examData.totalQuestions || '—';
     document.getElementById('info-marks').textContent = examData.maxMarks || '—';
@@ -156,14 +289,13 @@ function toggleStart() {
 
 async function startExam() {
   const user = auth.currentUser;
-  // Check if already attempted
   const existing = await db.collection('attempts')
     .where('userId','==',user.uid)
     .where('examId','==',examId)
     .where('status','==','submitted')
     .get();
   if (!existing.empty) {
-    Utils.toast('You have already submitted this exam. View your result.','warning');
+    Utils.toast('You have already submitted this exam. Redirecting to result…','warning');
     setTimeout(() => window.location.href = `result.html?id=${existing.docs[0].id}`, 2000);
     return;
   }
