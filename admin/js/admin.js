@@ -21,6 +21,7 @@ auth.onAuthStateChanged(async user => {
   loadQBank();
   loadExams();
   loadAttempts();
+  loadFlaggedAttempts();
   loadUsers();
   renderOptionFields();
   renderSections();
@@ -38,7 +39,7 @@ function showPanel(name) {
   const titles = {
     dashboard:'Dashboard', qbank:'Question Bank', 'add-single':'Add Question',
     'add-bulk':'Bulk Upload PDF', exams:'Manage Exams', 'create-exam':'Create / Edit Exam',
-    attempts:'All Attempts', users:'Users', revaluation:'Revaluation Centre'
+    attempts:'All Attempts', flagged:'🚩 Flagged Attempts', users:'Users', revaluation:'Revaluation Centre'
   };
   document.getElementById('panel-title').textContent = titles[name] || name;
 }
@@ -822,6 +823,161 @@ async function loadAttempts() {
   } catch(e) { console.error(e); }
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// FLAGGED ATTEMPTS DASHBOARD
+// ══════════════════════════════════════════════════════════════
+
+let allFlaggedAttempts = [];
+let flaggedUserCache   = {};
+
+async function loadFlaggedAttempts() {
+  const tbody = document.getElementById('flagged-tbody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted"><div class="spinner" style="margin:0 auto;"></div></td></tr>';
+  try {
+    const snap = await db.collection('attempts').where('flagged', '==', true).get();
+    allFlaggedAttempts = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0));
+
+    const badgeEl = document.getElementById('flagged-badge');
+    if (badgeEl) { badgeEl.textContent = allFlaggedAttempts.length; badgeEl.style.display = allFlaggedAttempts.length > 0 ? 'inline' : 'none'; }
+    const totalEl = document.getElementById('flagged-total-count');
+    if (totalEl) totalEl.textContent = allFlaggedAttempts.length;
+
+    const uids = [...new Set(allFlaggedAttempts.map(a => a.userId))];
+    await Promise.all(uids.map(async uid => {
+      if (!flaggedUserCache[uid]) {
+        try { const ud = await db.collection('users').doc(uid).get(); flaggedUserCache[uid] = ud.exists ? ud.data() : {}; }
+        catch(_) { flaggedUserCache[uid] = {}; }
+      }
+    }));
+
+    const examNames = [...new Set(allFlaggedAttempts.map(a => a.examTitle).filter(Boolean))];
+    const filterEl  = document.getElementById('flagged-exam-filter');
+    if (filterEl) {
+      filterEl.innerHTML = '<option value="">All Exams</option>' + examNames.map(n => `<option value="${n}">${n}</option>`).join('');
+    }
+    renderFlaggedTable();
+  } catch(e) {
+    const tbody = document.getElementById('flagged-tbody');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-center" style="color:var(--danger)">${e.message}</td></tr>`;
+    console.error('Flagged load error:', e);
+  }
+}
+
+function renderFlaggedTable() {
+  const examFilter = document.getElementById('flagged-exam-filter')?.value || '';
+  const typeFilter = document.getElementById('flagged-type-filter')?.value || '';
+  let list = allFlaggedAttempts.filter(a => {
+    if (examFilter && a.examTitle !== examFilter) return false;
+    if (typeFilter === 'tab')        return (a.tabSwitchCount || 0) > 0;
+    if (typeFilter === 'fullscreen') return (a.fullscreenExitCount || 0) > 0;
+    if (typeFilter === 'idle')       return !!a.idleFlagged;
+    return true;
+  });
+
+  const countEl = document.getElementById('flagged-count-badge');
+  if (countEl) countEl.textContent = list.length;
+  const filterCount = document.getElementById('flagged-filter-count');
+  if (filterCount) filterCount.textContent = `Showing ${list.length} of ${allFlaggedAttempts.length} flagged`;
+
+  const tbody = document.getElementById('flagged-tbody');
+  if (!tbody) return;
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted" style="padding:40px;"><div style="font-size:40px;margin-bottom:12px;">✅</div><div style="font-weight:700;">No flagged attempts found.</div></td></tr>`;
+    return;
+  }
+
+  const rows = [];
+  list.forEach((a, idx) => {
+    const u    = flaggedUserCache[a.userId] || {};
+    const name = `${u.firstName || 'Unknown'} ${u.lastName || ''}`.trim();
+    const date = a.submittedAt?.toDate?.()?.toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) || '—';
+    const score = `${(a.totalScore||0).toFixed(2)} / ${a.maxScore||'?'}`;
+    const tabs  = a.tabSwitchCount || 0;
+    const fsEx  = a.fullscreenExitCount || 0;
+    const tabLog       = a.tabSwitchLog || [];
+    const integrityLog = a.integrityLog || [];
+    const detailRowId  = `flag-detail-${idx}`;
+
+    let chips = '';
+    if (tabs > 0)      chips += `<span class="flag-reason-chip flag-tab"><i class="fas fa-exchange-alt"></i> ${tabs} Tabs</span>`;
+    if (fsEx > 0)      chips += `<span class="flag-reason-chip flag-fs"><i class="fas fa-compress-arrows-alt"></i> ${fsEx} FS</span>`;
+    if (a.idleFlagged) chips += `<span class="flag-reason-chip flag-idle"><i class="fas fa-moon"></i> Idle</span>`;
+    if (!chips)        chips = '<span style="color:var(--text3);font-size:12px;">—</span>';
+
+    rows.push(`<tr class="flag-row-expand" onclick="toggleFlagDetail('${detailRowId}')">
+      <td style="text-align:center;color:var(--text3);font-size:12px;"><i class="fas fa-chevron-right" id="arrow-${detailRowId}" style="transition:transform .2s;"></i></td>
+      <td><strong>${name}</strong><div style="font-size:11px;color:var(--text2);">${u.email||'—'}</div></td>
+      <td style="font-size:13px;">${a.examTitle||'—'}</td>
+      <td style="font-weight:700;color:var(--primary);">${score}</td>
+      <td>${chips}</td>
+      <td style="text-align:center;font-size:18px;font-weight:800;font-family:'Rajdhani';color:${tabs>3?'#ef4444':tabs>0?'#f59e0b':'var(--text3)'};">${tabs}</td>
+      <td style="text-align:center;font-size:18px;font-weight:800;font-family:'Rajdhani';color:${fsEx>3?'#ef4444':fsEx>0?'#f59e0b':'var(--text3)'};">${fsEx}</td>
+      <td style="text-align:center;">${a.idleFlagged ? '<i class="fas fa-check-circle" style="color:#8b5cf6;font-size:16px;"></i>' : '<i class="fas fa-times" style="color:var(--text3)"></i>'}</td>
+      <td style="font-size:12px;">${date}</td>
+      <td><div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <a href="../pages/result.html?id=${a.id}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-chart-bar"></i> Result</a>
+        <button class="btn btn-ghost btn-sm" style="color:var(--danger);" onclick="event.stopPropagation();clearFlag('${a.id}')"><i class="fas fa-flag"></i> Clear</button>
+      </div></td>
+    </tr>
+    <tr class="flag-detail-row" id="${detailRowId}">
+      <td colspan="10" style="padding:0;">
+        <div style="padding:16px 20px;background:var(--bg);border-top:2px solid var(--border);">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+            <div class="card" style="padding:12px;">
+              <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;margin-bottom:8px;"><i class="fas fa-exchange-alt"></i> Tab Switch Log</div>
+              ${tabLog.length
+                ? tabLog.map(l => `<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--border);">Switch #${l.count} — ${new Date(l.at).toLocaleTimeString('en-IN')}</div>`).join('')
+                : '<div style="font-size:12px;color:var(--text3);">No tab events.</div>'}
+            </div>
+            <div class="card" style="padding:12px;">
+              <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;margin-bottom:8px;"><i class="fas fa-compress-arrows-alt"></i> Fullscreen & Idle Events</div>
+              ${integrityLog.length
+                ? integrityLog.map(l => `<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--border);">${l.type} — ${new Date(l.at).toLocaleTimeString('en-IN')}${l.idleSeconds?' ('+Math.round(l.idleSeconds/60)+'m idle)':''}</div>`).join('')
+                : '<div style="font-size:12px;color:var(--text3);">No events logged.</div>'}
+            </div>
+            <div class="card" style="padding:12px;">
+              <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;margin-bottom:8px;"><i class="fas fa-chart-pie"></i> Summary</div>
+              <div style="font-size:13px;line-height:2;">
+                <div>Tab Switches: <strong style="color:#ef4444">${tabs}</strong></div>
+                <div>FS Exits: <strong style="color:#f59e0b">${fsEx}</strong></div>
+                <div>Idle Flag: <strong style="color:#8b5cf6">${a.idleFlagged ? 'Yes ⚠️' : 'No ✅'}</strong></div>
+                <div>Status: <strong>${a.status||'—'}</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>`);
+  });
+  tbody.innerHTML = rows.join('');
+}
+
+function toggleFlagDetail(rowId) {
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  const isOpen = row.classList.toggle('open');
+  const arrowEl = document.getElementById(`arrow-${rowId}`);
+  if (arrowEl) arrowEl.style.transform = isOpen ? 'rotate(90deg)' : 'rotate(0)';
+}
+
+async function clearFlag(attemptId) {
+  if (!confirm('Clear the flag on this attempt? It will be removed from this list.')) return;
+  try {
+    await db.collection('attempts').doc(attemptId).update({
+      flagged: false, flagCleared: true,
+      flagClearedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    Utils.toast('Flag cleared. Attempt marked as reviewed.', 'success');
+    loadFlaggedAttempts();
+  } catch(e) {
+    Utils.toast('Error clearing flag: ' + e.message, 'error');
+  }
+}
+
 // ── Users ──
 async function loadUsers() {
   try {
@@ -905,16 +1061,13 @@ async function selectRevalExam(examId) {
     '<tr><td colspan="7" class="text-center text-muted"><div class="spinner" style="margin:0 auto;width:20px;height:20px;border-width:3px;"></div></td></tr>';
 
   try {
-    // NOTE: orderBy('submittedAt') with two equality filters needs a composite
-    // index. We sort client-side to avoid that dependency.
     const snap = await db.collection('attempts')
       .where('examId','==',examId)
       .where('status','==','submitted')
+      .orderBy('submittedAt','desc')
       .get();
 
-    revalAttempts = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0));
+    revalAttempts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     await renderRevalAttempts();
   } catch(e) {
     Utils.toast('Error loading attempts: ' + e.message, 'error');
