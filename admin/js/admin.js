@@ -905,13 +905,16 @@ async function selectRevalExam(examId) {
     '<tr><td colspan="7" class="text-center text-muted"><div class="spinner" style="margin:0 auto;width:20px;height:20px;border-width:3px;"></div></td></tr>';
 
   try {
+    // NOTE: orderBy('submittedAt') with two equality filters needs a composite
+    // index. We sort client-side to avoid that dependency.
     const snap = await db.collection('attempts')
       .where('examId','==',examId)
       .where('status','==','submitted')
-      .orderBy('submittedAt','desc')
       .get();
 
-    revalAttempts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    revalAttempts = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0));
     await renderRevalAttempts();
   } catch(e) {
     Utils.toast('Error loading attempts: ' + e.message, 'error');
