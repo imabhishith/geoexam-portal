@@ -106,76 +106,159 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script>
+
+// ── Tab switcher ──────────────────────────────────────────────
 function switchTab(tab) {
-  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (tab==='login'?0:1)===i));
+  document.querySelectorAll('.auth-tab').forEach((t,i) =>
+    t.classList.toggle('active', (tab === 'login' ? 0 : 1) === i));
   document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
   document.getElementById(`form-${tab}`).classList.add('active');
 }
 
+// ── Login ─────────────────────────────────────────────────────
 async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-password').value;
-  if (!email || !pass) { Utils.toast('Please fill all fields','error'); return; }
+  if (!email || !pass) { Utils.toast('Please fill all fields', 'error'); return; }
+
   const btn = document.getElementById('btn-login');
   btn.disabled = true; btn.textContent = 'Logging in…';
+
   try {
-    const cred = await auth.signInWithEmailAndPassword(email, pass);
-    const uid  = cred.user.uid;
+    const cred    = await auth.signInWithEmailAndPassword(email, pass);
+    const uid     = cred.user.uid;
     const userDoc = await db.collection('users').doc(uid).get();
-    if (userDoc.exists && userDoc.data().role === 'admin') {
+
+    // If Firestore doc is missing (edge-case for old accounts), create it now
+    if (!userDoc.exists) {
+      await db.collection('users').doc(uid).set({
+        uid,
+        firstName: cred.user.displayName ? cred.user.displayName.split(' ')[0] : '',
+        lastName:  cred.user.displayName ? cred.user.displayName.split(' ').slice(1).join(' ') : '',
+        email:     cred.user.email,
+        mobile:    '',
+        role:      'student',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      window.location.href = 'pages/dashboard.html';
+      return;
+    }
+
+    if (userDoc.data().role === 'admin') {
       window.location.href = 'admin/index.html';
     } else {
       window.location.href = 'pages/dashboard.html';
     }
   } catch(e) {
-    Utils.toast(e.message, 'error');
+    console.error('Login error:', e);
+    Utils.toast(friendlyError(e.code, e.message), 'error');
     btn.disabled = false; btn.textContent = 'Login to Portal';
   }
 }
 
+// ── Sign-up ───────────────────────────────────────────────────
 async function doSignup() {
-  const fname = document.getElementById('signup-fname').value.trim();
-  const lname = document.getElementById('signup-lname').value.trim();
-  const email = document.getElementById('signup-email').value.trim();
-  const mobile= document.getElementById('signup-mobile').value.trim();
-  const pass  = document.getElementById('signup-password').value;
-  const conf  = document.getElementById('signup-confirm').value;
-  if (!fname||!lname||!email||!pass||!conf) { Utils.toast('Please fill all fields','error'); return; }
-  if (pass !== conf) { Utils.toast('Passwords do not match','error'); return; }
-  if (pass.length < 8) { Utils.toast('Password must be at least 8 characters','error'); return; }
+  const fname  = document.getElementById('signup-fname').value.trim();
+  const lname  = document.getElementById('signup-lname').value.trim();
+  const email  = document.getElementById('signup-email').value.trim();
+  const mobile = document.getElementById('signup-mobile').value.trim();
+  const pass   = document.getElementById('signup-password').value;
+  const conf   = document.getElementById('signup-confirm').value;
+
+  if (!fname || !lname || !email || !pass || !conf) {
+    Utils.toast('Please fill all fields', 'error'); return;
+  }
+  if (pass !== conf)    { Utils.toast('Passwords do not match', 'error'); return; }
+  if (pass.length < 8)  { Utils.toast('Password must be at least 8 characters', 'error'); return; }
+
   const btn = document.getElementById('btn-signup');
   btn.disabled = true; btn.textContent = 'Creating account…';
+
+  // ── STEP 1: Create Firebase Auth account ──
+  let cred;
   try {
-    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    cred = await auth.createUserWithEmailAndPassword(email, pass);
     await cred.user.updateProfile({ displayName: `${fname} ${lname}` });
+  } catch(authErr) {
+    console.error('Auth error:', authErr);
+    Utils.toast(friendlyError(authErr.code, authErr.message), 'error');
+    btn.disabled = false; btn.textContent = 'Create Account';
+    return;
+  }
+
+  // ── STEP 2: Write Firestore user document ──
+  try {
     await db.collection('users').doc(cred.user.uid).set({
-      uid: cred.user.uid, firstName: fname, lastName: lname,
-      email, mobile, role: 'student',
+      uid:       cred.user.uid,
+      firstName: fname,
+      lastName:  lname,
+      email,
+      mobile,
+      role:      'student',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    Utils.toast('Account created! Redirecting…','success');
+
+    Utils.toast('Account created! Redirecting…', 'success');
     setTimeout(() => window.location.href = 'pages/dashboard.html', 1200);
-  } catch(e) {
-    Utils.toast(e.message,'error');
+
+  } catch(fsErr) {
+    // Auth account was created but Firestore write failed.
+    // This almost always means Firestore rules are not published yet.
+    console.error('Firestore write error:', fsErr);
+
+    let hint = '';
+    if (fsErr.code === 'permission-denied') {
+      hint = 'Firestore rules not published yet. Go to Firebase Console → Firestore → Rules and publish the rules, then try again.';
+    } else {
+      hint = fsErr.message;
+    }
+
+    Utils.toast('Account created in Auth but profile save failed: ' + hint, 'error', 8000);
     btn.disabled = false; btn.textContent = 'Create Account';
   }
 }
 
+// ── Forgot password ───────────────────────────────────────────
 async function forgotPassword() {
   const email = document.getElementById('login-email').value.trim();
-  if (!email) { Utils.toast('Enter your email address first','warning'); return; }
+  if (!email) { Utils.toast('Enter your email address first', 'warning'); return; }
   try {
     await auth.sendPasswordResetEmail(email);
-    Utils.toast('Password reset email sent!','success');
-  } catch(e) { Utils.toast(e.message,'error'); }
+    Utils.toast('Password reset email sent!', 'success');
+  } catch(e) {
+    Utils.toast(friendlyError(e.code, e.message), 'error');
+  }
 }
 
-// Redirect if already logged in
+// ── Friendly error messages ───────────────────────────────────
+function friendlyError(code, fallback) {
+  const map = {
+    'auth/user-not-found':       'No account found with this email.',
+    'auth/wrong-password':       'Incorrect password. Please try again.',
+    'auth/invalid-email':        'Invalid email address.',
+    'auth/email-already-in-use': 'An account with this email already exists.',
+    'auth/weak-password':        'Password is too weak. Use at least 8 characters.',
+    'auth/too-many-requests':    'Too many attempts. Please wait a moment and try again.',
+    'auth/network-request-failed': 'Network error. Check your internet connection.',
+    'permission-denied':         'Firestore permission denied. Please publish Firestore security rules in Firebase Console.',
+  };
+  return map[code] || fallback;
+}
+
+// ── Auto-redirect if already logged in ───────────────────────
 auth.onAuthStateChanged(async user => {
-  if (user) {
+  if (!user) return;
+  try {
     const doc = await db.collection('users').doc(user.uid).get();
-    if (doc.exists && doc.data().role === 'admin') window.location.href = 'admin/index.html';
-    else window.location.href = 'pages/dashboard.html';
+    if (doc.exists && doc.data().role === 'admin') {
+      window.location.href = 'admin/index.html';
+    } else {
+      window.location.href = 'pages/dashboard.html';
+    }
+  } catch(e) {
+    // If Firestore is unreachable at this point, just go to dashboard
+    console.warn('onAuthStateChanged Firestore read failed:', e);
+    window.location.href = 'pages/dashboard.html';
   }
 });
 </script>
