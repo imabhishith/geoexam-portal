@@ -228,55 +228,27 @@
 
     .sidebar-submit { padding: 12px 14px; }
 
-    /* ── SCIENTIFIC CALCULATOR ── */
+    /* ── CALCULATOR ── */
     .calc-panel {
       position: fixed; bottom: 78px; right: 290px;
-      background: #f8fafc; border-radius: 16px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.18); z-index: 400;
-      padding: 0; width: 320px; display: none;
-      border: 1px solid #e2e8f0; overflow: hidden;
+      background: #1e293b; border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5); z-index: 400;
+      padding: 14px; width: 268px; display: none;
     }
     .calc-panel.show { display: block; }
-    .calc-header-bar {
-      background: #1a3c6e; color: #fff; padding: 10px 14px;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .calc-header-bar span { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; opacity: .85; }
-    .calc-header-bar button { background: none; border: none; color: rgba(255,255,255,.7); font-size: 16px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
-    .calc-header-bar button:hover { color:#fff; background: rgba(255,255,255,.15); }
-    .calc-display-wrap { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 10px 14px; }
-    .calc-expr { font-size: 11px; color: #94a3b8; min-height: 16px; text-align: right; font-family: 'IBM Plex Mono', monospace; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .calc-display {
-      color: #1a3c6e; font-family: 'IBM Plex Mono', monospace; font-size: 26px;
-      text-align: right; word-break: break-all; font-weight: 700; line-height: 1.2;
+      background: #0f172a; color: #4ade80;
+      font-family: 'IBM Plex Mono', monospace; font-size: 22px;
+      padding: 10px 14px; border-radius: 8px; text-align: right;
+      margin-bottom: 10px; min-height: 50px; word-break: break-all;
     }
-    .calc-display.error { color: #dc2626; font-size: 18px; }
-    .calc-body { padding: 10px; background: #f8fafc; }
-    /* Mode tabs */
-    .calc-mode-tabs { display: flex; gap: 4px; margin-bottom: 8px; background: #e2e8f0; border-radius: 8px; padding: 3px; }
-    .calc-mode-tab { flex: 1; text-align: center; padding: 4px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; color: #64748b; transition: all .15s; }
-    .calc-mode-tab.active { background: #fff; color: #1a3c6e; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-    .calc-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; }
-    .calc-grid-sci { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; margin-bottom: 5px; }
-    .calc-btn {
-      background: #fff; color: #1e293b; border: 1px solid #e2e8f0;
-      border-radius: 8px; padding: 10px 4px; cursor: pointer; font-size: 12px;
-      font-weight: 600; transition: all .12s; text-align: center; line-height: 1;
-      box-shadow: 0 1px 2px rgba(0,0,0,.05);
-    }
-    .calc-btn:hover { background: #eff6ff; border-color: #93c5fd; color: #1a3c6e; transform: translateY(-1px); }
-    .calc-btn:active { transform: translateY(0); box-shadow: none; }
-    .calc-btn.op  { background: #fff7ed; color: #c2410c; border-color: #fed7aa; font-size: 14px; }
-    .calc-btn.op:hover  { background: #ffedd5; }
-    .calc-btn.eq  { background: #1a3c6e; color: #fff; border-color: #1a3c6e; font-size: 15px; }
-    .calc-btn.eq:hover  { background: #0f2545; }
-    .calc-btn.clr { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
-    .calc-btn.clr:hover { background: #fee2e2; }
-    .calc-btn.fn  { background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe; font-size: 11px; }
-    .calc-btn.fn:hover  { background: #ede9fe; }
-    .calc-btn.num { background: #f8fafc; }
+    .calc-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 5px; }
+    .calc-btn { background: #334155; color: #e2e8f0; border: none; border-radius: 6px; padding: 10px 4px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background .15s; }
+    .calc-btn:hover { background: #475569; }
+    .calc-btn.op  { background: #ea580c; color: #fff; }
+    .calc-btn.eq  { background: #16a34a; color: #fff; }
+    .calc-btn.clr { background: #b91c1c; color: #fff; }
     .calc-btn.span2 { grid-column: span 2; }
-    .calc-deg-rad { font-size: 10px; color: #64748b; text-align: right; padding: 2px 0; font-weight: 600; }
 
     /* ── SUBMIT MODAL ── */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 500; align-items: center; justify-content: center; }
@@ -308,21 +280,19 @@
     /* ── FULLSCREEN WARNING OVERLAY ── */
     #fs-warning-overlay {
       display: none; position: fixed; inset: 0; z-index: 9999;
-      background: rgba(7, 15, 35, 0.98);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.97);
       flex-direction: column; align-items: center; justify-content: center;
       text-align: center; color: #fff; padding: 32px;
-      cursor: not-allowed;  /* block interaction underneath */
     }
     #fs-warning-overlay.show { display: flex; }
     .fw-icon { font-size: 72px; margin-bottom: 20px; color: #f59e0b; }
-    #fs-warning-overlay h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; font-family:'Rajdhani',sans-serif; }
-    #fs-warning-overlay p  { font-size: 16px; opacity: .85; max-width: 500px; margin-bottom: 16px; line-height:1.6; }
-    .fw-count { font-size: 14px; background:rgba(239,68,68,.2); border:1px solid rgba(239,68,68,.4); padding:8px 20px; border-radius:20px; margin-bottom: 12px; }
-    .fw-btn { background: #f59e0b; color: #1a1a1a; border: none; border-radius: 10px;
-      padding: 14px 36px; font-size: 16px; font-weight: 800; cursor: pointer;
-      display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 20px rgba(245,158,11,.4); }
-    .fw-btn:hover { background: #d97706; transform: scale(1.02); }
+    #fs-warning-overlay h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; }
+    #fs-warning-overlay p  { font-size: 16px; opacity: .8; max-width: 480px; margin-bottom: 28px; }
+    .fw-count { font-size: 14px; opacity: .55; margin-bottom: 20px; }
+    .fw-btn { background: #f59e0b; color: #1a1a1a; border: none; border-radius: 8px;
+      padding: 14px 32px; font-size: 16px; font-weight: 800; cursor: pointer;
+      display: flex; align-items: center; gap: 10px; }
+    .fw-btn:hover { background: #d97706; }
 
     /* ── IDLE WARNING BAR ── */
     #idle-warning-bar {
@@ -425,62 +395,37 @@
   </div>
 </div>
 
-<!-- ════════════════════ SCIENTIFIC CALCULATOR ════════════════════ -->
+<!-- ════════════════════ CALCULATOR ════════════════════ -->
 <div class="calc-panel" id="calc-panel">
-  <div class="calc-header-bar">
-    <span><i class="fas fa-calculator"></i> Scientific Calculator</span>
-    <button onclick="toggleCalc()" title="Close"><i class="fas fa-times"></i></button>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <span style="color:#94a3b8;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Scientific Calculator</span>
+    <button onclick="toggleCalc()" style="background:none;border:none;color:#64748b;font-size:16px;cursor:pointer;">✕</button>
   </div>
-  <div class="calc-display-wrap">
-    <div class="calc-expr" id="calc-expr"></div>
-    <div class="calc-display" id="calc-display">0</div>
-  </div>
-  <div class="calc-body">
-    <!-- Mode Tabs -->
-    <div class="calc-mode-tabs">
-      <div class="calc-mode-tab active" onclick="setCalcMode('basic')" id="mode-basic">Basic</div>
-      <div class="calc-mode-tab" onclick="setCalcMode('sci')" id="mode-sci">Scientific</div>
-      <div class="calc-mode-tab" onclick="setCalcMode('trig')" id="mode-trig">Trig</div>
-    </div>
-
-    <!-- Scientific Row (shown in sci/trig mode) -->
-    <div id="calc-sci-row" style="display:none;">
-      <div class="calc-grid-sci" id="sci-buttons">
-        <!-- populated by JS based on mode -->
-      </div>
-      <div class="calc-deg-rad" id="deg-rad-label">
-        Mode: <strong id="angle-mode-label">DEG</strong>
-        <button onclick="toggleAngleMode()" style="background:#e2e8f0;border:none;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700;cursor:pointer;color:#1a3c6e;margin-left:6px;">Switch</button>
-      </div>
-    </div>
-
-    <!-- Main Grid -->
-    <div class="calc-grid">
-      <button class="calc-btn clr" onclick="calcClear()" title="Clear All">AC</button>
-      <button class="calc-btn fn" onclick="calcDel()" title="Backspace"><i class="fas fa-backspace"></i></button>
-      <button class="calc-btn fn" onclick="calcPercent()" title="Percent">%</button>
-      <button class="calc-btn op" onclick="calcOp('/')">÷</button>
-
-      <button class="calc-btn num" onclick="calcNum('7')">7</button>
-      <button class="calc-btn num" onclick="calcNum('8')">8</button>
-      <button class="calc-btn num" onclick="calcNum('9')">9</button>
-      <button class="calc-btn op" onclick="calcOp('*')">×</button>
-
-      <button class="calc-btn num" onclick="calcNum('4')">4</button>
-      <button class="calc-btn num" onclick="calcNum('5')">5</button>
-      <button class="calc-btn num" onclick="calcNum('6')">6</button>
-      <button class="calc-btn op" onclick="calcOp('-')">−</button>
-
-      <button class="calc-btn num" onclick="calcNum('1')">1</button>
-      <button class="calc-btn num" onclick="calcNum('2')">2</button>
-      <button class="calc-btn num" onclick="calcNum('3')">3</button>
-      <button class="calc-btn op" onclick="calcOp('+')">+</button>
-
-      <button class="calc-btn fn" onclick="calcSign()">+/−</button>
-      <button class="calc-btn num" onclick="calcNum('0')">0</button>
-      <button class="calc-btn fn" onclick="calcDot()">.</button>
-      <button class="calc-btn eq" onclick="calcEquals()">=</button>
-    </div>
+  <div class="calc-display" id="calc-display">0</div>
+  <div class="calc-grid">
+    <button class="calc-btn clr span2" onclick="calcClear()">AC</button>
+    <button class="calc-btn clr" onclick="calcDel()">⌫</button>
+    <button class="calc-btn op" onclick="calcOp('/')">/</button>
+    <button class="calc-btn op" onclick="calcOp('*')">×</button>
+    <button class="calc-btn" onclick="calcNum('7')">7</button>
+    <button class="calc-btn" onclick="calcNum('8')">8</button>
+    <button class="calc-btn" onclick="calcNum('9')">9</button>
+    <button class="calc-btn op" onclick="calcOp('-')">−</button>
+    <button class="calc-btn op" onclick="calcOp('+')">+</button>
+    <button class="calc-btn" onclick="calcNum('4')">4</button>
+    <button class="calc-btn" onclick="calcNum('5')">5</button>
+    <button class="calc-btn" onclick="calcNum('6')">6</button>
+    <button class="calc-btn" onclick="calcFunc('sqrt')">√x</button>
+    <button class="calc-btn" onclick="calcFunc('pow2')">x²</button>
+    <button class="calc-btn" onclick="calcNum('1')">1</button>
+    <button class="calc-btn" onclick="calcNum('2')">2</button>
+    <button class="calc-btn" onclick="calcNum('3')">3</button>
+    <button class="calc-btn" onclick="calcFunc('log')">log</button>
+    <button class="calc-btn" onclick="calcFunc('ln')">ln</button>
+    <button class="calc-btn span2" onclick="calcNum('0')">0</button>
+    <button class="calc-btn" onclick="calcDot()">.</button>
+    <button class="calc-btn" onclick="calcSign()">±</button>
+    <button class="calc-btn eq" onclick="calcEquals()">=</button>
   </div>
 </div>
 
@@ -508,18 +453,12 @@
 
 <!-- ════════════════ FULLSCREEN WARNING OVERLAY ════════════════ -->
 <div id="fs-warning-overlay">
-  <div class="fw-icon"><i class="fas fa-shield-alt"></i></div>
-  <h2><i class="fas fa-exclamation-triangle" style="color:#ef4444;margin-right:10px;"></i>Full Screen Required</h2>
-  <p>This examination <strong>must</strong> be taken in full-screen mode. Exiting full screen is a proctoring violation and has been logged to your attempt record.</p>
-  <div class="fw-count" id="fs-exit-count">
-    <i class="fas fa-flag" style="color:#ef4444;margin-right:6px;"></i>
-    Exit count: 0 / 3 allowed
-  </div>
-  <div style="font-size:13px;opacity:.55;margin-bottom:20px;max-width:400px;">
-    <i class="fas fa-info-circle"></i> &nbsp;Your timer continues to run. Return to full screen immediately to resume.
-  </div>
+  <div class="fw-icon"><i class="fas fa-expand-arrows-alt"></i></div>
+  <h2>Please Return to Full Screen</h2>
+  <p>This exam must be taken in full-screen mode. Exiting full screen is considered a violation and has been logged.</p>
+  <div class="fw-count" id="fs-exit-count">Exit count: 0 / 3 allowed</div>
   <button class="fw-btn" onclick="reenterFullscreen()">
-    <i class="fas fa-expand"></i> &nbsp;Re-enter Full Screen Now
+    <i class="fas fa-expand"></i> Re-enter Full Screen
   </button>
 </div>
 
@@ -551,10 +490,6 @@ let attemptId = null;
 let currentUser = null;
 let calcVal='0', calcOp_=null, calcPrev=null, calcNewNum=true;
 
-// ── Time-Per-Question Tracking ──
-let timeSpent = {};      // { questionId: secondsSpent }
-let qStartTime = null;   // timestamp when current question was rendered
-
 // ── Tab-Switch Detection ──
 let tabSwitchCount = 0;
 const tabSwitchLog = [];          // [{timestamp, count}]
@@ -576,11 +511,11 @@ document.addEventListener('visibilitychange', () => {
 
     // Show warning toast to student
     if (tabSwitchCount === 1) {
-      Utils.toast('Tab switch detected! Activity is logged.', 'warning', 5000);
+      Utils.toast('⚠️ Tab switch detected! Suspicious activity is logged and reviewed by admins.', 'warning', 5000);
     } else if (tabSwitchCount <= TAB_SWITCH_FLAG_THRESHOLD) {
-      Utils.toast(`Warning ${tabSwitchCount}/${TAB_SWITCH_FLAG_THRESHOLD}: Repeated tab switching will flag your attempt.`, 'warning', 5000);
+      Utils.toast(`⚠️ Warning ${tabSwitchCount}/${TAB_SWITCH_FLAG_THRESHOLD}: Repeated tab switching will flag your attempt.`, 'warning', 5000);
     } else {
-      Utils.toast(`Your attempt has been flagged for admin review (${tabSwitchCount} tab switches).`, 'error', 6000);
+      Utils.toast(`🚨 Your attempt has been flagged for admin review (${tabSwitchCount} tab switches).`, 'error', 6000);
     }
   }
 });
@@ -624,7 +559,6 @@ async function initExam() {
       attemptId = att.id;
       const attData = att.data();
       answers   = attData.answers || {};
-      timeSpent = attData.timeSpent || {};
       timerSec  = attData.remainingSeconds ?? timerSec;
       tabSwitchCount = attData.tabSwitchCount || 0;
       tabSwitchLog.push(...(attData.tabSwitchLog || []));
@@ -663,17 +597,7 @@ function switchSection(idx) {
   if(qi>=0){ currentQ=qi; renderQuestion(); renderPalette(); }
 }
 
-function saveTimeOnCurrentQ() {
-  if (qStartTime && questions[currentQ]) {
-    const qid = questions[currentQ].id;
-    const elapsed = Math.floor((Date.now() - qStartTime) / 1000);
-    timeSpent[qid] = (timeSpent[qid] || 0) + elapsed;
-  }
-  qStartTime = Date.now();
-}
-
 function renderQuestion() {
-  saveTimeOnCurrentQ();
   const q = questions[currentQ];
   if(!q) return;
   const ans = answers[q.id]||{selected:[],status:'na'};
@@ -814,7 +738,7 @@ function startTimer(){
 function autoSaveInterval(){
   setInterval(async()=>{
     if(!attemptId) return;
-    try{ await db.collection('attempts').doc(attemptId).update({answers,remainingSeconds:timerSec,timeSpent}); }catch(e){}
+    try{ await db.collection('attempts').doc(attemptId).update({answers,remainingSeconds:timerSec}); }catch(e){}
   },15000);
 }
 
@@ -833,7 +757,6 @@ function confirmSubmit(){
 }
 
 async function submitExam(){
-  saveTimeOnCurrentQ(); // save time on last viewed question
   closeModal('submit-modal'); clearInterval(timerInt); clearInterval(idleInterval);
   Utils.toast('Evaluating answers…','info');
 
@@ -880,7 +803,7 @@ async function submitExam(){
 
   try{
     await db.collection('attempts').doc(attemptId).update({
-      status:'submitted',answers,evaluation,timeSpent,
+      status:'submitted',answers,evaluation,
       totalScore,maxScore,correct,wrong,partial,skipped,
       tabSwitchCount, tabSwitchLog,
       fullscreenExitCount: fsExitCount,
@@ -895,181 +818,32 @@ async function submitExam(){
 
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
-// ══════════════════════════════════════════════
-// ── ADVANCED SCIENTIFIC CALCULATOR ──
-// ══════════════════════════════════════════════
-let calcVal = '0', calcOp_ = null, calcPrev = null, calcNewNum = true;
-let calcExpr = '', calcAngleDeg = true, calcMode = 'basic';
-
+// ── Calculator ──
 function toggleCalc(){ document.getElementById('calc-panel').classList.toggle('show'); }
-
-function setCalcMode(mode) {
-  calcMode = mode;
-  document.querySelectorAll('.calc-mode-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('mode-' + mode).classList.add('active');
-  const sciRow = document.getElementById('calc-sci-row');
-  sciRow.style.display = (mode === 'basic') ? 'none' : 'block';
-  renderSciButtons();
+function calcDisplay(v){ const el=document.getElementById('calc-display'); el.textContent=String(v).length>13?parseFloat(v).toExponential(4):v; }
+function calcNum(n){ if(calcVal==='0'||calcNewNum){calcVal=n;calcNewNum=false;}else calcVal+=n; calcDisplay(calcVal); }
+function calcDot(){ if(!calcVal.includes('.'))calcVal+='.'; calcDisplay(calcVal); }
+function calcSign(){ calcVal=String(-parseFloat(calcVal)); calcDisplay(calcVal); }
+function calcOp(op){ calcPrev=parseFloat(calcVal);calcOp_=op;calcNewNum=true; }
+function calcEquals(){
+  if(calcOp_===null||calcPrev===null)return;
+  const cur=parseFloat(calcVal); let res;
+  if(calcOp_==='+')res=calcPrev+cur;
+  else if(calcOp_==='-')res=calcPrev-cur;
+  else if(calcOp_==='*')res=calcPrev*cur;
+  else if(calcOp_==='/')res=cur!==0?calcPrev/cur:'Err';
+  calcVal=String(res);calcOp_=null;calcPrev=null;calcNewNum=true;calcDisplay(calcVal);
 }
-
-function renderSciButtons() {
-  const el = document.getElementById('sci-buttons');
-  if (calcMode === 'sci') {
-    el.innerHTML = `
-      <button class="calc-btn fn" onclick="calcFunc('sqrt')">√x</button>
-      <button class="calc-btn fn" onclick="calcFunc('cbrt')">∛x</button>
-      <button class="calc-btn fn" onclick="calcFunc('pow2')">x²</button>
-      <button class="calc-btn fn" onclick="calcFunc('pow3')">x³</button>
-      <button class="calc-btn fn" onclick="calcOp('**')">xʸ</button>
-      <button class="calc-btn fn" onclick="calcFunc('inv')">1/x</button>
-      <button class="calc-btn fn" onclick="calcFunc('log')">log</button>
-      <button class="calc-btn fn" onclick="calcFunc('log2')">log₂</button>
-      <button class="calc-btn fn" onclick="calcFunc('ln')">ln</button>
-      <button class="calc-btn fn" onclick="calcFunc('exp')">eˣ</button>
-      <button class="calc-btn fn" onclick="calcFunc('10x')">10ˣ</button>
-      <button class="calc-btn fn" onclick="calcFunc('abs')">|x|</button>
-      <button class="calc-btn fn" onclick="calcFunc('fact')">n!</button>
-      <button class="calc-btn fn" onclick="calcConst('pi')">π</button>
-      <button class="calc-btn fn" onclick="calcConst('e')">e</button>
-      <button class="calc-btn fn" onclick="calcOp('mod')">mod</button>`;
-  } else { // trig
-    el.innerHTML = `
-      <button class="calc-btn fn" onclick="calcFunc('sin')">sin</button>
-      <button class="calc-btn fn" onclick="calcFunc('cos')">cos</button>
-      <button class="calc-btn fn" onclick="calcFunc('tan')">tan</button>
-      <button class="calc-btn fn" onclick="calcFunc('cot')">cot</button>
-      <button class="calc-btn fn" onclick="calcFunc('asin')">sin⁻¹</button>
-      <button class="calc-btn fn" onclick="calcFunc('acos')">cos⁻¹</button>
-      <button class="calc-btn fn" onclick="calcFunc('atan')">tan⁻¹</button>
-      <button class="calc-btn fn" onclick="calcFunc('atan2_btn')">atan2</button>
-      <button class="calc-btn fn" onclick="calcFunc('sinh')">sinh</button>
-      <button class="calc-btn fn" onclick="calcFunc('cosh')">cosh</button>
-      <button class="calc-btn fn" onclick="calcFunc('tanh')">tanh</button>
-      <button class="calc-btn fn" onclick="calcFunc('deg2rad')">→rad</button>
-      <button class="calc-btn fn" onclick="calcConst('pi')">π</button>
-      <button class="calc-btn fn" onclick="calcConst('pi2')">π/2</button>
-      <button class="calc-btn fn" onclick="calcConst('pi4')">π/4</button>
-      <button class="calc-btn fn" onclick="calcConst('e')">e</button>`;
-  }
+function calcFunc(f){
+  const n=parseFloat(calcVal);
+  if(f==='sqrt')calcVal=String(Math.sqrt(n));
+  else if(f==='pow2')calcVal=String(n*n);
+  else if(f==='log')calcVal=String(Math.log10(n));
+  else if(f==='ln')calcVal=String(Math.log(n));
+  calcNewNum=true;calcDisplay(calcVal);
 }
-
-function toggleAngleMode() {
-  calcAngleDeg = !calcAngleDeg;
-  document.getElementById('angle-mode-label').textContent = calcAngleDeg ? 'DEG' : 'RAD';
-}
-
-function toRad(v) { return calcAngleDeg ? v * Math.PI / 180 : v; }
-function toDeg(v) { return calcAngleDeg ? v * 180 / Math.PI : v; }
-
-function calcDisplayUpdate() {
-  const el = document.getElementById('calc-display');
-  const exEl = document.getElementById('calc-expr');
-  const v = calcVal;
-  if (v === 'Error' || v === 'Infinity' || v === '-Infinity') {
-    el.className = 'calc-display error'; el.textContent = v;
-  } else {
-    el.className = 'calc-display';
-    const num = parseFloat(v);
-    el.textContent = (!isNaN(num) && Math.abs(num) > 1e13) ? num.toExponential(6) : v;
-  }
-  exEl.textContent = calcExpr;
-}
-
-function calcNum(n) {
-  if (calcVal === '0' || calcNewNum) { calcVal = n; calcNewNum = false; }
-  else calcVal += n;
-  calcDisplayUpdate();
-}
-function calcDot() {
-  if (calcNewNum) { calcVal = '0.'; calcNewNum = false; }
-  else if (!calcVal.includes('.')) calcVal += '.';
-  calcDisplayUpdate();
-}
-function calcSign() {
-  if (calcVal !== '0') calcVal = calcVal.startsWith('-') ? calcVal.slice(1) : '-' + calcVal;
-  calcDisplayUpdate();
-}
-function calcPercent() {
-  const n = parseFloat(calcVal);
-  calcVal = String(calcPrev !== null ? (calcPrev * n / 100) : n / 100);
-  calcNewNum = true; calcDisplayUpdate();
-}
-function calcOp(op) {
-  if (!calcNewNum) {
-    if (calcOp_ !== null) calcEquals(true);
-  }
-  calcPrev = parseFloat(calcVal); calcOp_ = op; calcNewNum = true;
-  calcExpr = calcVal + ' ' + ({'+':'+','-':'−','*':'×','/':'÷','**':'^','mod':'mod'}[op]||op) + ' ';
-  calcDisplayUpdate();
-}
-
-function calcEquals(chain = false) {
-  if (calcOp_ === null || calcPrev === null) return;
-  const cur = parseFloat(calcVal); let res;
-  if (calcOp_ === '+')   res = calcPrev + cur;
-  else if (calcOp_ === '-') res = calcPrev - cur;
-  else if (calcOp_ === '*') res = calcPrev * cur;
-  else if (calcOp_ === '/') res = cur !== 0 ? calcPrev / cur : 'Error';
-  else if (calcOp_ === '**') res = Math.pow(calcPrev, cur);
-  else if (calcOp_ === 'mod') res = calcPrev % cur;
-  else res = cur;
-  if (!chain) calcExpr = '';
-  calcVal = String(res === 'Error' ? 'Error' : parseFloat(res.toFixed(12)));
-  calcOp_ = null; calcPrev = null; calcNewNum = true; calcDisplayUpdate();
-}
-
-function calcFunc(f) {
-  const n = parseFloat(calcVal); let res;
-  switch(f) {
-    case 'sqrt':  res = Math.sqrt(n); break;
-    case 'cbrt':  res = Math.cbrt(n); break;
-    case 'pow2':  res = n * n; break;
-    case 'pow3':  res = n * n * n; break;
-    case 'inv':   res = n !== 0 ? 1 / n : 'Error'; break;
-    case 'log':   res = n > 0 ? Math.log10(n) : 'Error'; break;
-    case 'log2':  res = n > 0 ? Math.log2(n)  : 'Error'; break;
-    case 'ln':    res = n > 0 ? Math.log(n)   : 'Error'; break;
-    case 'exp':   res = Math.exp(n); break;
-    case '10x':   res = Math.pow(10, n); break;
-    case 'abs':   res = Math.abs(n); break;
-    case 'fact':  res = factorial(Math.round(n)); break;
-    case 'sin':   res = Math.sin(toRad(n)); break;
-    case 'cos':   res = Math.cos(toRad(n)); break;
-    case 'tan':   res = Math.tan(toRad(n)); break;
-    case 'cot':   res = 1 / Math.tan(toRad(n)); break;
-    case 'asin':  res = toDeg(Math.asin(n)); break;
-    case 'acos':  res = toDeg(Math.acos(n)); break;
-    case 'atan':  res = toDeg(Math.atan(n)); break;
-    case 'sinh':  res = Math.sinh(n); break;
-    case 'cosh':  res = Math.cosh(n); break;
-    case 'tanh':  res = Math.tanh(n); break;
-    case 'deg2rad': res = n * Math.PI / 180; break;
-    default: res = n;
-  }
-  calcVal = (typeof res === 'string') ? res : String(parseFloat(res.toFixed(12)));
-  calcNewNum = true; calcExpr = ''; calcDisplayUpdate();
-}
-
-function calcConst(c) {
-  const map = { pi: Math.PI, e: Math.E, pi2: Math.PI/2, pi4: Math.PI/4 };
-  calcVal = String(map[c] || 0); calcNewNum = true; calcDisplayUpdate();
-}
-
-function factorial(n) {
-  if (n < 0 || n > 170) return 'Error';
-  if (n === 0 || n === 1) return 1;
-  let r = 1; for (let i = 2; i <= n; i++) r *= i; return r;
-}
-
-function calcClear() {
-  calcVal = '0'; calcOp_ = null; calcPrev = null; calcNewNum = true; calcExpr = '';
-  calcDisplayUpdate();
-}
-function calcDel() {
-  if (calcNewNum) return;
-  calcVal = calcVal.length > 1 ? calcVal.slice(0, -1) : '0';
-  calcDisplayUpdate();
-}
+function calcClear(){ calcVal='0';calcOp_=null;calcPrev=null;calcNewNum=true;calcDisplay('0'); }
+function calcDel(){ calcVal=calcVal.length>1?calcVal.slice(0,-1):'0';calcDisplay(calcVal); }
 
 window.addEventListener('beforeunload',e=>{ e.preventDefault(); e.returnValue=''; });
 
@@ -1135,7 +909,7 @@ function handleFullscreenChange() {
     }).catch(() => {});
 
     if (fsExitCount > FS_MAX_EXITS) {
-      Utils.toast(`Flagged: exceeded full-screen exit limit (${fsExitCount} exits).`, 'error', 7000);
+      Utils.toast(`🚨 Flagged: exceeded full-screen exit limit (${fsExitCount} exits).`, 'error', 7000);
     }
   }
 }
@@ -1178,7 +952,7 @@ function tickIdle() {
           flagged: true,
           [`integrityLog`]: firebase.firestore.FieldValue.arrayUnion(log)
         }).catch(() => {});
-        Utils.toast('Your attempt has been flagged: prolonged inactivity detected.', 'error', 8000);
+        Utils.toast('🚨 Your attempt has been flagged: prolonged inactivity detected.', 'error', 8000);
       }
     }
   }
@@ -1191,10 +965,8 @@ function tickIdle() {
 
 // Start idle ticker (starts when exam loads, not before)
 function startProctoring() {
-  // Auto-enter fullscreen on exam start — MANDATORY
-  enterFullscreen().catch(() => {
-    Utils.toast('Please allow full screen to begin the exam.', 'warning', 5000);
-  });
+  // Auto-enter fullscreen on exam start
+  enterFullscreen().catch(() => {});
   idleInterval = setInterval(tickIdle, 1000);
 }
 
