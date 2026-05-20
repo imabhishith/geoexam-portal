@@ -139,7 +139,7 @@ function filterQBank() {
   const t = document.getElementById('qbank-type').value;
   const y = document.getElementById('qbank-year').value;
   const filtered = allQuestions.filter(q =>
-    (!s || (q.text||'').toLowerCase().includes(s)) &&
+    (!s || (q.text||'').toLowerCase().includes(s) || (q.tags||[]).join(' ').toLowerCase().includes(s)) &&
     (!t || q.type === t) &&
     (!y || q.year === y)
   );
@@ -159,7 +159,7 @@ function renderQBank(list) {
   tbody.innerHTML = page.map((q, i) => `<tr>
     <td>${start+i+1}</td>
     <td style="max-width:320px;">
-      <div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${(q.text||'').substring(0,80)}</div>
+      <div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${q.text ? (q.text||'').substring(0,80) : '<em style="color:var(--text2);">[Image Question]</em>'}</div>
       ${q.imageUrl ? `<img src="${q.imageUrl}" style="height:32px;border-radius:4px;margin-top:4px;object-fit:cover;" alt="">` : ''}
     </td>
     <td><span class="badge ${q.type==='scq'?'badge-info':q.type==='mcq'?'badge-warning':'badge-primary'}">${(q.type||'').toUpperCase()}</span></td>
@@ -249,10 +249,13 @@ async function saveQuestion() {
   const sol    = document.getElementById('q-solution').value.trim();
   const tags   = document.getElementById('q-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
 
-  if (!text) { Utils.toast('Question text is required', 'error'); return; }
-
   // Main image — base64 from file OR URL string (no Storage!)
-  const imageUrl = await getImageData('q-img-file', 'q-img-url');
+  // (fetched before validation so we can check if image is present)
+  const _imageUrlCheck = await getImageData('q-img-file', 'q-img-url');
+  if (!text && !_imageUrlCheck) { Utils.toast('Enter question text or upload a question image.', 'error'); return; }
+
+  // Main image — already fetched above for validation
+  const imageUrl = _imageUrlCheck;
 
   let options = [], correctOptions = [], correctAnswer = null;
 
@@ -375,11 +378,10 @@ async function updateQuestion() {
   const q    = allQuestions.find(x => x.id === editingQuestionId);
   const type = document.getElementById('edit-type').value;
   const text = document.getElementById('edit-text').value.trim();
-  if (!text) { Utils.toast('Question text required', 'error'); return; }
-
   // Main image: new file > new URL > keep existing
   let imageUrl = await getImageData('edit-img-file', 'edit-img-url');
   if (!imageUrl) imageUrl = q.imageUrl || '';
+  if (!text && !imageUrl) { Utils.toast('Enter question text or upload a question image.', 'error'); return; }
 
   let options = q.options || [], correctOptions = q.correctOptions || [], correctAnswer = q.correctAnswer || null;
   if (type !== 'nat') {
@@ -706,7 +708,7 @@ function renderSelectedQs() {
       <span style="color:var(--text2);min-width:20px;font-weight:700;">${i+1}</span>
       <span class="badge ${q.type==='scq'?'badge-info':q.type==='mcq'?'badge-warning':'badge-primary'}"
         style="font-size:9px;">${(q.type||'').toUpperCase()}</span>
-      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(q.text||'').substring(0,45)}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${q.text ? (q.text||'').substring(0,45) : '📷 Image Question'}</span>
       <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:11px;color:var(--danger);"
         onclick="removeQFromExam('${qid}')">✕</button>
     </div>`;
