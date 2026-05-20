@@ -228,77 +228,26 @@
 
     .sidebar-submit { padding: 12px 14px; }
 
-    /* ── SCIENTIFIC CALCULATOR ── */
+    /* ── CALCULATOR ── */
     .calc-panel {
       position: fixed; bottom: 78px; right: 290px;
-      background: #0f172a; border-radius: 14px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.6); z-index: 400;
-      padding: 14px; width: 360px; display: none;
-      user-select: none;
+      background: #1e293b; border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5); z-index: 400;
+      padding: 14px; width: 268px; display: none;
     }
     .calc-panel.show { display: block; }
-
-    /* Dual-line display */
-    .calc-display-wrap {
-      background: #020c1b; border-radius: 10px;
-      padding: 10px 14px 8px; margin-bottom: 10px;
-      min-height: 72px; display: flex; flex-direction: column;
-      justify-content: space-between; border: 1px solid #1e3a5f;
+    .calc-display {
+      background: #0f172a; color: #4ade80;
+      font-family: 'IBM Plex Mono', monospace; font-size: 22px;
+      padding: 10px 14px; border-radius: 8px; text-align: right;
+      margin-bottom: 10px; min-height: 50px; word-break: break-all;
     }
-    .calc-expr-line {
-      font-family: 'IBM Plex Mono', monospace; font-size: 13px;
-      color: #4b7fa3; text-align: right; min-height: 18px;
-      word-break: break-all; line-height: 1.4;
-    }
-    .calc-result-line {
-      font-family: 'IBM Plex Mono', monospace; font-size: 26px;
-      font-weight: 700; color: #4ade80; text-align: right;
-      min-height: 34px; word-break: break-all;
-    }
-    .calc-result-line.error { color: #f87171; font-size: 18px; }
-
-    /* Angle mode pill */
-    .calc-angle-toggle {
-      display: inline-flex; background: #1e293b; border-radius: 20px;
-      overflow: hidden; margin-bottom: 8px;
-    }
-    .calc-angle-toggle button {
-      background: transparent; border: none; color: #94a3b8;
-      padding: 4px 14px; font-size: 12px; font-weight: 700;
-      cursor: pointer; transition: all .15s; letter-spacing: .04em;
-    }
-    .calc-angle-toggle button.active {
-      background: #1a3c6e; color: #60a5fa;
-    }
-
-    /* Button grid */
-    .calc-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 5px;
-    }
-    .calc-btn {
-      background: #1e293b; color: #cbd5e1;
-      border: none; border-radius: 7px;
-      padding: 9px 4px; cursor: pointer;
-      font-size: 12px; font-weight: 600;
-      transition: background .12s, transform .08s;
-      line-height: 1.2; text-align: center;
-    }
-    .calc-btn:hover  { background: #334155; }
-    .calc-btn:active { transform: scale(.93); }
-
-    /* colour variants */
-    .calc-btn.sci  { background: #172554; color: #93c5fd; font-size: 11px; }
-    .calc-btn.sci:hover { background: #1d3a7a; }
-    .calc-btn.op   { background: #7c2d12; color: #fdba74; }
-    .calc-btn.op:hover { background: #9a3412; }
-    .calc-btn.eq   { background: #14532d; color: #86efac; font-size: 18px; }
-    .calc-btn.eq:hover { background: #166534; }
-    .calc-btn.clr  { background: #7f1d1d; color: #fca5a5; }
-    .calc-btn.clr:hover { background: #991b1b; }
-    .calc-btn.const { background: #312e81; color: #c4b5fd; }
-    .calc-btn.const:hover { background: #3730a3; }
+    .calc-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 5px; }
+    .calc-btn { background: #334155; color: #e2e8f0; border: none; border-radius: 6px; padding: 10px 4px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background .15s; }
+    .calc-btn:hover { background: #475569; }
+    .calc-btn.op  { background: #ea580c; color: #fff; }
+    .calc-btn.eq  { background: #16a34a; color: #fff; }
+    .calc-btn.clr { background: #b91c1c; color: #fff; }
     .calc-btn.span2 { grid-column: span 2; }
 
     /* ── SUBMIT MODAL ── */
@@ -327,6 +276,35 @@
     .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; gap: 12px; color: #6b7280; font-size: 14px; }
     .spinner { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #1a3c6e; border-radius: 50%; animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── FULLSCREEN WARNING OVERLAY ── */
+    #fs-warning-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(15, 23, 42, 0.97);
+      flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; color: #fff; padding: 32px;
+    }
+    #fs-warning-overlay.show { display: flex; }
+    .fw-icon { font-size: 72px; margin-bottom: 20px; color: #f59e0b; }
+    #fs-warning-overlay h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; }
+    #fs-warning-overlay p  { font-size: 16px; opacity: .8; max-width: 480px; margin-bottom: 28px; }
+    .fw-count { font-size: 14px; opacity: .55; margin-bottom: 20px; }
+    .fw-btn { background: #f59e0b; color: #1a1a1a; border: none; border-radius: 8px;
+      padding: 14px 32px; font-size: 16px; font-weight: 800; cursor: pointer;
+      display: flex; align-items: center; gap: 10px; }
+    .fw-btn:hover { background: #d97706; }
+
+    /* ── IDLE WARNING BAR ── */
+    #idle-warning-bar {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 600;
+      background: linear-gradient(90deg, #7f1d1d, #991b1b);
+      color: #fff; padding: 12px 20px;
+      font-size: 14px; font-weight: 700; text-align: center;
+      border-top: 3px solid #ef4444;
+      animation: pulse-bar 1s ease-in-out infinite;
+    }
+    #idle-warning-bar.show { display: block; }
+    @keyframes pulse-bar { 0%,100%{opacity:1} 50%{opacity:.7} }
   </style>
 </head>
 <body>
@@ -337,7 +315,7 @@
     <div class="header-logo"><i class="fas fa-gem" style="color:#f59e0b;"></i></div>
     <div class="exam-title-bar" id="exam-header-title">
       Loading…
-      <small>GeoExam Portal · GATE Geology CBT</small>
+      <small>GeoExam Portal · GATE Geology & CSIR-NET CBT</small>
     </div>
   </div>
   <div class="header-right">
@@ -386,7 +364,7 @@
       <div class="cand-avatar" id="sb-avatar">?</div>
       <div>
         <div class="cand-name" id="sb-name">Candidate</div>
-        <div class="cand-role">GATE Geology</div>
+        <div class="cand-role">GATE Geology / CSIR-NET</div>
       </div>
     </div>
 
@@ -419,82 +397,35 @@
 
 <!-- ════════════════════ CALCULATOR ════════════════════ -->
 <div class="calc-panel" id="calc-panel">
-  <!-- Header -->
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-    <span style="color:#64748b;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Scientific Calculator</span>
-    <button onclick="toggleCalc()" style="background:none;border:none;color:#64748b;font-size:16px;cursor:pointer;line-height:1;">✕</button>
+    <span style="color:#94a3b8;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Scientific Calculator</span>
+    <button onclick="toggleCalc()" style="background:none;border:none;color:#64748b;font-size:16px;cursor:pointer;">✕</button>
   </div>
-
-  <!-- Angle mode toggle -->
-  <div style="display:flex;justify-content:flex-start;margin-bottom:6px;">
-    <div class="calc-angle-toggle">
-      <button id="calc-deg-btn" class="active" onclick="calcSetAngle('DEG')">DEG</button>
-      <button id="calc-rad-btn" onclick="calcSetAngle('RAD')">RAD</button>
-    </div>
-  </div>
-
-  <!-- Dual display -->
-  <div class="calc-display-wrap">
-    <div class="calc-expr-line"   id="calc-expr">0</div>
-    <div class="calc-result-line" id="calc-result"></div>
-  </div>
-
-  <!-- Button grid: 5 columns -->
+  <div class="calc-display" id="calc-display">0</div>
   <div class="calc-grid">
-    <!-- Row 1: trig -->
-    <button class="calc-btn sci" onclick="calcAppend('sin(')">sin</button>
-    <button class="calc-btn sci" onclick="calcAppend('cos(')">cos</button>
-    <button class="calc-btn sci" onclick="calcAppend('tan(')">tan</button>
-    <button class="calc-btn sci" onclick="calcAppend('^(')">xʸ</button>
-    <button class="calc-btn sci" onclick="calcAppend('√(')">√x</button>
-
-    <!-- Row 2: inverse trig + powers -->
-    <button class="calc-btn sci" onclick="calcAppend('sin⁻¹(')">sin⁻¹</button>
-    <button class="calc-btn sci" onclick="calcAppend('cos⁻¹(')">cos⁻¹</button>
-    <button class="calc-btn sci" onclick="calcAppend('tan⁻¹(')">tan⁻¹</button>
-    <button class="calc-btn sci" onclick="calcSquare()">x²</button>
-    <button class="calc-btn sci" onclick="calcAppend('^3')">x³</button>
-
-    <!-- Row 3: log / exp -->
-    <button class="calc-btn sci" onclick="calcAppend('log(')">log</button>
-    <button class="calc-btn sci" onclick="calcAppend('ln(')">ln</button>
-    <button class="calc-btn sci" onclick="calcAppend('10^(')">10ˣ</button>
-    <button class="calc-btn sci" onclick="calcAppend('e^(')">eˣ</button>
-    <button class="calc-btn sci" onclick="calcReciprocal()">1/x</button>
-
-    <!-- Row 4: constants + misc -->
-    <button class="calc-btn const" onclick="calcAppend('π')">π</button>
-    <button class="calc-btn const" onclick="calcAppend('ℇ')">e</button>
-    <button class="calc-btn sci"   onclick="calcAppend('abs(')">|x|</button>
-    <button class="calc-btn sci"   onclick="calcAppend('(')"> ( </button>
-    <button class="calc-btn sci"   onclick="calcAppend(')')"> ) </button>
-
-    <!-- Row 5: clear / operators -->
-    <button class="calc-btn clr"  onclick="calcClear()">AC</button>
-    <button class="calc-btn clr"  onclick="calcDel()">⌫</button>
-    <button class="calc-btn sci"  onclick="calcToggleSign()">±</button>
-    <button class="calc-btn op"   onclick="calcAppend('÷')">÷</button>
-    <button class="calc-btn op"   onclick="calcAppend('×')">×</button>
-
-    <!-- Row 6: numbers 7–9 + ops -->
-    <button class="calc-btn" onclick="calcAppend('7')">7</button>
-    <button class="calc-btn" onclick="calcAppend('8')">8</button>
-    <button class="calc-btn" onclick="calcAppend('9')">9</button>
-    <button class="calc-btn op" onclick="calcAppend('−')">−</button>
-    <button class="calc-btn op" onclick="calcAppend('+')">+</button>
-
-    <!-- Row 7: numbers 4–6 + . + = -->
-    <button class="calc-btn" onclick="calcAppend('4')">4</button>
-    <button class="calc-btn" onclick="calcAppend('5')">5</button>
-    <button class="calc-btn" onclick="calcAppend('6')">6</button>
-    <button class="calc-btn" onclick="calcAppend('.')">.</button>
-    <button class="calc-btn eq" onclick="calcEvaluate()">=</button>
-
-    <!-- Row 8: numbers 1–3 + 0 span2 -->
-    <button class="calc-btn" onclick="calcAppend('1')">1</button>
-    <button class="calc-btn" onclick="calcAppend('2')">2</button>
-    <button class="calc-btn" onclick="calcAppend('3')">3</button>
-    <button class="calc-btn span2" onclick="calcAppend('0')">0</button>
+    <button class="calc-btn clr span2" onclick="calcClear()">AC</button>
+    <button class="calc-btn clr" onclick="calcDel()">⌫</button>
+    <button class="calc-btn op" onclick="calcOp('/')">/</button>
+    <button class="calc-btn op" onclick="calcOp('*')">×</button>
+    <button class="calc-btn" onclick="calcNum('7')">7</button>
+    <button class="calc-btn" onclick="calcNum('8')">8</button>
+    <button class="calc-btn" onclick="calcNum('9')">9</button>
+    <button class="calc-btn op" onclick="calcOp('-')">−</button>
+    <button class="calc-btn op" onclick="calcOp('+')">+</button>
+    <button class="calc-btn" onclick="calcNum('4')">4</button>
+    <button class="calc-btn" onclick="calcNum('5')">5</button>
+    <button class="calc-btn" onclick="calcNum('6')">6</button>
+    <button class="calc-btn" onclick="calcFunc('sqrt')">√x</button>
+    <button class="calc-btn" onclick="calcFunc('pow2')">x²</button>
+    <button class="calc-btn" onclick="calcNum('1')">1</button>
+    <button class="calc-btn" onclick="calcNum('2')">2</button>
+    <button class="calc-btn" onclick="calcNum('3')">3</button>
+    <button class="calc-btn" onclick="calcFunc('log')">log</button>
+    <button class="calc-btn" onclick="calcFunc('ln')">ln</button>
+    <button class="calc-btn span2" onclick="calcNum('0')">0</button>
+    <button class="calc-btn" onclick="calcDot()">.</button>
+    <button class="calc-btn" onclick="calcSign()">±</button>
+    <button class="calc-btn eq" onclick="calcEquals()">=</button>
   </div>
 </div>
 
@@ -520,6 +451,23 @@
   </div>
 </div>
 
+<!-- ════════════════ FULLSCREEN WARNING OVERLAY ════════════════ -->
+<div id="fs-warning-overlay">
+  <div class="fw-icon"><i class="fas fa-expand-arrows-alt"></i></div>
+  <h2>Please Return to Full Screen</h2>
+  <p>This exam must be taken in full-screen mode. Exiting full screen is considered a violation and has been logged.</p>
+  <div class="fw-count" id="fs-exit-count">Exit count: 0 / 3 allowed</div>
+  <button class="fw-btn" onclick="reenterFullscreen()">
+    <i class="fas fa-expand"></i> Re-enter Full Screen
+  </button>
+</div>
+
+<!-- ════════════════ IDLE WARNING BAR ════════════════ -->
+<div id="idle-warning-bar">
+  <i class="fas fa-exclamation-triangle"></i>
+  &nbsp;You appear to be idle. Activity will be flagged after <span id="idle-countdown">60</span>s of inactivity.
+</div>
+
 <div id="toast-container"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -540,8 +488,37 @@ let timerSec  = 0;
 let timerInt  = null;
 let attemptId = null;
 let currentUser = null;
-// Scientific calculator state
-let calcExpr = '', calcAngleMode = 'DEG', calcJustEvaluated = false;
+let calcVal='0', calcOp_=null, calcPrev=null, calcNewNum=true;
+
+// ── Tab-Switch Detection ──
+let tabSwitchCount = 0;
+const tabSwitchLog = [];          // [{timestamp, count}]
+const TAB_SWITCH_FLAG_THRESHOLD = 3;
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    tabSwitchCount++;
+    tabSwitchLog.push({ at: new Date().toISOString(), count: tabSwitchCount });
+
+    // Persist to Firestore immediately (non-blocking)
+    if (attemptId) {
+      db.collection('attempts').doc(attemptId).update({
+        tabSwitchCount,
+        tabSwitchLog,
+        flagged: tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD
+      }).catch(() => {});
+    }
+
+    // Show warning toast to student
+    if (tabSwitchCount === 1) {
+      Utils.toast('⚠️ Tab switch detected! Suspicious activity is logged and reviewed by admins.', 'warning', 5000);
+    } else if (tabSwitchCount <= TAB_SWITCH_FLAG_THRESHOLD) {
+      Utils.toast(`⚠️ Warning ${tabSwitchCount}/${TAB_SWITCH_FLAG_THRESHOLD}: Repeated tab switching will flag your attempt.`, 'warning', 5000);
+    } else {
+      Utils.toast(`🚨 Your attempt has been flagged for admin review (${tabSwitchCount} tab switches).`, 'error', 6000);
+    }
+  }
+});
 
 // ── Auth & Init ──
 auth.onAuthStateChanged(async user => {
@@ -564,7 +541,7 @@ async function initExam() {
     if (!examDoc.exists) { alert('Exam not found.'); window.location.href='dashboard.html'; return; }
     examData = examDoc.data();
     document.getElementById('exam-header-title').innerHTML =
-      `${examData.title}<small>GeoExam Portal · GATE Geology CBT</small>`;
+      `${examData.title}<small>GeoExam Portal · GATE Geology & CSIR-NET CBT</small>`;
     timerSec = (examData.durationMinutes || 180) * 60;
 
     const qIds = examData.questionIds || [];
@@ -583,11 +560,14 @@ async function initExam() {
       const attData = att.data();
       answers   = attData.answers || {};
       timerSec  = attData.remainingSeconds ?? timerSec;
+      tabSwitchCount = attData.tabSwitchCount || 0;
+      tabSwitchLog.push(...(attData.tabSwitchLog || []));
     } else {
       questions.forEach(q => { answers[q.id] = { selected:[], status:'nv' }; });
       const ref = await db.collection('attempts').add({
         userId: currentUser.uid, examId, examTitle: examData.title,
         status: 'in-progress', answers, remainingSeconds: timerSec,
+        tabSwitchCount: 0, tabSwitchLog: [], flagged: false,
         startedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       attemptId = ref.id;
@@ -598,6 +578,7 @@ async function initExam() {
     renderPalette();
     startTimer();
     autoSaveInterval();
+    startProctoring(); // ← fullscreen + idle detection
   } catch(e) { console.error(e); Utils.toast('Error loading exam: '+e.message,'error'); }
 }
 
@@ -776,7 +757,7 @@ function confirmSubmit(){
 }
 
 async function submitExam(){
-  closeModal('submit-modal'); clearInterval(timerInt);
+  closeModal('submit-modal'); clearInterval(timerInt); clearInterval(idleInterval);
   Utils.toast('Evaluating answers…','info');
 
   let totalScore=0,maxScore=0,correct=0,wrong=0,partial=0,skipped=0;
@@ -824,6 +805,10 @@ async function submitExam(){
     await db.collection('attempts').doc(attemptId).update({
       status:'submitted',answers,evaluation,
       totalScore,maxScore,correct,wrong,partial,skipped,
+      tabSwitchCount, tabSwitchLog,
+      fullscreenExitCount: fsExitCount,
+      idleFlagged,
+      flagged: tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD || fsExitCount > FS_MAX_EXITS || idleFlagged,
       submittedAt:firebase.firestore.FieldValue.serverTimestamp()
     });
     Utils.toast('Exam submitted successfully!','success');
@@ -833,161 +818,158 @@ async function submitExam(){
 
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
-// ── Scientific Calculator ──
-function toggleCalc() {
-  document.getElementById('calc-panel').classList.toggle('show');
+// ── Calculator ──
+function toggleCalc(){ document.getElementById('calc-panel').classList.toggle('show'); }
+function calcDisplay(v){ const el=document.getElementById('calc-display'); el.textContent=String(v).length>13?parseFloat(v).toExponential(4):v; }
+function calcNum(n){ if(calcVal==='0'||calcNewNum){calcVal=n;calcNewNum=false;}else calcVal+=n; calcDisplay(calcVal); }
+function calcDot(){ if(!calcVal.includes('.'))calcVal+='.'; calcDisplay(calcVal); }
+function calcSign(){ calcVal=String(-parseFloat(calcVal)); calcDisplay(calcVal); }
+function calcOp(op){ calcPrev=parseFloat(calcVal);calcOp_=op;calcNewNum=true; }
+function calcEquals(){
+  if(calcOp_===null||calcPrev===null)return;
+  const cur=parseFloat(calcVal); let res;
+  if(calcOp_==='+')res=calcPrev+cur;
+  else if(calcOp_==='-')res=calcPrev-cur;
+  else if(calcOp_==='*')res=calcPrev*cur;
+  else if(calcOp_==='/')res=cur!==0?calcPrev/cur:'Err';
+  calcVal=String(res);calcOp_=null;calcPrev=null;calcNewNum=true;calcDisplay(calcVal);
 }
-
-function calcSetAngle(mode) {
-  calcAngleMode = mode;
-  document.getElementById('calc-deg-btn').classList.toggle('active', mode === 'DEG');
-  document.getElementById('calc-rad-btn').classList.toggle('active', mode === 'RAD');
-  calcRefreshDisplay();
+function calcFunc(f){
+  const n=parseFloat(calcVal);
+  if(f==='sqrt')calcVal=String(Math.sqrt(n));
+  else if(f==='pow2')calcVal=String(n*n);
+  else if(f==='log')calcVal=String(Math.log10(n));
+  else if(f==='ln')calcVal=String(Math.log(n));
+  calcNewNum=true;calcDisplay(calcVal);
 }
-
-function calcAppend(s) {
-  // After pressing =, if user types a digit/const/func → start fresh
-  if (calcJustEvaluated) {
-    if (/^[\dπℇ(]/.test(s) || /[a-z√]/.test(s[0])) calcExpr = '';
-    calcJustEvaluated = false;
-  }
-  calcExpr += s;
-  calcRefreshDisplay();
-}
-
-function calcRefreshDisplay() {
-  const exprEl   = document.getElementById('calc-expr');
-  const resultEl = document.getElementById('calc-result');
-  exprEl.textContent = calcExpr || '0';
-  const val = calcTryEval(calcExpr);
-  if (val !== null) {
-    resultEl.textContent = calcFmtNum(val);
-    resultEl.className = 'calc-result-line';
-  } else {
-    resultEl.textContent = calcExpr.length > 2 ? 'Syntax…' : '';
-    resultEl.className = 'calc-result-line';
-  }
-}
-
-function calcEvaluate() {
-  const val = calcTryEval(calcExpr);
-  if (val === null) {
-    document.getElementById('calc-result').textContent = 'Error';
-    document.getElementById('calc-result').className = 'calc-result-line error';
-    return;
-  }
-  const resultStr = calcFmtNum(val);
-  // Show expression = result in expr line, result in big line
-  document.getElementById('calc-expr').textContent = calcExpr + ' =';
-  document.getElementById('calc-result').textContent = resultStr;
-  document.getElementById('calc-result').className = 'calc-result-line';
-  calcExpr = resultStr;
-  calcJustEvaluated = true;
-}
-
-function calcTryEval(expr) {
-  if (!expr || expr === '') return null;
-  try {
-    let e = expr
-      // operators
-      .replace(/×/g, '*')
-      .replace(/÷/g, '/')
-      .replace(/−/g, '-')
-      // power  (must come before any ** replacement)
-      .replace(/\^/g, '**')
-      // IMPORTANT: inverse trig BEFORE regular trig (sin⁻¹ starts with sin)
-      .replace(/sin⁻¹\(/g, 'ASIN(')
-      .replace(/cos⁻¹\(/g, 'ACOS(')
-      .replace(/tan⁻¹\(/g, 'ATAN(')
-      // regular trig
-      .replace(/sin\(/g, 'SIN(')
-      .replace(/cos\(/g, 'COS(')
-      .replace(/tan\(/g, 'TAN(')
-      // log / sqrt / abs
-      .replace(/log\(/g, 'Math.log10(')
-      .replace(/ln\(/g,  'Math.log(')
-      .replace(/√\(/g,   'Math.sqrt(')
-      .replace(/abs\(/g, 'Math.abs(')
-      // constants (ℇ = Unicode Euler constant char used as button to avoid clash)
-      .replace(/π/g,  '(Math.PI)')
-      .replace(/ℇ/g,  '(Math.E)')
-      // implicit multiplication: 2( → 2*(, )( → )*(, )2 → )*2
-      .replace(/(\d)\(/g,  '$1*(')
-      .replace(/\)\(/g,    ')*(')
-      .replace(/\)(\d)/g,  ')*$1');
-
-    // eslint-disable-next-line no-new-func
-    const fn = new Function('SIN','COS','TAN','ASIN','ACOS','ATAN',
-      '"use strict"; return (' + e + ')');
-
-    const toRad = x => calcAngleMode === 'DEG' ? x * Math.PI / 180 : x;
-    const toDeg = x => calcAngleMode === 'DEG' ? x * 180 / Math.PI : x;
-
-    const result = fn(
-      x => Math.sin(toRad(x)),
-      x => Math.cos(toRad(x)),
-      x => Math.tan(toRad(x)),
-      x => toDeg(Math.asin(x)),
-      x => toDeg(Math.acos(x)),
-      x => toDeg(Math.atan(x))
-    );
-    if (typeof result !== 'number' || !isFinite(result)) return null;
-    return result;
-  } catch(err) {
-    return null;
-  }
-}
-
-function calcFmtNum(n) {
-  // Avoid floating-point noise, keep up to 10 significant digits
-  const rounded = parseFloat(n.toPrecision(10));
-  if (Math.abs(rounded) >= 1e12 || (Math.abs(rounded) < 1e-7 && rounded !== 0)) {
-    return rounded.toExponential(6);
-  }
-  return String(rounded);
-}
-
-function calcClear() {
-  calcExpr = ''; calcJustEvaluated = false;
-  document.getElementById('calc-expr').textContent = '0';
-  document.getElementById('calc-result').textContent = '';
-  document.getElementById('calc-result').className = 'calc-result-line';
-}
-
-function calcDel() {
-  if (calcJustEvaluated) { calcClear(); return; }
-  // Remove last character but respect multi-char tokens like sin⁻¹(
-  const tokens = ['sin⁻¹(','cos⁻¹(','tan⁻¹(','sin(','cos(','tan(','log(','ln(','√(','abs(','10^(','e^('];
-  for (const t of tokens) {
-    if (calcExpr.endsWith(t)) { calcExpr = calcExpr.slice(0, -t.length); calcRefreshDisplay(); return; }
-  }
-  calcExpr = calcExpr.slice(0, -1);
-  calcRefreshDisplay();
-}
-
-function calcToggleSign() {
-  if (calcExpr === '' || calcExpr === '0') return;
-  // Wrap current expression in -(...)
-  if (calcExpr.startsWith('-(') && calcExpr.endsWith(')')) {
-    calcExpr = calcExpr.slice(2, -1);
-  } else {
-    calcExpr = '-(' + calcExpr + ')';
-  }
-  calcRefreshDisplay();
-}
-
-function calcSquare() {
-  calcExpr += '^2';
-  calcRefreshDisplay();
-}
-
-function calcReciprocal() {
-  if (!calcExpr) return;
-  calcExpr = '(1/(' + calcExpr + '))';
-  calcRefreshDisplay();
-}
+function calcClear(){ calcVal='0';calcOp_=null;calcPrev=null;calcNewNum=true;calcDisplay('0'); }
+function calcDel(){ calcVal=calcVal.length>1?calcVal.slice(0,-1):'0';calcDisplay(calcVal); }
 
 window.addEventListener('beforeunload',e=>{ e.preventDefault(); e.returnValue=''; });
+
+// ═══════════════════════════════════════════════════════
+// ── PROCTORING MODULE ──
+// ═══════════════════════════════════════════════════════
+
+// ── 1. COPY / PASTE / RIGHT-CLICK DISABLE ──────────────
+document.addEventListener('copy',  e => { e.preventDefault(); });
+document.addEventListener('cut',   e => { e.preventDefault(); });
+document.addEventListener('paste', e => { e.preventDefault(); });
+document.addEventListener('contextmenu', e => { e.preventDefault(); });
+document.addEventListener('keydown', e => {
+  // Block Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+A, Ctrl+U (view source), F12, PrintScreen
+  const blocked = (
+    (e.ctrlKey && ['c','v','x','a','u','s','p'].includes(e.key.toLowerCase())) ||
+    e.key === 'F12' ||
+    e.key === 'PrintScreen'
+  );
+  if (blocked) { e.preventDefault(); e.stopPropagation(); }
+});
+
+// ── 2. FULL-SCREEN ENFORCEMENT ──────────────────────────
+let fsExitCount = 0;
+const FS_MAX_EXITS = 3;
+const fsOverlay   = document.getElementById('fs-warning-overlay');
+const fsCountEl   = document.getElementById('fs-exit-count');
+
+function enterFullscreen() {
+  const el = document.documentElement;
+  if (el.requestFullscreen)           return el.requestFullscreen();
+  if (el.webkitRequestFullscreen)     return el.webkitRequestFullscreen();
+  if (el.mozRequestFullScreen)        return el.mozRequestFullScreen();
+  if (el.msRequestFullscreen)         return el.msRequestFullscreen();
+}
+
+function reenterFullscreen() {
+  enterFullscreen().then(() => {
+    fsOverlay.classList.remove('show');
+  }).catch(() => {
+    Utils.toast('Please allow full screen in your browser settings.', 'error');
+  });
+}
+
+function isFullscreen() {
+  return !!(document.fullscreenElement || document.webkitFullscreenElement ||
+            document.mozFullScreenElement || document.msFullscreenElement);
+}
+
+function handleFullscreenChange() {
+  if (!isFullscreen() && attemptId) {
+    fsExitCount++;
+    fsCountEl.textContent = `Exit count: ${fsExitCount} / ${FS_MAX_EXITS} allowed`;
+    fsOverlay.classList.add('show');
+
+    // Log to Firestore
+    const log = { at: new Date().toISOString(), type: 'fullscreen_exit', count: fsExitCount };
+    const flagged = fsExitCount > FS_MAX_EXITS || tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD;
+    db.collection('attempts').doc(attemptId).update({
+      fullscreenExitCount: fsExitCount,
+      flagged,
+      [`integrityLog`]: firebase.firestore.FieldValue.arrayUnion(log)
+    }).catch(() => {});
+
+    if (fsExitCount > FS_MAX_EXITS) {
+      Utils.toast(`🚨 Flagged: exceeded full-screen exit limit (${fsExitCount} exits).`, 'error', 7000);
+    }
+  }
+}
+
+document.addEventListener('fullscreenchange',       handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+document.addEventListener('mozfullscreenchange',    handleFullscreenChange);
+document.addEventListener('MSFullscreenChange',     handleFullscreenChange);
+
+// ── 3. IDLE DETECTION ───────────────────────────────────
+const IDLE_WARNING_SECS = 5 * 60;   // show warning bar after 5 min idle
+const IDLE_FLAG_SECS    = 6 * 60;   // flag attempt after 6 min idle
+let idleTimer    = 0;                // seconds since last activity
+let idleInterval = null;
+let idleFlagged  = false;
+const idleBar       = document.getElementById('idle-warning-bar');
+const idleCountdown = document.getElementById('idle-countdown');
+
+function resetIdle() {
+  idleTimer = 0;
+  if (idleBar.classList.contains('show')) {
+    idleBar.classList.remove('show');
+  }
+}
+
+function tickIdle() {
+  idleTimer++;
+  if (idleTimer >= IDLE_WARNING_SECS) {
+    const remaining = IDLE_FLAG_SECS - idleTimer;
+    if (remaining > 0) {
+      idleCountdown.textContent = remaining;
+      idleBar.classList.add('show');
+    } else {
+      idleBar.classList.remove('show');
+      if (!idleFlagged && attemptId) {
+        idleFlagged = true;
+        const log = { at: new Date().toISOString(), type: 'idle_flag', idleSeconds: idleTimer };
+        db.collection('attempts').doc(attemptId).update({
+          idleFlagged: true,
+          flagged: true,
+          [`integrityLog`]: firebase.firestore.FieldValue.arrayUnion(log)
+        }).catch(() => {});
+        Utils.toast('🚨 Your attempt has been flagged: prolonged inactivity detected.', 'error', 8000);
+      }
+    }
+  }
+}
+
+// Reset idle on any meaningful interaction
+['mousemove','keydown','mousedown','touchstart','scroll'].forEach(ev =>
+  document.addEventListener(ev, resetIdle, { passive: true })
+);
+
+// Start idle ticker (starts when exam loads, not before)
+function startProctoring() {
+  // Auto-enter fullscreen on exam start
+  enterFullscreen().catch(() => {});
+  idleInterval = setInterval(tickIdle, 1000);
+}
+
 </script>
 </body>
 </html>
