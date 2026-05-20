@@ -21,13 +21,11 @@
   .wrong-num   { color: var(--danger); }
   .partial-num { color: var(--warning); }
   .skip-num    { color: var(--text3); }
-  /* Chart */
   .donut-wrap { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; padding: 20px; }
   .donut-svg { width: 160px; height: 160px; }
   .donut-legend { display: flex; flex-direction: column; gap: 8px; }
   .legend-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
   .legend-clr { width: 14px; height: 14px; border-radius: 3px; }
-  /* Q Review */
   .review-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
   .review-filters .btn.active { background: var(--primary); color: #fff; }
   .q-review-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 12px; overflow: hidden; }
@@ -84,7 +82,7 @@
       <div class="rank-big" id="rank-num">—</div>
       <div style="flex:1">
         <div style="font-size:18px;font-weight:700;color:var(--primary);margin-bottom:4px;">Your Rank</div>
-        <div style="font-size:13px;color:var(--text2);" id="rank-out-of">among all candidates</div>
+        <div style="font-size:13px;color:var(--text2);" id="rank-out-of">Calculating…</div>
         <a id="rank-link" href="#" class="btn btn-outline btn-sm mt-1">View Full Ranklist →</a>
       </div>
       <div style="text-align:right">
@@ -111,7 +109,7 @@
             <svg class="donut-svg" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f4f8" stroke-width="16"/>
               <circle id="donut-correct" cx="50" cy="50" r="40" fill="none" stroke="#22c55e" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 251.2" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
-              <circle id="donut-wrong" cx="50" cy="50" r="40" fill="none" stroke="#ef4444" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 251.2" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
+              <circle id="donut-wrong"   cx="50" cy="50" r="40" fill="none" stroke="#ef4444" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 251.2" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
               <circle id="donut-partial" cx="50" cy="50" r="40" fill="none" stroke="#f59e0b" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 251.2" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
               <text x="50" y="46" text-anchor="middle" font-size="14" font-weight="800" fill="#1e293b" font-family="Rajdhani" id="donut-pct-text">0%</text>
               <text x="50" y="58" text-anchor="middle" font-size="7" fill="#64748b">Score</text>
@@ -157,153 +155,203 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="../js/firebase-config.js"></script>
 <script>
-const params = new URLSearchParams(location.search);
+const params    = new URLSearchParams(location.search);
 const attemptId = params.get('id');
-let attempt=null, questions=[];
+let attempt = null, questions = [];
 
-auth.onAuthStateChanged(async user=>{
-  if(!user){window.location.href='../index.html';return;}
-  try{
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = '../index.html'; return; }
+  if (!attemptId) { Utils.toast('No result ID provided', 'error'); return; }
+
+  try {
     const attDoc = await db.collection('attempts').doc(attemptId).get();
-    if(!attDoc.exists){Utils.toast('Result not found','error');return;}
+    if (!attDoc.exists) { Utils.toast('Result not found', 'error'); return; }
     attempt = attDoc.data();
-    if(attempt.userId!==user.uid){Utils.toast('Access denied','error');return;}
 
-    document.getElementById('ranklist-link').href=`ranklist.html?examId=${attempt.examId}`;
-    document.getElementById('rank-link').href=`ranklist.html?examId=${attempt.examId}`;
+    // Security: only the owner can view their own result
+    if (attempt.userId !== user.uid) {
+      Utils.toast('Access denied', 'error');
+      window.location.href = 'dashboard.html';
+      return;
+    }
 
-    // Load questions
+    document.getElementById('ranklist-link').href = `ranklist.html?examId=${attempt.examId}`;
+    document.getElementById('rank-link').href     = `ranklist.html?examId=${attempt.examId}`;
+
+    // Load questions for this exam
     const examDoc = await db.collection('exams').doc(attempt.examId).get();
-    const qIds = examDoc.data().questionIds||[];
-    const qDocs = await Promise.all(qIds.map(id=>db.collection('questions').doc(id).get()));
-    questions = qDocs.filter(d=>d.exists).map(d=>({id:d.id,...d.data()}));
+    const qIds    = examDoc.data().questionIds || [];
+    const qDocs   = await Promise.all(qIds.map(id => db.collection('questions').doc(id).get()));
+    questions     = qDocs.filter(d => d.exists).map(d => ({ id: d.id, ...d.data() }));
 
     renderResult();
-    loadRank();
-  } catch(e){Utils.toast('Error: '+e.message,'error');}
+    loadRank(); // non-blocking
+  } catch(e) {
+    Utils.toast('Error loading result: ' + e.message, 'error');
+    console.error(e);
+  }
 });
 
-function renderResult(){
+function renderResult() {
   document.getElementById('loading-screen').classList.add('hidden');
   document.getElementById('result-content').classList.remove('hidden');
-  const score = attempt.totalScore||0;
-  const max   = attempt.maxScore||100;
-  const pct   = ((score/max)*100).toFixed(1);
-  document.getElementById('res-exam-title').textContent = attempt.examTitle||'Exam';
+
+  const score = attempt.totalScore || 0;
+  const max   = attempt.maxScore   || 100;
+  const pct   = ((score / max) * 100).toFixed(1);
+
+  document.getElementById('res-exam-title').textContent = attempt.examTitle || 'Exam';
   document.getElementById('res-score').textContent      = score.toFixed(2);
   document.getElementById('res-max').textContent        = `/ ${max}`;
   document.getElementById('res-pct').textContent        = `${pct}%`;
-  document.getElementById('res-date').textContent       = attempt.submittedAt?.toDate?.()?.toLocaleString('en-IN')||'—';
-  document.getElementById('s-correct').textContent = attempt.correct||0;
-  document.getElementById('s-wrong').textContent   = attempt.wrong||0;
-  document.getElementById('s-partial').textContent = attempt.partial||0;
-  document.getElementById('s-skip').textContent    = attempt.skipped||0;
+  document.getElementById('res-date').textContent       =
+    attempt.submittedAt?.toDate?.()?.toLocaleString('en-IN') || '—';
+
+  document.getElementById('s-correct').textContent = attempt.correct  || 0;
+  document.getElementById('s-wrong').textContent   = attempt.wrong    || 0;
+  document.getElementById('s-partial').textContent = attempt.partial  || 0;
+  document.getElementById('s-skip').textContent    = attempt.skipped  || 0;
   document.getElementById('s-total').textContent   = questions.length;
-  renderChart(attempt.correct||0, attempt.wrong||0, attempt.partial||0, attempt.skipped||0, questions.length);
-  renderPerfBars(score, max, attempt.correct||0, attempt.wrong||0, questions.length);
+
+  renderChart(attempt.correct || 0, attempt.wrong || 0, attempt.partial || 0, attempt.skipped || 0, questions.length);
+  renderPerfBars(score, max, attempt.correct || 0, attempt.wrong || 0, questions.length);
   renderReview('all');
 }
 
-function renderChart(c,w,p,s,total){
-  if(!total)return;
-  const circ = 2*Math.PI*40;
-  const cRatio=c/total, wRatio=w/total, pRatio=p/total;
-  // Stacked stroke-dasharray
-  const cDash=circ*cRatio, wDash=circ*wRatio, pDash=circ*pRatio;
-  const cOffset=0, wOffset=circ*(1-cRatio), pOffset=circ*(1-cRatio-wRatio);
-  const score=parseFloat(document.getElementById('res-score').textContent);
-  const max=parseFloat(document.getElementById('res-max').textContent.replace('/','').trim());
-  document.getElementById('donut-pct-text').textContent=((score/max)*100).toFixed(0)+'%';
-  setTimeout(()=>{
-    const dc=document.getElementById('donut-correct');
-    dc.style.strokeDasharray=`${cDash} ${circ-cDash}`;
-    dc.style.strokeDashoffset=0;
-    const dw=document.getElementById('donut-wrong');
-    dw.style.strokeDasharray=`${wDash} ${circ-wDash}`;
-    dw.style.strokeDashoffset=-cDash;
-    const dp=document.getElementById('donut-partial');
-    dp.style.strokeDasharray=`${pDash} ${circ-pDash}`;
-    dp.style.strokeDashoffset=-(cDash+wDash);
-  },300);
+function renderChart(c, w, p, s, total) {
+  if (!total) return;
+  const circ  = 2 * Math.PI * 40;
+  const cDash = circ * (c / total);
+  const wDash = circ * (w / total);
+  const pDash = circ * (p / total);
+
+  const score = parseFloat(document.getElementById('res-score').textContent);
+  const max   = parseFloat(document.getElementById('res-max').textContent.replace('/', '').trim());
+  document.getElementById('donut-pct-text').textContent = ((score / max) * 100).toFixed(0) + '%';
+
+  setTimeout(() => {
+    const dc = document.getElementById('donut-correct');
+    dc.style.strokeDasharray  = `${cDash} ${circ - cDash}`;
+    dc.style.strokeDashoffset = 0;
+
+    const dw = document.getElementById('donut-wrong');
+    dw.style.strokeDasharray  = `${wDash} ${circ - wDash}`;
+    dw.style.strokeDashoffset = -cDash;
+
+    const dp = document.getElementById('donut-partial');
+    dp.style.strokeDasharray  = `${pDash} ${circ - pDash}`;
+    dp.style.strokeDashoffset = -(cDash + wDash);
+  }, 300);
 }
 
-function renderPerfBars(score,max,c,w,total){
-  const acc = total>0?((c/total)*100).toFixed(1):0;
-  const pct = max>0?((score/max)*100).toFixed(1):0;
+function renderPerfBars(score, max, c, w, total) {
+  const acc = total > 0 ? ((c / total) * 100).toFixed(1) : 0;
+  const pct = max  > 0 ? ((score / max)  * 100).toFixed(1) : 0;
   const bars = [
-    {label:'Score %', val:pct, color:'var(--primary)'},
-    {label:'Accuracy', val:acc, color:'var(--success)'},
-    {label:'Correct Rate', val:total?((c/total)*100).toFixed(1):0, color:'var(--success-light)'},
-    {label:'Wrong Rate',   val:total?((w/total)*100).toFixed(1):0, color:'var(--danger)'},
+    { label: 'Score %',     val: pct, color: 'var(--primary)' },
+    { label: 'Accuracy',    val: acc, color: 'var(--success)' },
+    { label: 'Correct Rate',val: total ? ((c / total) * 100).toFixed(1) : 0, color: 'var(--success)' },
+    { label: 'Wrong Rate',  val: total ? ((w / total) * 100).toFixed(1) : 0, color: 'var(--danger)'  },
   ];
-  document.getElementById('perf-bars').innerHTML = bars.map(b=>`
+  document.getElementById('perf-bars').innerHTML = bars.map(b => `
     <div class="perf-bar">
       <div class="perf-label"><span>${b.label}</span><span>${b.val}%</span></div>
       <div class="perf-track"><div class="perf-fill" style="width:0;background:${b.color}" data-w="${b.val}"></div></div>
     </div>`).join('');
-  setTimeout(()=>{ document.querySelectorAll('.perf-fill').forEach(el=>el.style.width=el.dataset.w+'%'); },400);
+  setTimeout(() => {
+    document.querySelectorAll('.perf-fill').forEach(el => el.style.width = el.dataset.w + '%');
+  }, 400);
 }
 
-function renderReview(filter){
-  const ev = attempt.evaluation||{};
+function renderReview(filter) {
+  const ev   = attempt.evaluation || {};
   const list = document.getElementById('review-list');
-  let html='';
-  questions.forEach((q,i)=>{
-    const ev_ = ev[q.id]||{result:'skip',selected:[],correct:[],score:0};
-    if(filter!=='all'&&ev_.result!==filter)return;
-    const rbCls = {correct:'rb-correct',wrong:'rb-wrong',partial:'rb-partial',skip:'rb-skip'}[ev_.result]||'rb-skip';
-    const rbTxt = {correct:'✅ Correct',wrong:'❌ Wrong',partial:'⚡ Partial',skip:'⬜ Skipped'}[ev_.result]||'—';
-    const optLabels=(arr)=>arr.map(i=>typeof i==='number'?String.fromCharCode(65+i):i).join(', ');
-    html+=`<div class="q-review-item" id="rv-${i}">
+  let html   = '';
+
+  questions.forEach((q, i) => {
+    const ev_ = ev[q.id] || { result: 'skip', selected: [], correct: [], score: 0 };
+    if (filter !== 'all' && ev_.result !== filter) return;
+
+    const rbCls = { correct:'rb-correct', wrong:'rb-wrong', partial:'rb-partial', skip:'rb-skip' }[ev_.result] || 'rb-skip';
+    const rbTxt = { correct:'✅ Correct', wrong:'❌ Wrong', partial:'⚡ Partial', skip:'⬜ Skipped' }[ev_.result] || '—';
+    const optLabels = arr => arr.map(x => typeof x === 'number' ? String.fromCharCode(65 + x) : x).join(', ');
+
+    html += `<div class="q-review-item" id="rv-${i}">
       <div class="q-review-header" onclick="toggleReview(${i})">
         <div style="display:flex;align-items:center;gap:12px;">
-          <span style="font-weight:700;color:var(--primary)">Q${i+1}</span>
-          <span style="font-size:13px;color:var(--text2);max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(q.text||'').substring(0,80)}${q.text?.length>80?'…':''}</span>
+          <span style="font-weight:700;color:var(--primary)">Q${i + 1}</span>
+          <span style="font-size:13px;color:var(--text2);max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            ${(q.text || '').substring(0, 80)}${(q.text || '').length > 80 ? '…' : ''}
+          </span>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
           <span class="result-badge ${rbCls}">${rbTxt}</span>
-          <span style="font-weight:700;color:${ev_.score>=0?'var(--success)':'var(--danger)'}">${ev_.score>=0?'+':''}${(ev_.score||0).toFixed(2)}</span>
+          <span style="font-weight:700;color:${ev_.score >= 0 ? 'var(--success)' : 'var(--danger)'}">
+            ${ev_.score >= 0 ? '+' : ''}${(ev_.score || 0).toFixed(2)}
+          </span>
           <span style="color:var(--text2);font-size:13px;">▼</span>
         </div>
       </div>
       <div class="q-review-body" id="rvb-${i}">
-        ${q.imageUrl?`<img src="${q.imageUrl}" style="max-height:200px;border-radius:8px;margin-bottom:12px;">`:''}
-        <p style="font-size:14px;line-height:1.7;margin-bottom:12px;">${q.text||''}</p>
+        ${q.imageUrl ? `<img src="${q.imageUrl}" style="max-height:200px;border-radius:8px;margin-bottom:12px;">` : ''}
+        <p style="font-size:14px;line-height:1.7;margin-bottom:12px;">${q.text || ''}</p>
         <div class="answer-comparison">
-          <div class="ans-box ans-your"><strong>Your Answer:</strong><br>${ev_.selected?.length>0?optLabels(ev_.selected):'Not attempted'}</div>
-          <div class="ans-box ans-correct"><strong>Correct Answer:</strong><br>${ev_.correct?.length>0?optLabels(ev_.correct):'—'}</div>
+          <div class="ans-box ans-your">
+            <strong>Your Answer:</strong><br>
+            ${ev_.selected?.length > 0 ? optLabels(ev_.selected) : 'Not attempted'}
+          </div>
+          <div class="ans-box ans-correct">
+            <strong>Correct Answer:</strong><br>
+            ${ev_.correct?.length > 0 ? optLabels(ev_.correct) : '—'}
+          </div>
         </div>
-        ${q.solution?`<div style="margin-top:12px;background:#f0fdf4;border-left:3px solid var(--success);padding:12px;border-radius:6px;font-size:13px;"><strong>Solution:</strong><br>${q.solution}</div>`:''}
+        ${q.solution ? `<div style="margin-top:12px;background:#f0fdf4;border-left:3px solid var(--success);padding:12px;border-radius:6px;font-size:13px;"><strong>Solution:</strong><br>${q.solution}</div>` : ''}
       </div>
     </div>`;
   });
+
   list.innerHTML = html || '<div class="empty-state"><div class="icon">✅</div><p>No questions match this filter.</p></div>';
 }
 
-function toggleReview(i){
+function toggleReview(i) {
   document.getElementById(`rvb-${i}`).classList.toggle('open');
 }
 
-function filterReview(f,btn){
-  document.querySelectorAll('.review-filters .btn').forEach(b=>b.classList.remove('active'));
+function filterReview(f, btn) {
+  document.querySelectorAll('.review-filters .btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderReview(f);
 }
 
-async function loadRank(){
-  try{
+// ── FIX: loadRank now sorts client-side to avoid composite index error ──
+async function loadRank() {
+  try {
+    // Fetch only by examId + status (2 fields = no composite index needed)
     const snap = await db.collection('attempts')
-      .where('examId','==',attempt.examId)
-      .where('status','==','submitted')
-      .orderBy('totalScore','desc').get();
-    const all=snap.docs;
-    const myIdx=all.findIndex(d=>d.id===attemptId);
-    const rank=myIdx+1, total=all.length;
-    const pct=total>1?((total-rank)/(total-1)*100).toFixed(1):'100.0';
-    document.getElementById('rank-num').textContent=`#${rank}`;
-    document.getElementById('rank-out-of').textContent=`out of ${total} candidates`;
-    document.getElementById('rank-percentile').textContent=`${pct}%`;
-  }catch(e){}
+      .where('examId', '==', attempt.examId)
+      .where('status', '==', 'submitted')
+      .get();
+
+    if (snap.empty) return;
+
+    // Sort client-side by totalScore descending
+    const all = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0));
+
+    const myIdx = all.findIndex(d => d.id === attemptId);
+    const rank  = myIdx + 1;
+    const total = all.length;
+    const pct   = total > 1 ? (((total - rank) / (total - 1)) * 100).toFixed(1) : '100.0';
+
+    document.getElementById('rank-num').textContent        = `#${rank}`;
+    document.getElementById('rank-out-of').textContent     = `out of ${total} candidate${total !== 1 ? 's' : ''}`;
+    document.getElementById('rank-percentile').textContent = `${pct}%`;
+  } catch(e) {
+    console.error('loadRank error:', e);
+    document.getElementById('rank-num').textContent    = '—';
+    document.getElementById('rank-out-of').textContent = 'Could not load rank';
+  }
 }
 </script>
 </body>
