@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Portal — GeoExam</title>
@@ -41,14 +42,14 @@
 <!-- Admin Sidebar -->
 <div class="admin-sidebar">
   <div class="admin-logo">
-    <h1>🪨 GeoExam Admin</h1>
+    <h1><i class="fas fa-gem"></i> GeoExam Admin</h1>
     <p>Portal Management System</p>
   </div>
   <div class="admin-nav">
     <div class="nav-section">
       <div class="nav-section-title">Overview</div>
       <button class="admin-nav-link active" onclick="showPanel('dashboard')" data-panel="dashboard">
-        <span class="icon">📊</span> Dashboard
+        <span class="icon"><i class="fas fa-chart-bar"></i></span> Dashboard
       </button>
     </div>
     <div class="nav-section">
@@ -66,7 +67,7 @@
     <div class="nav-section">
       <div class="nav-section-title">Exams</div>
       <button class="admin-nav-link" onclick="showPanel('exams')" data-panel="exams">
-        <span class="icon">📝</span> Manage Exams
+        <span class="icon"><i class="fas fa-file-alt"></i></span> Manage Exams
       </button>
       <button class="admin-nav-link" onclick="showPanel('create-exam')" data-panel="create-exam">
         <span class="icon">🆕</span> Create Exam
@@ -75,7 +76,7 @@
     <div class="nav-section">
       <div class="nav-section-title">Analytics</div>
       <button class="admin-nav-link" onclick="showPanel('attempts')" data-panel="attempts">
-        <span class="icon">🏆</span> All Attempts
+        <span class="icon"><i class="fas fa-trophy"></i></span> All Attempts
       </button>
       <button class="admin-nav-link" onclick="showPanel('users')" data-panel="users">
         <span class="icon">👥</span> Users
@@ -102,10 +103,10 @@
     <!-- DASHBOARD -->
     <div id="panel-dashboard" class="admin-panel active">
       <div class="admin-stats" id="admin-stats-row">
-        <div class="admin-stat"><div class="ico">❓</div><div><div class="num" id="st-q">—</div><div class="lbl">Total Questions</div></div></div>
-        <div class="admin-stat"><div class="ico">📝</div><div><div class="num" id="st-e">—</div><div class="lbl">Total Exams</div></div></div>
+        <div class="admin-stat"><div class="ico"><i class="fas fa-question-circle"></i></div><div><div class="num" id="st-q">—</div><div class="lbl">Total Questions</div></div></div>
+        <div class="admin-stat"><div class="ico"><i class="fas fa-file-alt"></i></div><div><div class="num" id="st-e">—</div><div class="lbl">Total Exams</div></div></div>
         <div class="admin-stat"><div class="ico">👥</div><div><div class="num" id="st-u">—</div><div class="lbl">Registered Users</div></div></div>
-        <div class="admin-stat"><div class="ico">📊</div><div><div class="num" id="st-a">—</div><div class="lbl">Total Attempts</div></div></div>
+        <div class="admin-stat"><div class="ico"><i class="fas fa-chart-bar"></i></div><div><div class="num" id="st-a">—</div><div class="lbl">Total Attempts</div></div></div>
       </div>
       <div class="grid-2">
         <div class="card">
