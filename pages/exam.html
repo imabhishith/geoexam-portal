@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Examination — GeoExam Portal</title>
@@ -104,7 +105,7 @@
 <div class="exam-header">
   <div class="exam-title-bar" id="exam-header-title">Loading…</div>
   <div style="display:flex;align-items:center;gap:12px;">
-    <button class="btn btn-ghost btn-sm" style="color:#fff;border:1px solid rgba(255,255,255,.3);" onclick="toggleCalc()">🧮 Calculator</button>
+    <button class="btn btn-ghost btn-sm" style="color:#fff;border:1px solid rgba(255,255,255,.3);" onclick="toggleCalc()"><i class="fas fa-calculator"></i> Calculator</button>
     <div class="timer-box" id="timer-display">00:00:00</div>
   </div>
 </div>
@@ -123,11 +124,11 @@
         <button class="btn btn-outline btn-sm" onclick="markForReview()">Mark for Review &amp; Next</button>
       </div>
       <div style="display:flex;gap:8px;">
-        <button class="btn btn-ghost btn-sm" onclick="navigate(-1)">← Previous</button>
-        <button class="btn btn-primary btn-sm" onclick="saveAndNext()">Save &amp; Next →</button>
+        <button class="btn btn-ghost btn-sm" onclick="navigate(-1)"><i class="fas fa-arrow-left"></i> Previous</button>
+        <button class="btn btn-primary btn-sm" onclick="saveAndNext()">Save &amp; Next <i class="fas fa-arrow-right"></i></button>
       </div>
       <div class="action-right">
-        <button class="btn btn-accent" onclick="confirmSubmit()">⬛ Submit Exam</button>
+        <button class="btn btn-accent" onclick="confirmSubmit()"><i class="fas fa-paper-plane"></i> Submit Exam</button>
       </div>
     </div>
   </div>
@@ -192,14 +193,14 @@
 <div class="modal-overlay" id="submit-modal">
   <div class="modal submit-confirm">
     <div class="modal-header">
-      <h3>⚠️ Submit Examination?</h3>
+      <h3><i class="fas fa-exclamation-triangle"></i> Submit Examination?</h3>
       <button class="modal-close" onclick="closeModal('submit-modal')">✕</button>
     </div>
     <div class="modal-body">
       <p style="margin-bottom:12px;">Are you sure you want to submit? This action <strong>cannot be undone</strong>.</p>
       <div class="stats-mini" id="submit-stats"></div>
       <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px;font-size:13px;">
-        ⚠️ Unanswered questions will be counted as <strong>0 marks</strong>. Make sure you have reviewed all questions.
+        <i class="fas fa-exclamation-triangle"></i> Unanswered questions will be counted as <strong>0 marks</strong>. Make sure you have reviewed all questions.
       </div>
     </div>
     <div class="modal-footer">
@@ -224,7 +225,7 @@ let questions = [];       // flat array
 let sections  = [];       // [{title, questionIds}]
 let currentSec= 0;
 let currentQ  = 0;        // global index
-let answers   = {};       // qId → {selected:[...], status:'na'|'ans'|'mrk'|'am'|'nv'}
+let answers   = {};       // qId <i class="fas fa-arrow-right"></i> {selected:[...], status:'na'|'ans'|'mrk'|'am'|'nv'}
 let timerSec  = 0;
 let timerInt  = null;
 let attemptId = null;
@@ -259,7 +260,7 @@ async function initExam() {
 
     // Load questions
     const qIds = examData.questionIds || [];
-    if (qIds.length === 0) { document.getElementById('question-area').innerHTML='<div class="empty-state"><div class="icon">📭</div><p>No questions in this exam.</p></div>'; return; }
+    if (qIds.length === 0) { document.getElementById('question-area').innerHTML='<div class="empty-state"><div class="icon"><i class="fas fa-inbox"></i></div><p>No questions in this exam.</p></div>'; return; }
 
     const qDocs = await Promise.all(qIds.map(id => db.collection('questions').doc(id).get()));
     questions = qDocs.filter(d=>d.exists).map(d=>({id:d.id,...d.data()}));
@@ -354,7 +355,7 @@ function renderQuestion() {
     <div class="q-marking">
       <span>Marks: <span class="mark-pos">+${posM}</span></span>
       ${negM>0?`<span>Negative: <span class="mark-neg">−${negM}</span></span>`:'<span style="color:var(--text3)">No Negative Marking</span>'}
-      ${q.type==='mcq'?'<span style="color:var(--info)">⚡ Partial Marking Applicable</span>':''}
+      ${q.type==='mcq'?'<span style="color:var(--info)"><i class="fas fa-bolt"></i> Partial Marking Applicable</span>':''}
     </div>
     ${q.imageUrl?`<img src="${q.imageUrl}" class="q-image" alt="question">`:''}
     <div class="q-text">${q.text||''}</div>
