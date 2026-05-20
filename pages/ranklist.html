@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ranklist — GeoExam Portal</title>
@@ -42,18 +43,18 @@
 <body>
 <nav class="navbar">
   <div class="navbar-brand">
-    <span style="font-size:28px;">🪨</span>
+    <span style="font-size:28px;"><i class="fas fa-gem"></i></span>
     <div><h1>GeoExam Portal</h1><span>Ranklist</span></div>
   </div>
   <div class="navbar-nav">
-    <a href="dashboard.html" class="nav-link">← Dashboard</a>
+    <a href="dashboard.html" class="nav-link"><i class="fas fa-arrow-left"></i> Dashboard</a>
     <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,.8)">Logout</button>
   </div>
 </nav>
 
 <div class="page-content">
   <div class="rank-header">
-    <h2 style="margin-bottom:12px;">🏆 Exam Ranklist</h2>
+    <h2 style="margin-bottom:12px;"><i class="fas fa-trophy"></i> Exam Ranklist</h2>
     <div class="exam-sel">
       <label style="font-size:14px;opacity:.8;">Select Exam:</label>
       <select class="exam-picker" id="exam-picker" onchange="loadRanklist()">
@@ -64,7 +65,7 @@
 
   <div id="rank-content">
     <div class="empty-state">
-      <div class="icon">📋</div>
+      <div class="icon"><i class="fas fa-clipboard-list"></i></div>
       <p>Select an exam above to view its ranklist.</p>
     </div>
   </div>
@@ -110,7 +111,7 @@ async function loadRanklist() {
   const examId = document.getElementById('exam-picker').value;
   const cont = document.getElementById('rank-content');
   if (!examId) {
-    cont.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>Please select an exam.</p></div>';
+    cont.innerHTML = '<div class="empty-state"><div class="icon"><i class="fas fa-clipboard-list"></i></div><p>Please select an exam.</p></div>';
     return;
   }
   cont.innerHTML = '<div class="loading-screen" style="min-height:200px;"><div class="spinner"></div><p>Loading ranklist…</p></div>';
@@ -125,7 +126,7 @@ async function loadRanklist() {
       .get();
 
     if (snap.empty) {
-      cont.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No submissions yet for this exam. Be the first to attempt it!</p></div>';
+      cont.innerHTML = '<div class="empty-state"><div class="icon"><i class="fas fa-inbox"></i></div><p>No submissions yet for this exam. Be the first to attempt it!</p></div>';
       return;
     }
 
@@ -184,7 +185,7 @@ async function loadRanklist() {
       const podiumStyles = top3.length === 3
         ? ['silver', 'gold', 'bronze']
         : top3.length === 2 ? ['silver', 'gold'] : ['gold'];
-      const medals  = top3.length === 3 ? ['🥈', '🥇', '🥉'] : top3.length === 2 ? ['🥈', '🥇'] : ['🥇'];
+      const medals  = top3.length === 3 ? ['<i class="fas fa-medal" style="color:#94a3b8"></i>', '<i class="fas fa-medal" style="color:#f59e0b"></i>', '<i class="fas fa-medal" style="color:#cd7c2f"></i>'] : top3.length === 2 ? ['<i class="fas fa-medal" style="color:#94a3b8"></i>', '<i class="fas fa-medal" style="color:#f59e0b"></i>'] : ['<i class="fas fa-medal" style="color:#f59e0b"></i>'];
       const rbClass = top3.length === 3 ? ['rb-silver','rb-gold','rb-bronze'] : top3.length === 2 ? ['rb-silver','rb-gold'] : ['rb-gold'];
 
       html += `<div class="top3-row" style="grid-template-columns:${top3.length === 1 ? '1fr' : top3.length === 2 ? '1fr 1.2fr' : '1fr 1.2fr 1fr'}">`;
@@ -228,7 +229,7 @@ async function loadRanklist() {
         <div class="rank-av">${(u.firstName || 'S')[0].toUpperCase()}</div>
         <div class="rank-info">
           <div class="name">${displayName} ${isMe ? '<span class="badge badge-primary">You</span>' : ''}</div>
-          <div class="sub">✅ ${attempt.correct || 0} Correct &nbsp;|&nbsp; ❌ ${attempt.wrong || 0} Wrong &nbsp;|&nbsp; ⚡ ${attempt.partial || 0} Partial</div>
+          <div class="sub"><i class="fas fa-check-circle"></i> ${attempt.correct || 0} Correct &nbsp;|&nbsp; <i class="fas fa-times-circle"></i> ${attempt.wrong || 0} Wrong &nbsp;|&nbsp; <i class="fas fa-bolt"></i> ${attempt.partial || 0} Partial</div>
         </div>
         <div class="rank-score">${(attempt.totalScore || 0).toFixed(2)}</div>
         <div class="rank-pct">${pct}%</div>
@@ -242,9 +243,9 @@ async function loadRanklist() {
     console.error('Ranklist error:', e);
     let msg = e.message;
     if (e.code === 'permission-denied') {
-      msg = 'Permission denied. Make sure you have published the updated Firestore security rules (firestore.rules) in Firebase Console → Firestore → Rules.';
+      msg = 'Permission denied. Make sure you have published the updated Firestore security rules (firestore.rules) in Firebase Console <i class="fas fa-arrow-right"></i> Firestore <i class="fas fa-arrow-right"></i> Rules.';
     }
-    cont.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p style="color:var(--danger);font-weight:600;">Error loading ranklist</p><p style="font-size:13px;margin-top:8px;">${msg}</p></div>`;
+    cont.innerHTML = `<div class="empty-state"><div class="icon"><i class="fas fa-exclamation-triangle"></i></div><p style="color:var(--danger);font-weight:600;">Error loading ranklist</p><p style="font-size:13px;margin-top:8px;">${msg}</p></div>`;
   }
 }
 
