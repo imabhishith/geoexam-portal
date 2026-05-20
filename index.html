@@ -19,8 +19,6 @@
   .auth-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
   .auth-form { display: none; }
   .auth-form.active { display: block; }
-  .or-divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: var(--text3); font-size: 13px; }
-  .or-divider::before, .or-divider::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
   .info-box { background: #eff6ff; border-left: 3px solid var(--primary); padding: 12px 14px; border-radius: 6px; font-size: 13px; color: var(--primary-dark); margin-bottom: 16px; }
 </style>
 </head>
@@ -90,14 +88,11 @@
       </button>
     </div>
   </div>
-
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
-<!-- FIX: corrected path — firebase-config.js is at root, not inside js/ folder -->
 <script src="firebase-config.js"></script>
 
 <script>
@@ -124,7 +119,6 @@ async function doLogin() {
     const uid     = cred.user.uid;
     const userDoc = await db.collection('users').doc(uid).get();
 
-    // If Firestore doc is missing (edge-case for old accounts), create it now
     if (!userDoc.exists) {
       await db.collection('users').doc(uid).set({
         uid,
@@ -171,43 +165,53 @@ async function doSignup() {
   btn.textContent = 'Creating account…';
 
   try {
-    // Step 1: Create Firebase Auth user
+    // ── STEP 1: Create Auth user ──────────────────────────────
+    console.log('[Signup] Step 1: Creating auth user for', email);
     const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    console.log('[Signup] Auth user created. UID =', cred.user.uid);
     await cred.user.updateProfile({ displayName: `${fname} ${lname}` });
 
-    // Step 2: Force fresh token so Firestore rules see auth.uid immediately
-    await cred.user.getIdToken(true);
+    // ── STEP 2: Stop onAuthStateChanged from redirecting early ─
+    // We set a flag so the listener below does NOT redirect
+    // while the Firestore write is still in progress.
+    window._signingUp = true;
 
-    // Step 3: Write Firestore user document
-    await db.collection('users').doc(cred.user.uid).set({
-      uid:       cred.user.uid,
+    // ── STEP 3: Force fresh token ─────────────────────────────
+    console.log('[Signup] Step 3: Refreshing ID token…');
+    await cred.user.getIdToken(true);
+    console.log('[Signup] Token refreshed.');
+
+    // ── STEP 4: Write Firestore document ──────────────────────
+    const uid = cred.user.uid;
+    const payload = {
+      uid,
       firstName: fname,
       lastName:  lname,
       email,
       mobile,
       role:      'student',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+    };
+    console.log('[Signup] Step 4: Writing to Firestore users/' + uid, payload);
+    await db.collection('users').doc(uid).set(payload);
+    console.log('[Signup] ✅ Firestore write SUCCESS. Document users/' + uid + ' created.');
 
+    window._signingUp = false;
     Utils.toast('Account created! Redirecting…', 'success');
     setTimeout(() => window.location.href = 'pages/dashboard.html', 1200);
 
   } catch (e) {
-    console.error('Signup error:', e);
+    window._signingUp = false;
+    console.error('[Signup] ❌ ERROR at step:', e.code, e.message, e);
 
     if (e.code && e.code.startsWith('auth/')) {
-      // Auth creation itself failed — show error, let user retry
       Utils.toast(friendlyError(e.code, e.message), 'error');
-      btn.disabled = false;
-      btn.textContent = 'Create Account';
     } else {
-      // Auth succeeded but Firestore write failed
-      // The login fallback will recreate the doc on next login
-      console.error('Firestore write failed:', e.code, e.message);
-      Utils.toast('Account created but profile save failed: ' + friendlyError(e.code, e.message), 'warning', 7000);
-      btn.disabled = false;
-      btn.textContent = 'Create Account';
+      // Firestore write failed — show exact reason
+      Utils.toast('Profile save failed: ' + friendlyError(e.code, e.message), 'error', 8000);
     }
+    btn.disabled = false;
+    btn.textContent = 'Create Account';
   }
 }
 
@@ -233,14 +237,20 @@ function friendlyError(code, fallback) {
     'auth/weak-password':          'Password is too weak. Use at least 8 characters.',
     'auth/too-many-requests':      'Too many attempts. Please wait a moment and try again.',
     'auth/network-request-failed': 'Network error. Check your internet connection.',
-    'permission-denied':           'Firestore permission denied. Please publish Firestore security rules in Firebase Console.',
+    'permission-denied':           'Firestore permission denied. Please publish security rules.',
   };
   return map[code] || fallback;
 }
 
 // ── Auto-redirect if already logged in ───────────────────────
+// NOTE: guarded by _signingUp flag so it doesn't fire mid-signup
 auth.onAuthStateChanged(async user => {
   if (!user) return;
+  if (window._signingUp) {
+    console.log('[onAuthStateChanged] Signup in progress — skipping redirect.');
+    return;
+  }
+  console.log('[onAuthStateChanged] User detected, checking role…', user.uid);
   try {
     const doc = await db.collection('users').doc(user.uid).get();
     if (doc.exists && doc.data().role === 'admin') {
