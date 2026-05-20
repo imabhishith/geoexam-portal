@@ -26,6 +26,7 @@ auth.onAuthStateChanged(async user => {
   renderSections();
   loadQPicker();
   initAddSingleImageWidget();
+  loadRevaluation();
 });
 
 // ── Panel Navigation ──
@@ -37,7 +38,7 @@ function showPanel(name) {
   const titles = {
     dashboard:'Dashboard', qbank:'Question Bank', 'add-single':'Add Question',
     'add-bulk':'Bulk Upload PDF', exams:'Manage Exams', 'create-exam':'Create / Edit Exam',
-    attempts:'All Attempts', users:'Users'
+    attempts:'All Attempts', users:'Users', revaluation:'Revaluation Centre'
   };
   document.getElementById('panel-title').textContent = titles[name] || name;
 }
@@ -853,3 +854,353 @@ async function toggleRole(uid, currentRole) {
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 async function doLogout() { await auth.signOut(); window.location.href = '../index.html'; }
+
+// ══════════════════════════════════════════════════════════════
+// REVALUATION CENTRE
+// ══════════════════════════════════════════════════════════════
+
+let revalExams = [];          // all exams
+let revalAttempts = [];       // attempts for selected exam
+let revalUserCache = {};      // uid → user doc
+let revalSelectedExamId = null;
+let revalLog = [];            // log of current run
+
+async function loadRevaluation() {
+  try {
+    const snap = await db.collection('exams').orderBy('createdAt','desc').get();
+    revalExams = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderRevalExamList();
+  } catch(e) { console.error('Revaluation load error:', e); }
+}
+
+function renderRevalExamList() {
+  const el = document.getElementById('reval-exam-list');
+  if (!el) return;
+  if (!revalExams.length) {
+    el.innerHTML = '<p class="text-muted text-small">No exams found.</p>';
+    return;
+  }
+  el.innerHTML = revalExams.map(e => `
+    <div class="reval-exam-card ${revalSelectedExamId === e.id ? 'selected' : ''}" onclick="selectRevalExam('${e.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div>
+          <div style="font-weight:700;font-size:14px;color:var(--text);">${e.title}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px;">${e.totalQuestions||0} questions · ${e.durationMinutes||'—'} min</div>
+        </div>
+        <span class="badge ${e.published?'badge-success':'badge-muted'}" style="flex-shrink:0;">${e.published?'Live':'Draft'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function selectRevalExam(examId) {
+  revalSelectedExamId = examId;
+  renderRevalExamList(); // re-render to highlight
+
+  const exam = revalExams.find(e => e.id === examId);
+  document.getElementById('reval-exam-name').textContent = exam?.title || '—';
+  document.getElementById('reval-attempts-section').style.display = 'block';
+  document.getElementById('reval-log-section').style.display = 'none';
+  document.getElementById('reval-attempts-tbody').innerHTML =
+    '<tr><td colspan="7" class="text-center text-muted"><div class="spinner" style="margin:0 auto;width:20px;height:20px;border-width:3px;"></div></td></tr>';
+
+  try {
+    const snap = await db.collection('attempts')
+      .where('examId','==',examId)
+      .where('status','==','submitted')
+      .orderBy('submittedAt','desc')
+      .get();
+
+    revalAttempts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    await renderRevalAttempts();
+  } catch(e) {
+    Utils.toast('Error loading attempts: ' + e.message, 'error');
+    document.getElementById('reval-attempts-tbody').innerHTML =
+      `<tr><td colspan="7" class="text-center text-muted">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function renderRevalAttempts() {
+  const tbody = document.getElementById('reval-attempts-tbody');
+  if (!revalAttempts.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No submitted attempts for this exam.</td></tr>';
+    document.getElementById('reval-bulk-btn').disabled = true;
+    return;
+  }
+
+  // Load unknown users
+  for (const a of revalAttempts) {
+    if (!revalUserCache[a.userId]) {
+      try {
+        const ud = await db.collection('users').doc(a.userId).get();
+        revalUserCache[a.userId] = ud.data() || {};
+      } catch(_) { revalUserCache[a.userId] = {}; }
+    }
+  }
+
+  // Compute ranks by current score
+  const sorted = [...revalAttempts].sort((a,b) => (b.totalScore||0)-(a.totalScore||0));
+  const rankMap = {};
+  sorted.forEach((a,i) => { rankMap[a.id] = i+1; });
+
+  tbody.innerHTML = revalAttempts.map(a => {
+    const u = revalUserCache[a.userId] || {};
+    const date = a.submittedAt?.toDate?.()?.toLocaleDateString('en-IN') || '—';
+    const revaledAt = a.revaluatedAt?.toDate?.()?.toLocaleString('en-IN') || '—';
+    const wasRevaled = !!a.revaluatedAt;
+    return `<tr id="reval-row-${a.id}">
+      <td><strong>${u.firstName||'—'} ${u.lastName||''}</strong><br><span style="font-size:11px;color:var(--text2);">${u.email||''}</span></td>
+      <td style="font-weight:700;color:var(--primary);font-size:15px;">${(a.totalScore||0).toFixed(2)}</td>
+      <td>${a.maxScore||'—'}</td>
+      <td style="text-align:center;"><span class="badge badge-info">#${rankMap[a.id]}</span></td>
+      <td>${date}</td>
+      <td style="font-size:11px;color:${wasRevaled?'var(--success)':'var(--text3)'};">
+        ${wasRevaled ? `<i class="fas fa-check-circle"></i> ${revaledAt}` : '—'}
+      </td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="revaluateSingle('${a.id}')">
+          <i class="fas fa-sync-alt"></i> Revaluate
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('reval-bulk-btn').disabled = false;
+  document.getElementById('reval-count').textContent = `${revalAttempts.length} attempt${revalAttempts.length!==1?'s':''}`;
+}
+
+// ── Core scoring engine (mirrors exam.html submitExam logic) ──
+async function scoreAttempt(attempt, questionMap) {
+  const answers = attempt.answers || {};
+  let totalScore=0, maxScore=0, correct=0, wrong=0, partial=0, skipped=0;
+  const evaluation = {};
+
+  const exam = revalExams.find(e => e.id === attempt.examId);
+  const qIds = exam?.questionIds || Object.keys(answers);
+
+  for (const qid of qIds) {
+    const q = questionMap[qid];
+    if (!q) continue;
+
+    const qAns = answers[qid] || { selected: [] };
+    const posM = parseFloat(q.posMarks || q.marks || 1);
+    const negM = parseFloat(q.negMarks || 0);
+    const correctOpts = q.correctOptions || [];
+    const correctNat  = q.correctAnswer;
+    maxScore += posM;
+    let qScore = 0, qResult = 'skip';
+
+    if (q.type === 'nat') {
+      const sel = parseFloat(qAns.selected?.[0]);
+      const cor = parseFloat(correctNat);
+      const tol = parseFloat(q.tolerance || 0);
+      if (!isNaN(sel)) {
+        if (Math.abs(sel - cor) <= tol) { qScore = posM; qResult = 'correct'; correct++; }
+        else { qScore = 0; qResult = 'wrong'; wrong++; }
+      } else skipped++;
+    } else if (q.type === 'scq') {
+      if (qAns.selected?.length > 0) {
+        if (correctOpts.includes(qAns.selected[0])) { qScore = posM; qResult = 'correct'; correct++; }
+        else { qScore = -negM; qResult = 'wrong'; wrong++; }
+      } else skipped++;
+    } else if (q.type === 'mcq') {
+      if (qAns.selected?.length > 0) {
+        const selSet = new Set(qAns.selected), corSet = new Set(correctOpts);
+        const hasWrong = [...selSet].some(s => !corSet.has(s));
+        if (hasWrong) { qScore = -negM; qResult = 'wrong'; wrong++; }
+        else {
+          const corrChosen = [...selSet].filter(s => corSet.has(s)).length;
+          if (corrChosen === corSet.size) { qScore = posM; qResult = 'correct'; correct++; }
+          else { qScore = posM * (corrChosen / corSet.size); qResult = 'partial'; partial++; }
+        }
+      } else skipped++;
+    }
+
+    totalScore += qScore;
+    evaluation[qid] = {
+      selected: qAns.selected || [],
+      correct: correctOpts.length > 0 ? correctOpts : [correctNat],
+      score: qScore,
+      result: qResult
+    };
+  }
+
+  return { totalScore, maxScore, correct, wrong, partial, skipped, evaluation };
+}
+
+// ── Revaluate a single attempt ──
+async function revaluateSingle(attemptId) {
+  const btn = document.querySelector(`#reval-row-${attemptId} button`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+
+  try {
+    const attDoc = await db.collection('attempts').doc(attemptId).get();
+    if (!attDoc.exists) { Utils.toast('Attempt not found', 'error'); return; }
+    const attempt = { id: attDoc.id, ...attDoc.data() };
+
+    // Load current question data fresh from Firestore
+    const exam = revalExams.find(e => e.id === attempt.examId);
+    const qIds = exam?.questionIds || Object.keys(attempt.answers || {});
+    const qDocs = await Promise.all(qIds.map(id => db.collection('questions').doc(id).get()));
+    const questionMap = {};
+    qDocs.forEach(d => { if (d.exists) questionMap[d.id] = { id: d.id, ...d.data() }; });
+
+    const oldScore = attempt.totalScore || 0;
+    const result = await scoreAttempt(attempt, questionMap);
+
+    await db.collection('attempts').doc(attemptId).update({
+      totalScore:   result.totalScore,
+      maxScore:     result.maxScore,
+      correct:      result.correct,
+      wrong:        result.wrong,
+      partial:      result.partial,
+      skipped:      result.skipped,
+      evaluation:   result.evaluation,
+      revaluatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      revaluationNote: `Revaluated by admin on ${new Date().toLocaleString('en-IN')}`
+    });
+
+    // Update local cache
+    const idx = revalAttempts.findIndex(a => a.id === attemptId);
+    if (idx !== -1) {
+      revalAttempts[idx] = { ...revalAttempts[idx], ...result, revaluatedAt: { toDate: () => new Date() } };
+    }
+
+    const delta = result.totalScore - oldScore;
+    const deltaStr = delta >= 0 ? `+${delta.toFixed(2)}` : delta.toFixed(2);
+    Utils.toast(`Revaluation done! Score: ${result.totalScore.toFixed(2)} (${deltaStr})`, 'success');
+
+    // Log entry
+    const u = revalUserCache[attempt.userId] || {};
+    revalLog.unshift({
+      name: `${u.firstName||'?'} ${u.lastName||''}`,
+      attemptId,
+      oldScore: oldScore.toFixed(2),
+      newScore: result.totalScore.toFixed(2),
+      delta: deltaStr,
+      time: new Date().toLocaleTimeString('en-IN')
+    });
+    renderRevalLog();
+    await renderRevalAttempts();
+
+  } catch(e) {
+    Utils.toast('Error: ' + e.message, 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync-alt"></i> Revaluate'; }
+  }
+}
+
+// ── Bulk revaluate all attempts for selected exam ──
+async function revaluateAll() {
+  if (!revalSelectedExamId) { Utils.toast('Select an exam first', 'error'); return; }
+  if (!revalAttempts.length) { Utils.toast('No attempts to revaluate', 'warning'); return; }
+
+  const confirmed = confirm(
+    `Revaluate ALL ${revalAttempts.length} submitted attempt(s) for this exam?\n\n` +
+    `This will re-score every attempt using the CURRENT correct answers from the Question Bank. ` +
+    `All scores, results, and ranks will be updated.`
+  );
+  if (!confirmed) return;
+
+  const btn = document.getElementById('reval-bulk-btn');
+  const progressEl = document.getElementById('reval-progress');
+  const progFill = document.getElementById('reval-prog-fill');
+  const progText = document.getElementById('reval-prog-text');
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Revaluating…';
+  progressEl.style.display = 'block';
+  revalLog = [];
+
+  // Load ALL questions for this exam once
+  const exam = revalExams.find(e => e.id === revalSelectedExamId);
+  const qIds = exam?.questionIds || [];
+  const qDocs = await Promise.all(qIds.map(id => db.collection('questions').doc(id).get()));
+  const questionMap = {};
+  qDocs.forEach(d => { if (d.exists) questionMap[d.id] = { id: d.id, ...d.data() }; });
+
+  let done = 0, errors = 0;
+  for (const attempt of revalAttempts) {
+    progText.textContent = `Processing ${done + 1} of ${revalAttempts.length}…`;
+    progFill.style.width = `${Math.round((done / revalAttempts.length) * 100)}%`;
+
+    try {
+      const oldScore = attempt.totalScore || 0;
+      const result = await scoreAttempt(attempt, questionMap);
+
+      await db.collection('attempts').doc(attempt.id).update({
+        totalScore:   result.totalScore,
+        maxScore:     result.maxScore,
+        correct:      result.correct,
+        wrong:        result.wrong,
+        partial:      result.partial,
+        skipped:      result.skipped,
+        evaluation:   result.evaluation,
+        revaluatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        revaluationNote: `Bulk revaluated by admin on ${new Date().toLocaleString('en-IN')}`
+      });
+
+      // Update local
+      const idx = revalAttempts.findIndex(a => a.id === attempt.id);
+      if (idx !== -1) revalAttempts[idx] = { ...revalAttempts[idx], ...result, revaluatedAt: { toDate: () => new Date() } };
+
+      const u = revalUserCache[attempt.userId] || {};
+      const delta = result.totalScore - oldScore;
+      revalLog.push({
+        name: `${u.firstName||'?'} ${u.lastName||''}`,
+        attemptId: attempt.id,
+        oldScore: oldScore.toFixed(2),
+        newScore: result.totalScore.toFixed(2),
+        delta: (delta >= 0 ? '+' : '') + delta.toFixed(2),
+        time: new Date().toLocaleTimeString('en-IN')
+      });
+    } catch(e) {
+      errors++;
+      console.error('Reval error for', attempt.id, e);
+    }
+    done++;
+  }
+
+  progFill.style.width = '100%';
+  progText.textContent = `Done! ${done} revaluated, ${errors} error(s).`;
+
+  // Update ranks after all done
+  await renderRevalAttempts();
+  renderRevalLog();
+
+  const successCount = done - errors;
+  Utils.toast(`Bulk revaluation complete! ${successCount}/${done} updated.`, 'success');
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-sync-alt"></i> Revaluate All Attempts';
+}
+
+function renderRevalLog() {
+  const logEl = document.getElementById('reval-log-section');
+  const tbody = document.getElementById('reval-log-tbody');
+  if (!revalLog.length) { logEl.style.display = 'none'; return; }
+  logEl.style.display = 'block';
+
+  // Compute new ranks from current revalAttempts
+  const sorted = [...revalAttempts].sort((a,b) => (b.totalScore||0)-(a.totalScore||0));
+  const rankMap = {};
+  sorted.forEach((a,i) => { rankMap[a.id] = i+1; });
+
+  tbody.innerHTML = revalLog.map(entry => {
+    const rank = rankMap[entry.attemptId] ? `#${rankMap[entry.attemptId]}` : '—';
+    const deltaNum = parseFloat(entry.delta);
+    const deltaColor = deltaNum > 0 ? 'var(--success)' : deltaNum < 0 ? 'var(--danger)' : 'var(--text2)';
+    return `<tr>
+      <td><strong>${entry.name}</strong></td>
+      <td>${entry.oldScore}</td>
+      <td style="font-weight:700;color:var(--primary)">${entry.newScore}</td>
+      <td style="font-weight:700;color:${deltaColor}">${entry.delta}</td>
+      <td><span class="badge badge-info">${rank}</span></td>
+      <td style="font-size:11px;color:var(--text2);">${entry.time}</td>
+    </tr>`;
+  }).join('');
+}
+
+function clearRevalLog() {
+  revalLog = [];
+  document.getElementById('reval-log-section').style.display = 'none';
+  document.getElementById('reval-progress').style.display = 'none';
+}
