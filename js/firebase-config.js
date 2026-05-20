@@ -5,12 +5,11 @@
 //       Images are stored as base64 in Firestore OR as URLs.
 // ============================================================
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-  // storageBucket intentionally omitted — not needed!
+  apiKey: "AIzaSyA280RE5lycIE-MVxMvzWdb__Lwa0OzNBg",
+  authDomain: "geoexam-portal.firebaseapp.com",
+  projectId: "geoexam-portal",
+  messagingSenderId: "203992322500",
+  appId: "1:203992322500:web:e21f36d5c3f71c46715491"
 };
 
 // Initialize Firebase
