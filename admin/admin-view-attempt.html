@@ -244,21 +244,30 @@
     <!-- populated by JS -->
   </div>
 
+  <!-- Time Analysis Banner -->
+  <div id="time-analysis-section" style="display:none;background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin-bottom:20px;overflow:hidden;">
+    <div style="padding:14px 18px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;">
+      <h3 style="font-size:14px;color:#1a3c6e;font-family:'Rajdhani',sans-serif;"><i class="fas fa-clock"></i> Time Analysis per Question</h3>
+      <span id="time-total-label" style="font-size:12px;color:#64748b;"></span>
+    </div>
+    <div style="padding:14px 18px;" id="time-bars-container"></div>
+  </div>
+
   <!-- Filter bar -->
   <div class="filter-bar">
     <span style="font-size:13px;font-weight:600;color:var(--text2);">Show:</span>
     <button class="filter-btn active" onclick="setFilter('all',this)">All <span id="fc-all" class="badge badge-muted" style="margin-left:4px;"></span></button>
     <button class="filter-btn" onclick="setFilter('correct',this)" style="border-color:var(--success);color:var(--success);">
-      ✓ Correct <span id="fc-correct" class="badge" style="background:#dcfce7;color:#15803d;margin-left:4px;"></span>
+      <i class="fas fa-check-circle"></i> Correct <span id="fc-correct" class="badge" style="background:#dcfce7;color:#15803d;margin-left:4px;"></span>
     </button>
     <button class="filter-btn" onclick="setFilter('wrong',this)" style="border-color:var(--danger);color:var(--danger);">
-      ✗ Wrong <span id="fc-wrong" class="badge" style="background:#fee2e2;color:#991b1b;margin-left:4px;"></span>
+      <i class="fas fa-times-circle"></i> Wrong <span id="fc-wrong" class="badge" style="background:#fee2e2;color:#991b1b;margin-left:4px;"></span>
     </button>
     <button class="filter-btn" onclick="setFilter('partial',this)" style="border-color:var(--warning);color:var(--warning);">
-      ½ Partial <span id="fc-partial" class="badge" style="background:#fef9c3;color:#92400e;margin-left:4px;"></span>
+      <i class="fas fa-adjust"></i> Partial <span id="fc-partial" class="badge" style="background:#fef9c3;color:#92400e;margin-left:4px;"></span>
     </button>
     <button class="filter-btn" onclick="setFilter('skipped',this)" style="border-color:var(--text3);color:var(--text3);">
-      — Skipped <span id="fc-skipped" class="badge badge-muted" style="margin-left:4px;"></span>
+      <i class="fas fa-minus-circle"></i> Skipped <span id="fc-skipped" class="badge badge-muted" style="margin-left:4px;"></span>
     </button>
   </div>
 
@@ -297,6 +306,14 @@ auth.onAuthStateChanged(async user => {
   }
   loadAttempt();
 });
+
+// ── Helpers ──
+function formatQTime(secs) {
+  if (!secs || secs < 1) return '< 1s';
+  if (secs < 60) return secs + 's';
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return s > 0 ? `${m}m ${s}s` : `${m}m`;
+}
 
 // ── Load & render ──
 async function loadAttempt() {
@@ -471,6 +488,7 @@ async function loadAttempt() {
               ${q.year ? `<span style="font-size:11px;color:var(--text2);">${q.year}</span>` : ''}
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
+              ${attempt.timeSpent && attempt.timeSpent[qid] ? `<span style="font-size:11px;color:#64748b;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:12px;padding:3px 10px;"><i class="fas fa-clock"></i> ${formatQTime(attempt.timeSpent[qid])}</span>` : ''}
               <span class="score-chip ${scoreColor}">${scoreTxt} pts</span>
               <span class="q-result-badge ${result}">${result.charAt(0).toUpperCase()+result.slice(1)}</span>
             </div>
@@ -493,6 +511,32 @@ async function loadAttempt() {
 
       renderedItems.push({ result, html: cardHtml });
     });
+
+    // ── Render Time Analysis ──
+    if (attempt.timeSpent && Object.keys(attempt.timeSpent).length > 0) {
+      const taSection = document.getElementById('time-analysis-section');
+      const barsContainer = document.getElementById('time-bars-container');
+      taSection.style.display = 'block';
+      const tData = orderedIds.map((qid, idx) => ({
+        qid, idx: idx+1, secs: attempt.timeSpent[qid] || 0
+      })).filter(d => d.secs > 0);
+      const maxSecs = Math.max(...tData.map(d => d.secs), 1);
+      const totalSecs = tData.reduce((s, d) => s + d.secs, 0);
+      document.getElementById('time-total-label').textContent = 'Total tracked: ' + formatQTime(totalSecs);
+      barsContainer.innerHTML = tData.map(d => {
+        const ev = attempt.evaluation?.[d.qid] || {};
+        const result = ev.result || 'skipped';
+        const colors = {correct:'#22c55e',wrong:'#ef4444',partial:'#f59e0b',skipped:'#94a3b8'};
+        const pct = Math.round((d.secs / maxSecs) * 100);
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:12px;">
+          <div style="width:30px;text-align:right;color:#64748b;flex-shrink:0;">Q${d.idx}</div>
+          <div style="flex:1;background:#f1f5f9;border-radius:4px;overflow:hidden;height:16px;">
+            <div style="width:${pct}%;background:${colors[result]||'#94a3b8'};height:100%;border-radius:4px;transition:width .3s;"></div>
+          </div>
+          <div style="width:50px;color:#374151;font-weight:600;flex-shrink:0;">${formatQTime(d.secs)}</div>
+        </div>`;
+      }).join('');
+    }
 
     // Update filter badges
     const total = renderedItems.length;
