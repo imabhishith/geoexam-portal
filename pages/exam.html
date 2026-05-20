@@ -2,165 +2,376 @@
 <html lang="en">
 <head>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Examination — GeoExam Portal</title>
-<link rel="stylesheet" href="../css/global.css">
-<style>
-  body { background: #f0f4f8; overflow: hidden; }
-  /* ── Exam Header ── */
-  .exam-header { background: var(--primary); color: #fff; padding: 0 16px; height: 52px; display: flex; align-items: center; justify-content: space-between; position: fixed; top: 0; left: 0; right: 0; z-index: 200; }
-  .exam-title-bar { font-family: 'Rajdhani'; font-size: 18px; font-weight: 700; }
-  .timer-box { background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.4); border-radius: 8px; padding: 4px 16px; font-family: 'IBM Plex Mono'; font-size: 22px; font-weight: 600; letter-spacing: .1em; min-width: 110px; text-align: center; }
-  .timer-box.warning { background: rgba(231,76,60,.3); border-color: #e74c3c; animation: pulse 1s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.7} }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Examination — GeoExam Portal</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <style>
+    /* ============================================================
+       GATE-STYLE EXAM WINDOW
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; }
+    body { background: #e8edf2; overflow: hidden; margin: 0; font-family: 'Segoe UI', Arial, sans-serif; }
 
-  /* ── Main Layout ── */
-  .exam-layout { display: flex; margin-top: 52px; height: calc(100vh - 52px); }
-  .exam-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-  .exam-sidebar { width: 280px; background: var(--surface); border-left: 2px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    /* ── TOP HEADER BAR (GATE blue) ── */
+    .exam-header {
+      background: linear-gradient(90deg, #1a3c6e 0%, #0d2447 100%);
+      color: #fff;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      box-shadow: 0 2px 8px rgba(0,0,0,.3);
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .header-logo { font-size: 22px; opacity: .9; }
+    .exam-title-bar { font-size: 15px; font-weight: 700; letter-spacing: .02em; }
+    .exam-title-bar small { display: block; font-size: 11px; font-weight: 400; opacity: .7; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
 
-  /* ── Section Tabs ── */
-  .section-tabs { background: var(--primary-dark); display: flex; overflow-x: auto; }
-  .sec-tab { padding: 8px 16px; color: rgba(255,255,255,.7); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; transition: all .2s; }
-  .sec-tab.active { color: #fff; border-bottom-color: var(--accent); background: rgba(255,255,255,.08); }
+    /* Timer — prominent like GATE */
+    .timer-wrap { display: flex; flex-direction: column; align-items: flex-end; }
+    .timer-label { font-size: 10px; opacity: .7; letter-spacing: .05em; text-transform: uppercase; }
+    .timer-box {
+      background: #0d2447;
+      border: 2px solid rgba(255,255,255,.4);
+      border-radius: 6px;
+      padding: 3px 14px;
+      font-family: 'IBM Plex Mono', 'Courier New', monospace;
+      font-size: 20px; font-weight: 700;
+      letter-spacing: .08em;
+      min-width: 108px; text-align: center;
+      transition: background .3s, border-color .3s;
+    }
+    .timer-box.warning { background: #7f1d1d; border-color: #ef4444; animation: blink .9s infinite; }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:.6} }
 
-  /* ── Question Area ── */
-  .question-area { flex: 1; overflow-y: auto; padding: 20px 24px; }
-  .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
-  .q-number { font-size: 15px; font-weight: 700; color: var(--primary); }
-  .q-type-badge { background: var(--primary); color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
-  .q-marking { background: var(--bg); border-radius: 8px; padding: 8px 14px; font-size: 12px; display: flex; gap: 16px; margin-bottom: 16px; }
-  .q-marking span { display: flex; align-items: center; gap: 4px; }
-  .mark-pos { color: var(--success); font-weight: 700; }
-  .mark-neg { color: var(--danger); font-weight: 700; }
-  .q-image { max-width: 100%; max-height: 340px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border); display: block; }
-  .q-text { font-size: 15px; line-height: 1.8; margin-bottom: 20px; color: var(--text); }
-  /* Options */
-  .options-list { display: flex; flex-direction: column; gap: 10px; }
-  .option-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border: 2px solid var(--border); border-radius: 10px; cursor: pointer; transition: all .2s; user-select: none; }
-  .option-item:hover { border-color: var(--primary-light); background: #eff6ff; }
-  .option-item.selected { border-color: var(--primary); background: #dbeafe; }
-  .option-item.selected .opt-bubble { background: var(--primary); color: #fff; }
-  .opt-bubble { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; color: var(--text2); transition: all .2s; }
-  .opt-content { font-size: 14px; line-height: 1.6; flex: 1; }
-  .opt-img { max-width: 200px; max-height: 150px; border-radius: 6px; margin-top: 6px; display: block; }
-  /* NAT Input */
-  .nat-input-wrap { margin-top: 12px; }
-  .nat-input { font-size: 18px; font-family: 'IBM Plex Mono'; border: 2px solid var(--border); border-radius: 8px; padding: 12px 16px; width: 220px; text-align: center; }
-  .nat-input:focus { border-color: var(--primary); outline: none; }
+    .calc-toggle-btn {
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
+      color: #fff; border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background .2s;
+    }
+    .calc-toggle-btn:hover { background: rgba(255,255,255,.2); }
 
-  /* ── Bottom Action Bar ── */
-  .exam-actions { background: var(--surface); border-top: 2px solid var(--border); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-  .action-left { display: flex; gap: 8px; }
-  .action-right { display: flex; gap: 8px; }
+    /* ── SECONDARY BAR: section tabs ── */
+    .section-bar {
+      background: #1e4d8c;
+      display: flex; align-items: stretch;
+      position: fixed; top: 56px; left: 0; right: 280px; z-index: 200;
+      overflow-x: auto;
+      border-bottom: 3px solid #f59e0b;
+    }
+    .sec-tab {
+      padding: 8px 20px; color: rgba(255,255,255,.65);
+      font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+      border-bottom: 3px solid transparent; margin-bottom: -3px;
+      transition: all .2s; user-select: none;
+    }
+    .sec-tab:hover { color: #fff; background: rgba(255,255,255,.07); }
+    .sec-tab.active { color: #fff; border-bottom-color: #f59e0b; background: rgba(255,255,255,.1); }
 
-  /* ── Sidebar: Profile & Palette ── */
-  .sidebar-profile { padding: 12px 14px; background: var(--primary); color: #fff; display: flex; align-items: center; gap: 10px; }
-  .profile-av { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; }
-  .profile-info { font-size: 12px; line-height: 1.5; }
-  .sidebar-legend { padding: 10px 14px; background: var(--bg); border-bottom: 1px solid var(--border); }
-  .legend-row { display: flex; flex-wrap: wrap; gap: 6px; }
-  .legend-it { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
-  .leg-dot { width: 22px; height: 22px; border-radius: 50%; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; }
-  .palette-scroll { flex: 1; overflow-y: auto; padding: 10px 14px; }
-  .palette-section { margin-bottom: 12px; }
-  .palette-sec-title { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
-  .palette-grid { display: flex; flex-wrap: wrap; gap: 5px; }
-  .q-btn { width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer; font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center; transition: transform .15s; }
-  .q-btn:hover { transform: scale(1.15); }
-  .q-btn.active { outline: 3px solid var(--accent); outline-offset: 2px; }
-  .qst-nv  { background: var(--q-not-visited); }
-  .qst-na  { background: var(--q-not-answered); }
-  .qst-ans { background: var(--q-answered); }
-  .qst-mrk { background: var(--q-marked); }
-  .qst-am  { background: var(--q-answered-marked); }
+    /* ── MAIN LAYOUT ── */
+    .exam-layout {
+      display: flex;
+      margin-top: 56px; /* header */
+      height: calc(100vh - 56px);
+    }
+    .exam-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+    .exam-sidebar { width: 280px; background: #fff; border-left: 2px solid #d1d5db; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
 
-  .sidebar-stats { padding: 10px 14px; border-top: 1px solid var(--border); background: var(--bg); font-size: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .sidebar-stats div { background: var(--surface); border-radius: 6px; padding: 6px 10px; text-align: center; }
-  .sidebar-stats .sval { font-size: 16px; font-weight: 700; font-family: 'Rajdhani'; }
-  .sidebar-btn { margin: 10px 14px; }
+    /* question panel offset for section bar */
+    .question-scroll-wrap {
+      flex: 1; overflow-y: auto;
+      padding-top: 40px; /* height of section bar */
+    }
+    .question-area { padding: 20px 28px 8px; }
 
-  /* ── Calculator ── */
-  .calc-panel { position: fixed; bottom: 80px; right: 290px; background: #2c3e50; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.4); z-index: 300; padding: 12px; width: 260px; display: none; }
-  .calc-panel.show { display: block; }
-  .calc-display { background: #1a252f; color: #2ecc71; font-family: 'IBM Plex Mono'; font-size: 22px; padding: 10px 14px; border-radius: 8px; text-align: right; margin-bottom: 10px; min-height: 48px; word-break: break-all; }
-  .calc-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
-  .calc-btn { background: #34495e; color: #fff; border: none; border-radius: 6px; padding: 10px 4px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background .15s; }
-  .calc-btn:hover { background: #4a6274; }
-  .calc-btn.op  { background: #e67e22; }
-  .calc-btn.eq  { background: #27ae60; }
-  .calc-btn.clr { background: #c0392b; }
-  .calc-btn.span2 { grid-column: span 2; }
+    /* ── QUESTION DISPLAY ── */
+    .q-info-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 12px; padding-bottom: 12px;
+      border-bottom: 2px solid #e5e7eb;
+      flex-wrap: wrap; gap: 8px;
+    }
+    .q-number { font-size: 16px; font-weight: 700; color: #1a3c6e; }
+    .q-section-label { font-size: 12px; color: #6b7280; margin-top: 2px; }
+    .q-type-badge {
+      background: #1a3c6e; color: #fff;
+      font-size: 11px; padding: 4px 12px; border-radius: 4px;
+      font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+      align-self: flex-start;
+    }
+    .q-type-badge.nat { background: #0369a1; }
+    .q-type-badge.mcq { background: #7c3aed; }
 
-  /* ── Submit Modal ── */
-  .submit-confirm .stats-mini { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 16px 0; }
-  .stat-mini-card { background: var(--bg); border-radius: 8px; padding: 12px; text-align: center; }
-  .stat-mini-card .n { font-size: 24px; font-weight: 700; font-family: 'Rajdhani'; }
-</style>
+    /* Marks bar */
+    .q-marks-bar {
+      display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
+      padding: 8px 16px; margin-bottom: 16px; font-size: 13px;
+    }
+    .q-marks-bar .pos { color: #16a34a; font-weight: 700; }
+    .q-marks-bar .neg { color: #dc2626; font-weight: 700; }
+    .q-marks-bar .partial-note { color: #7c3aed; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+
+    .q-image { max-width: 100%; max-height: 340px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #e5e7eb; display: block; }
+    .q-text { font-size: 15px; line-height: 1.85; margin-bottom: 22px; color: #1f2937; }
+
+    /* ── OPTIONS ── */
+    .options-list { display: flex; flex-direction: column; gap: 10px; }
+    .option-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 12px 16px; border: 2px solid #d1d5db;
+      border-radius: 8px; cursor: pointer;
+      transition: border-color .18s, background .18s;
+      user-select: none; background: #fff;
+    }
+    .option-item:hover { border-color: #93c5fd; background: #eff6ff; }
+    .option-item.selected { border-color: #1a3c6e; background: #dbeafe; }
+    .option-item.selected .opt-bubble { background: #1a3c6e; color: #fff; border-color: #1a3c6e; }
+    .opt-bubble {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid #9ca3af;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; flex-shrink: 0; color: #374151;
+      transition: all .18s;
+    }
+    .opt-content { font-size: 14px; line-height: 1.7; flex: 1; padding-top: 5px; }
+    .opt-img { max-width: 220px; max-height: 160px; border-radius: 6px; margin-top: 8px; display: block; }
+
+    /* ── NAT Input ── */
+    .nat-wrap { margin-top: 8px; }
+    .nat-label { font-size: 13px; color: #6b7280; margin-bottom: 10px; }
+    .nat-input {
+      font-size: 20px; font-family: 'IBM Plex Mono', monospace;
+      border: 2px solid #d1d5db; border-radius: 8px;
+      padding: 12px 18px; width: 240px; text-align: center;
+      background: #f9fafb;
+    }
+    .nat-input:focus { border-color: #1a3c6e; outline: none; background: #fff; }
+
+    /* ── BOTTOM ACTION BAR ── */
+    .exam-actions {
+      background: #f3f4f6;
+      border-top: 2px solid #d1d5db;
+      padding: 10px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 8px;
+    }
+    .action-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    /* Button styles — GATE-like */
+    .btn-gate { border: none; border-radius: 6px; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all .2s; letter-spacing: .02em; }
+    .btn-save-next   { background: #1a3c6e; color: #fff; }
+    .btn-save-next:hover   { background: #0d2447; }
+    .btn-mark-review { background: #8b5cf6; color: #fff; }
+    .btn-mark-review:hover { background: #7c3aed; }
+    .btn-clear       { background: #fff; color: #dc2626; border: 2px solid #dc2626; }
+    .btn-clear:hover { background: #fef2f2; }
+    .btn-prev        { background: #fff; color: #374151; border: 2px solid #d1d5db; }
+    .btn-prev:hover  { background: #f3f4f6; }
+    .btn-submit-exam { background: #f59e0b; color: #1a1a1a; font-size: 14px; padding: 9px 22px; }
+    .btn-submit-exam:hover { background: #d97706; }
+
+    /* ── SIDEBAR ── */
+    .sidebar-candidate {
+      background: linear-gradient(135deg, #1a3c6e, #0d2447);
+      color: #fff; padding: 14px 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .cand-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,.2); border: 2px solid rgba(255,255,255,.4);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 16px; flex-shrink: 0;
+    }
+    .cand-name { font-weight: 700; font-size: 13px; }
+    .cand-role { font-size: 11px; opacity: .65; }
+
+    .sidebar-legend {
+      background: #f9fafb; border-bottom: 1px solid #e5e7eb;
+      padding: 10px 14px;
+    }
+    .legend-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #6b7280; margin-bottom: 8px; }
+    .legend-rows { display: flex; flex-direction: column; gap: 5px; }
+    .leg-it { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #374151; }
+    .leg-dot { width: 22px; height: 22px; border-radius: 50%; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; flex-shrink: 0; }
+
+    /* Question palette */
+    .palette-scroll { flex: 1; overflow-y: auto; padding: 12px 14px; }
+    .palette-sec { margin-bottom: 14px; }
+    .palette-sec-title { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #e5e7eb; }
+    .palette-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+    .q-btn {
+      width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+      font-size: 12px; font-weight: 700; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .q-btn:hover { transform: scale(1.15); box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+    .q-btn.current { outline: 3px solid #f59e0b; outline-offset: 2px; }
+    .qst-nv  { background: #9ca3af; }
+    .qst-na  { background: #ef4444; }
+    .qst-ans { background: #22c55e; }
+    .qst-mrk { background: #8b5cf6; }
+    .qst-am  { background: #8b5cf6; border: 3px solid #22c55e; }
+
+    /* Stats */
+    .sidebar-stats {
+      padding: 10px 14px; border-top: 1px solid #e5e7eb;
+      background: #f9fafb;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    }
+    .stat-cell { background: #fff; border-radius: 6px; padding: 6px 8px; text-align: center; border: 1px solid #e5e7eb; }
+    .stat-cell .sv { font-size: 17px; font-weight: 800; font-family: 'Rajdhani', sans-serif; }
+    .stat-cell .sl { font-size: 10px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+    .sidebar-submit { padding: 12px 14px; }
+
+    /* ── CALCULATOR ── */
+    .calc-panel {
+      position: fixed; bottom: 78px; right: 290px;
+      background: #1e293b; border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5); z-index: 400;
+      padding: 14px; width: 268px; display: none;
+    }
+    .calc-panel.show { display: block; }
+    .calc-display {
+      background: #0f172a; color: #4ade80;
+      font-family: 'IBM Plex Mono', monospace; font-size: 22px;
+      padding: 10px 14px; border-radius: 8px; text-align: right;
+      margin-bottom: 10px; min-height: 50px; word-break: break-all;
+    }
+    .calc-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 5px; }
+    .calc-btn { background: #334155; color: #e2e8f0; border: none; border-radius: 6px; padding: 10px 4px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background .15s; }
+    .calc-btn:hover { background: #475569; }
+    .calc-btn.op  { background: #ea580c; color: #fff; }
+    .calc-btn.eq  { background: #16a34a; color: #fff; }
+    .calc-btn.clr { background: #b91c1c; color: #fff; }
+    .calc-btn.span2 { grid-column: span 2; }
+
+    /* ── SUBMIT MODAL ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 500; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: #fff; border-radius: 12px; width: 480px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+    .modal-hdr { padding: 18px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+    .modal-hdr h3 { font-size: 17px; color: #1a3c6e; display: flex; align-items: center; gap: 8px; }
+    .modal-body { padding: 20px 24px; }
+    .modal-foot { padding: 14px 24px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; }
+    .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: #6b7280; }
+    .submit-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 14px 0; }
+    .sm-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; text-align: center; }
+    .sm-card .n { font-size: 26px; font-weight: 800; font-family: 'Rajdhani', sans-serif; }
+    .sm-card .l { font-size: 12px; color: #6b7280; }
+    .warn-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #92400e; display: flex; align-items: flex-start; gap: 8px; }
+
+    /* Btn resets for modal */
+    .btn-modal { border: none; border-radius: 8px; padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .btn-modal-outline { background: #fff; border: 2px solid #d1d5db; color: #374151; }
+    .btn-modal-outline:hover { background: #f3f4f6; }
+    .btn-modal-danger { background: #dc2626; color: #fff; }
+    .btn-modal-danger:hover { background: #b91c1c; }
+
+    /* Loading */
+    .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; gap: 12px; color: #6b7280; font-size: 14px; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #1a3c6e; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
 
-<!-- EXAM HEADER -->
+<!-- ════════════════════ HEADER ════════════════════ -->
 <div class="exam-header">
-  <div class="exam-title-bar" id="exam-header-title">Loading…</div>
-  <div style="display:flex;align-items:center;gap:12px;">
-    <button class="btn btn-ghost btn-sm" style="color:#fff;border:1px solid rgba(255,255,255,.3);" onclick="toggleCalc()"><i class="fas fa-calculator"></i> Calculator</button>
-    <div class="timer-box" id="timer-display">00:00:00</div>
+  <div class="header-left">
+    <div class="header-logo"><i class="fas fa-gem" style="color:#f59e0b;"></i></div>
+    <div class="exam-title-bar" id="exam-header-title">
+      Loading…
+      <small>GeoExam Portal · GATE Geology CBT</small>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="calc-toggle-btn" onclick="toggleCalc()"><i class="fas fa-calculator"></i> Calculator</button>
+    <div class="timer-wrap">
+      <div class="timer-label">Time Remaining</div>
+      <div class="timer-box" id="timer-display">00:00:00</div>
+    </div>
   </div>
 </div>
 
-<!-- MAIN LAYOUT -->
+<!-- ════════════════════ SECTION TABS ════════════════════ -->
+<div class="section-bar" id="section-tabs"></div>
+
+<!-- ════════════════════ MAIN LAYOUT ════════════════════ -->
 <div class="exam-layout">
-  <!-- Main Panel -->
+
+  <!-- ── LEFT: Question Panel ── -->
   <div class="exam-main">
-    <div class="section-tabs" id="section-tabs"></div>
-    <div class="question-area" id="question-area">
-      <div class="loading-screen"><div class="spinner"></div><p>Loading exam…</p></div>
+    <div class="question-scroll-wrap" id="question-scroll-wrap">
+      <div class="question-area" id="question-area">
+        <div class="loading-screen"><div class="spinner"></div><p>Loading exam…</p></div>
+      </div>
     </div>
+
+    <!-- Action Bar -->
     <div class="exam-actions">
-      <div class="action-left">
-        <button class="btn btn-danger btn-sm" onclick="clearResponse()">Clear Response</button>
-        <button class="btn btn-outline btn-sm" onclick="markForReview()">Mark for Review &amp; Next</button>
+      <div class="action-group">
+        <button class="btn-gate btn-clear" onclick="clearResponse()"><i class="fas fa-times"></i> Clear Response</button>
+        <button class="btn-gate btn-mark-review" onclick="markForReview()"><i class="fas fa-bookmark"></i> Mark for Review &amp; Next</button>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-ghost btn-sm" onclick="navigate(-1)"><i class="fas fa-arrow-left"></i> Previous</button>
-        <button class="btn btn-primary btn-sm" onclick="saveAndNext()">Save &amp; Next <i class="fas fa-arrow-right"></i></button>
+      <div class="action-group">
+        <button class="btn-gate btn-prev" onclick="navigate(-1)"><i class="fas fa-arrow-left"></i> Previous</button>
+        <button class="btn-gate btn-save-next" onclick="saveAndNext()">Save &amp; Next <i class="fas fa-arrow-right"></i></button>
       </div>
-      <div class="action-right">
-        <button class="btn btn-accent" onclick="confirmSubmit()"><i class="fas fa-paper-plane"></i> Submit Exam</button>
+      <div class="action-group">
+        <button class="btn-gate btn-submit-exam" onclick="confirmSubmit()"><i class="fas fa-paper-plane"></i> Submit Exam</button>
       </div>
     </div>
   </div>
 
-  <!-- Sidebar -->
+  <!-- ── RIGHT: Sidebar ── -->
   <div class="exam-sidebar">
-    <div class="sidebar-profile">
-      <div class="profile-av" id="sb-avatar">?</div>
-      <div class="profile-info">
-        <div style="font-weight:700" id="sb-name">Student</div>
-        <div style="opacity:.7">Candidate</div>
+    <!-- Candidate Info -->
+    <div class="sidebar-candidate">
+      <div class="cand-avatar" id="sb-avatar">?</div>
+      <div>
+        <div class="cand-name" id="sb-name">Candidate</div>
+        <div class="cand-role">GATE Geology</div>
       </div>
     </div>
+
+    <!-- Legend -->
     <div class="sidebar-legend">
-      <div class="legend-row">
-        <div class="legend-it"><div class="leg-dot" style="background:var(--q-not-visited)">—</div>Not Visited</div>
-        <div class="legend-it"><div class="leg-dot" style="background:var(--q-not-answered)">—</div>Not Ans.</div>
-        <div class="legend-it"><div class="leg-dot" style="background:var(--q-answered)">—</div>Answered</div>
-        <div class="legend-it"><div class="leg-dot" style="background:var(--q-marked)">—</div>Marked</div>
-        <div class="legend-it"><div class="leg-dot" style="background:var(--q-answered-marked)">—</div>Ans+Marked</div>
+      <div class="legend-title">Question Status Legend</div>
+      <div class="legend-rows">
+        <div class="leg-it"><div class="leg-dot" style="background:#9ca3af;">—</div>Not Visited</div>
+        <div class="leg-it"><div class="leg-dot" style="background:#ef4444;">—</div>Not Answered</div>
+        <div class="leg-it"><div class="leg-dot" style="background:#22c55e;">—</div>Answered</div>
+        <div class="leg-it"><div class="leg-dot" style="background:#8b5cf6;">—</div>Marked for Review</div>
+        <div class="leg-it"><div class="leg-dot" style="background:#8b5cf6;border:2px solid #22c55e;">—</div>Answered &amp; Marked</div>
       </div>
     </div>
+
+    <!-- Palette -->
     <div class="palette-scroll" id="palette-scroll"></div>
+
+    <!-- Stats -->
     <div class="sidebar-stats" id="sidebar-stats"></div>
-    <div class="sidebar-btn">
-      <button class="btn btn-accent btn-block" onclick="confirmSubmit()">Submit Exam</button>
+
+    <!-- Submit Button -->
+    <div class="sidebar-submit">
+      <button class="btn-gate btn-submit-exam" style="width:100%;justify-content:center;" onclick="confirmSubmit()">
+        <i class="fas fa-paper-plane"></i> Submit Examination
+      </button>
     </div>
   </div>
 </div>
 
-<!-- Calculator -->
+<!-- ════════════════════ CALCULATOR ════════════════════ -->
 <div class="calc-panel" id="calc-panel">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <span style="color:#94a3b8;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Scientific Calculator</span>
+    <button onclick="toggleCalc()" style="background:none;border:none;color:#64748b;font-size:16px;cursor:pointer;">✕</button>
+  </div>
   <div class="calc-display" id="calc-display">0</div>
   <div class="calc-grid">
     <button class="calc-btn clr span2" onclick="calcClear()">AC</button>
@@ -175,7 +386,7 @@
     <button class="calc-btn" onclick="calcNum('4')">4</button>
     <button class="calc-btn" onclick="calcNum('5')">5</button>
     <button class="calc-btn" onclick="calcNum('6')">6</button>
-    <button class="calc-btn" onclick="calcFunc('sqrt')">√</button>
+    <button class="calc-btn" onclick="calcFunc('sqrt')">√x</button>
     <button class="calc-btn" onclick="calcFunc('pow2')">x²</button>
     <button class="calc-btn" onclick="calcNum('1')">1</button>
     <button class="calc-btn" onclick="calcNum('2')">2</button>
@@ -189,23 +400,24 @@
   </div>
 </div>
 
-<!-- Submit Confirm Modal -->
+<!-- ════════════════════ SUBMIT MODAL ════════════════════ -->
 <div class="modal-overlay" id="submit-modal">
-  <div class="modal submit-confirm">
-    <div class="modal-header">
-      <h3><i class="fas fa-exclamation-triangle"></i> Submit Examination?</h3>
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h3><i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> Submit Examination</h3>
       <button class="modal-close" onclick="closeModal('submit-modal')">✕</button>
     </div>
     <div class="modal-body">
-      <p style="margin-bottom:12px;">Are you sure you want to submit? This action <strong>cannot be undone</strong>.</p>
-      <div class="stats-mini" id="submit-stats"></div>
-      <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px;font-size:13px;">
-        <i class="fas fa-exclamation-triangle"></i> Unanswered questions will be counted as <strong>0 marks</strong>. Make sure you have reviewed all questions.
+      <p style="font-size:14px;color:#374151;margin-bottom:4px;">You are about to submit your examination. This action <strong>cannot be undone.</strong></p>
+      <div class="submit-stats" id="submit-stats"></div>
+      <div class="warn-box">
+        <i class="fas fa-info-circle" style="margin-top:2px;color:#d97706;"></i>
+        <span>Questions marked for review <em>(without answer)</em> will be treated as <strong>Not Answered</strong> and carry <strong>0 marks</strong>. Questions that are <em>Answered &amp; Marked for Review</em> will be evaluated.</span>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('submit-modal')">Go Back &amp; Review</button>
-      <button class="btn btn-danger" onclick="submitExam()">Yes, Submit Now</button>
+    <div class="modal-foot">
+      <button class="btn-modal btn-modal-outline" onclick="closeModal('submit-modal')"><i class="fas fa-arrow-left"></i> Go Back &amp; Review</button>
+      <button class="btn-modal btn-modal-danger" onclick="submitExam()"><i class="fas fa-paper-plane"></i> Yes, Submit Now</button>
     </div>
   </div>
 </div>
@@ -221,16 +433,15 @@
 const params  = new URLSearchParams(location.search);
 const examId  = params.get('id');
 let examData  = null;
-let questions = [];       // flat array
-let sections  = [];       // [{title, questionIds}]
+let questions = [];
+let sections  = [];
 let currentSec= 0;
-let currentQ  = 0;        // global index
-let answers   = {};       // qId <i class="fas fa-arrow-right"></i> {selected:[...], status:'na'|'ans'|'mrk'|'am'|'nv'}
+let currentQ  = 0;
+let answers   = {};
 let timerSec  = 0;
 let timerInt  = null;
 let attemptId = null;
 let currentUser = null;
-// Calculator state
 let calcVal='0', calcOp_=null, calcPrev=null, calcNewNum=true;
 
 // ── Auth & Init ──
@@ -238,43 +449,41 @@ auth.onAuthStateChanged(async user => {
   if (!user) { window.location.href = '../index.html'; return; }
   currentUser = user;
   const ud = (await db.collection('users').doc(user.uid).get()).data();
-  document.getElementById('sb-name').textContent = ud?.firstName || user.displayName || 'Candidate';
-  document.getElementById('sb-avatar').textContent = (ud?.firstName||'S')[0].toUpperCase();
+  document.getElementById('sb-name').textContent = `${ud?.firstName||''} ${ud?.lastName||''}`.trim() || user.displayName || 'Candidate';
+  document.getElementById('sb-avatar').textContent = (ud?.firstName||user.displayName||'S')[0].toUpperCase();
   initExam();
 });
 
 async function initExam() {
   try {
-    // Check existing in-progress attempt
     const existingSnap = await db.collection('attempts')
       .where('userId','==',currentUser.uid)
       .where('examId','==',examId)
-      .where('status','==','in-progress')
-      .get();
+      .where('status','==','in-progress').get();
 
     const examDoc = await db.collection('exams').doc(examId).get();
     if (!examDoc.exists) { alert('Exam not found.'); window.location.href='dashboard.html'; return; }
     examData = examDoc.data();
-    document.getElementById('exam-header-title').textContent = examData.title;
+    document.getElementById('exam-header-title').innerHTML =
+      `${examData.title}<small>GeoExam Portal · GATE Geology CBT</small>`;
     timerSec = (examData.durationMinutes || 180) * 60;
 
-    // Load questions
     const qIds = examData.questionIds || [];
-    if (qIds.length === 0) { document.getElementById('question-area').innerHTML='<div class="empty-state"><div class="icon"><i class="fas fa-inbox"></i></div><p>No questions in this exam.</p></div>'; return; }
+    if (!qIds.length) {
+      document.getElementById('question-area').innerHTML = '<div class="loading-screen"><p>No questions in this exam.</p></div>';
+      return;
+    }
 
     const qDocs = await Promise.all(qIds.map(id => db.collection('questions').doc(id).get()));
     questions = qDocs.filter(d=>d.exists).map(d=>({id:d.id,...d.data()}));
+    sections  = examData.sections || [{ title:'All Questions', questionIds: qIds }];
 
-    // Build sections
-    sections = examData.sections || [{ title:'All Questions', questionIds: qIds }];
-
-    // Restore or create attempt
     if (!existingSnap.empty) {
       const att = existingSnap.docs[0];
       attemptId = att.id;
       const attData = att.data();
-      answers = attData.answers || {};
-      timerSec = attData.remainingSeconds ?? timerSec;
+      answers   = attData.answers || {};
+      timerSec  = attData.remainingSeconds ?? timerSec;
     } else {
       questions.forEach(q => { answers[q.id] = { selected:[], status:'nv' }; });
       const ref = await db.collection('attempts').add({
@@ -295,134 +504,108 @@ async function initExam() {
 
 function buildSectionTabs() {
   const el = document.getElementById('section-tabs');
-  el.innerHTML = sections.map((s,i) =>
+  el.innerHTML = sections.map((s,i)=>
     `<div class="sec-tab ${i===0?'active':''}" onclick="switchSection(${i})">${s.title}</div>`
   ).join('');
 }
 
 function switchSection(idx) {
-  currentSec = idx;
+  currentSec=idx;
   document.querySelectorAll('.sec-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
-  // Find first question in section
-  const secQIds = sections[idx].questionIds || [];
+  const secQIds = sections[idx].questionIds||[];
   const qi = questions.findIndex(q=>secQIds.includes(q.id));
-  if (qi>=0) { currentQ=qi; renderQuestion(); renderPalette(); }
+  if(qi>=0){ currentQ=qi; renderQuestion(); renderPalette(); }
 }
 
 function renderQuestion() {
   const q = questions[currentQ];
-  if (!q) return;
-  const ans = answers[q.id] || { selected:[], status:'na' };
-  if (ans.status === 'nv') { answers[q.id] = { ...ans, status:'na' }; }
-  const posM = q.posMarks || q.marks || 1;
-  const negM = q.negMarks || 0;
+  if(!q) return;
+  const ans = answers[q.id]||{selected:[],status:'na'};
+  if(ans.status==='nv'){ answers[q.id]={...ans,status:'na'}; }
+  const posM = q.posMarks||q.marks||1;
+  const negM = q.negMarks||0;
 
-  let optionsHtml = '';
-  if (q.type === 'nat') {
-    const natVal = ans.selected[0] || '';
-    optionsHtml = `<div class="nat-input-wrap">
-      <p style="margin-bottom:10px;font-size:13px;color:var(--text2);">Enter your numerical answer:</p>
-      <input type="number" class="nat-input" id="nat-input" value="${natVal}" step="any" placeholder="Type answer here"
-        onchange="natAnswer(this.value)">
+  let optHtml='';
+  if(q.type==='nat'){
+    const natVal = ans.selected[0]||'';
+    optHtml=`<div class="nat-wrap">
+      <p class="nat-label">Enter your answer in the box below. Use decimal point (.) for fractional values.</p>
+      <input type="number" class="nat-input" id="nat-input" value="${natVal}" step="any" placeholder="Type numerical answer">
     </div>`;
   } else {
-    const opts = q.options || [];
-    optionsHtml = `<div class="options-list">` + opts.map((opt,i)=>{
-      const label = String.fromCharCode(65+i);
-      const sel = ans.selected.includes(i);
-      const inputType = q.type==='mcq' ? 'checkbox' : 'radio';
+    const opts = q.options||[];
+    optHtml = `<div class="options-list">`+opts.map((opt,i)=>{
+      const label=String.fromCharCode(65+i);
+      const sel=ans.selected.includes(i);
       return `<div class="option-item ${sel?'selected':''}" onclick="toggleOption(${i})">
         <div class="opt-bubble">${label}</div>
         <div class="opt-content">
           ${opt.text||''}
-          ${opt.imageUrl?`<img src="${opt.imageUrl}" class="opt-img" alt="option">`:''}
+          ${opt.imageUrl?`<img src="${opt.imageUrl}" class="opt-img" alt="option image">`:''}
         </div>
-        <input type="${inputType}" style="display:none" ${sel?'checked':''}>
       </div>`;
-    }).join('') + `</div>`;
+    }).join('')+`</div>`;
   }
 
-  document.getElementById('question-area').innerHTML = `
-    <div class="q-header">
+  const typeName = q.type==='scq'?'Single Correct (SCQ)':q.type==='mcq'?'Multiple Select (MSQ)':'Numerical Answer (NAT)';
+  const typeCls  = q.type==='nat'?'nat':q.type==='mcq'?'mcq':'';
+
+  document.getElementById('question-area').innerHTML=`
+    <div class="q-info-row">
       <div>
-        <div class="q-number">Question ${currentQ+1} of ${questions.length}</div>
-        <div style="font-size:12px;color:var(--text2);">${getSectionName(q.id)}</div>
+        <div class="q-number">Question ${currentQ+1} <span style="color:#9ca3af;font-weight:400;">of ${questions.length}</span></div>
+        <div class="q-section-label">${getSectionName(q.id)}</div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <span class="q-type-badge">${q.type==='scq'?'Single Correct':q.type==='mcq'?'Multiple Correct':'Numerical Answer'}</span>
-      </div>
+      <span class="q-type-badge ${typeCls}">${typeName}</span>
     </div>
-    <div class="q-marking">
-      <span>Marks: <span class="mark-pos">+${posM}</span></span>
-      ${negM>0?`<span>Negative: <span class="mark-neg">−${negM}</span></span>`:'<span style="color:var(--text3)">No Negative Marking</span>'}
-      ${q.type==='mcq'?'<span style="color:var(--info)"><i class="fas fa-bolt"></i> Partial Marking Applicable</span>':''}
+    <div class="q-marks-bar">
+      <span>Marks: <span class="pos">+${posM}</span></span>
+      ${negM>0?`<span>Negative: <span class="neg">−${negM}</span></span>`:`<span style="color:#6b7280;font-size:12px;">No Negative Marking</span>`}
+      ${q.type==='mcq'?`<span class="partial-note"><i class="fas fa-info-circle"></i> Partial marks applicable</span>`:''}
     </div>
-    ${q.imageUrl?`<img src="${q.imageUrl}" class="q-image" alt="question">`:''}
-    <div class="q-text">${q.text||''}</div>
-    ${optionsHtml}
+    ${q.imageUrl?`<img src="${q.imageUrl}" class="q-image" alt="question figure">`:''}
+    ${q.text?`<div class="q-text">${q.text}</div>`:''}
+    ${optHtml}
   `;
 }
 
-function getSectionName(qid) {
-  const sec = sections.find(s=>s.questionIds?.includes(qid));
-  return sec ? sec.title : '';
+function getSectionName(qid){
+  const sec=sections.find(s=>s.questionIds?.includes(qid));
+  return sec?sec.title:'';
 }
 
-function toggleOption(idx) {
-  const q = questions[currentQ];
-  const ans = answers[q.id];
-  if (q.type === 'nat') return;
-  if (q.type === 'scq') {
-    ans.selected = ans.selected[0]===idx ? [] : [idx];
-  } else {
-    const pos = ans.selected.indexOf(idx);
-    if (pos > -1) ans.selected.splice(pos,1);
-    else ans.selected.push(idx);
-  }
+function toggleOption(idx){
+  const q=questions[currentQ]; const ans=answers[q.id];
+  if(q.type==='nat') return;
+  if(q.type==='scq'){ ans.selected=ans.selected[0]===idx?[]:[idx]; }
+  else{ const p=ans.selected.indexOf(idx); if(p>-1)ans.selected.splice(p,1); else ans.selected.push(idx); }
   renderQuestion();
 }
 
-function natAnswer(val) {
-  const q = questions[currentQ];
-  answers[q.id].selected = val!==''?[val]:[];
-}
-
-function saveAndNext() {
-  const q = questions[currentQ];
-  const ans = answers[q.id];
-  if (q.type==='nat') {
-    const v = document.getElementById('nat-input')?.value;
-    if (v!==undefined&&v!=='') ans.selected=[v];
-  }
-  if (ans.selected.length>0) ans.status='ans';
-  else ans.status='na';
-  answers[q.id]=ans;
+function saveAndNext(){
+  const q=questions[currentQ]; const ans=answers[q.id];
+  if(q.type==='nat'){ const v=document.getElementById('nat-input')?.value; if(v!==undefined&&v!=='')ans.selected=[v]; }
+  ans.status=ans.selected.length>0?'ans':'na';
   navigate(1);
 }
 
-function markForReview() {
-  const q = questions[currentQ];
-  const ans = answers[q.id];
-  if (q.type==='nat') { const v=document.getElementById('nat-input')?.value; if(v)ans.selected=[v]; }
-  ans.status = ans.selected.length>0 ? 'am' : 'mrk';
+function markForReview(){
+  const q=questions[currentQ]; const ans=answers[q.id];
+  if(q.type==='nat'){ const v=document.getElementById('nat-input')?.value; if(v)ans.selected=[v]; }
+  ans.status=ans.selected.length>0?'am':'mrk';
   navigate(1);
 }
 
-function clearResponse() {
-  const q = questions[currentQ];
-  answers[q.id].selected=[];
-  answers[q.id].status='na';
-  renderQuestion();
-  renderPalette();
+function clearResponse(){
+  const q=questions[currentQ];
+  answers[q.id].selected=[]; answers[q.id].status='na';
+  renderQuestion(); renderPalette();
 }
 
-function navigate(dir) {
-  const newIdx = currentQ + dir;
-  if (newIdx<0||newIdx>=questions.length) return;
-  currentQ = newIdx;
-  renderQuestion();
-  renderPalette();
-  // Switch section tab if needed
+function navigate(dir){
+  const ni=currentQ+dir;
+  if(ni<0||ni>=questions.length) return;
+  currentQ=ni; renderQuestion(); renderPalette();
   for(let i=0;i<sections.length;i++){
     if(sections[i].questionIds?.includes(questions[currentQ].id)){
       if(i!==currentSec){ currentSec=i; document.querySelectorAll('.sec-tab').forEach((t,idx)=>t.classList.toggle('active',idx===i)); }
@@ -431,149 +614,141 @@ function navigate(dir) {
   }
 }
 
-function renderPalette() {
-  const container = document.getElementById('palette-scroll');
-  let html='';
-  sections.forEach((sec,si)=>{
-    const secQs = questions.filter(q=>sec.questionIds?.includes(q.id));
-    html+=`<div class="palette-section"><div class="palette-sec-title">${sec.title}</div><div class="palette-grid">`;
-    secQs.forEach(q=>{
-      const gi = questions.indexOf(q);
-      const ans = answers[q.id]||{status:'nv'};
-      const cls = {nv:'qst-nv',na:'qst-na',ans:'qst-ans',mrk:'qst-mrk',am:'qst-am'}[ans.status]||'qst-nv';
-      html+=`<button class="q-btn ${cls} ${gi===currentQ?'active':''}" onclick="goTo(${gi})">${gi+1}</button>`;
+function renderPalette(){
+  const c=document.getElementById('palette-scroll');
+  let h='';
+  sections.forEach(sec=>{
+    const sQs=questions.filter(q=>sec.questionIds?.includes(q.id));
+    h+=`<div class="palette-sec"><div class="palette-sec-title">${sec.title}</div><div class="palette-grid">`;
+    sQs.forEach(q=>{
+      const gi=questions.indexOf(q);
+      const s=(answers[q.id]||{status:'nv'}).status;
+      const cls={nv:'qst-nv',na:'qst-na',ans:'qst-ans',mrk:'qst-mrk',am:'qst-am'}[s]||'qst-nv';
+      h+=`<button class="q-btn ${cls} ${gi===currentQ?'current':''}" onclick="goTo(${gi})" title="Q${gi+1}">${gi+1}</button>`;
     });
-    html+=`</div></div>`;
+    h+=`</div></div>`;
   });
-  container.innerHTML=html;
+  c.innerHTML=h;
 
-  // Stats
-  const vals = Object.values(answers);
+  const vals=Object.values(answers);
   const ans=vals.filter(a=>a.status==='ans'||a.status==='am').length;
   const na =vals.filter(a=>a.status==='na'||a.status==='nv').length;
   const mrk=vals.filter(a=>a.status==='mrk'||a.status==='am').length;
   document.getElementById('sidebar-stats').innerHTML=`
-    <div><div class="sval" style="color:var(--success)">${ans}</div><div>Answered</div></div>
-    <div><div class="sval" style="color:var(--danger)">${na}</div><div>Not Ans.</div></div>
-    <div><div class="sval" style="color:var(--q-marked)">${mrk}</div><div>Marked</div></div>
-    <div><div class="sval">${questions.length}</div><div>Total</div></div>
+    <div class="stat-cell"><div class="sv" style="color:#22c55e;">${ans}</div><div class="sl">Answered</div></div>
+    <div class="stat-cell"><div class="sv" style="color:#ef4444;">${na}</div><div class="sl">Not Ans.</div></div>
+    <div class="stat-cell"><div class="sv" style="color:#8b5cf6;">${mrk}</div><div class="sl">Marked</div></div>
+    <div class="stat-cell"><div class="sv">${questions.length}</div><div class="sl">Total</div></div>
   `;
 }
 
-function goTo(idx) { currentQ=idx; renderQuestion(); renderPalette(); }
+function goTo(idx){ currentQ=idx; renderQuestion(); renderPalette(); }
 
 // ── Timer ──
-function startTimer() {
-  timerInt = setInterval(()=>{
+function startTimer(){
+  timerInt=setInterval(()=>{
     timerSec--;
-    const el = document.getElementById('timer-display');
-    el.textContent = Utils.formatTime(timerSec);
-    if (timerSec<=300) el.classList.add('warning');
-    if (timerSec<=0) { clearInterval(timerInt); Utils.toast('Time up! Submitting…','warning'); submitExam(); }
-  }, 1000);
+    const el=document.getElementById('timer-display');
+    el.textContent=Utils.formatTime(timerSec);
+    if(timerSec<=300) el.classList.add('warning');
+    if(timerSec<=0){ clearInterval(timerInt); Utils.toast('Time up! Submitting…','warning'); submitExam(); }
+  },1000);
 }
 
-// ── Auto Save ──
-function autoSaveInterval() {
-  setInterval(async ()=>{
-    if (!attemptId) return;
-    try {
-      await db.collection('attempts').doc(attemptId).update({ answers, remainingSeconds: timerSec });
-    } catch(e){}
-  }, 15000);
+function autoSaveInterval(){
+  setInterval(async()=>{
+    if(!attemptId) return;
+    try{ await db.collection('attempts').doc(attemptId).update({answers,remainingSeconds:timerSec}); }catch(e){}
+  },15000);
 }
 
 // ── Submit ──
-function confirmSubmit() {
-  const vals = Object.values(answers);
-  const answered = vals.filter(a=>a.status==='ans'||a.status==='am').length;
-  const notAns   = vals.filter(a=>a.status==='na'||a.status==='nv').length;
-  const marked   = vals.filter(a=>a.status==='mrk'||a.status==='am').length;
+function confirmSubmit(){
+  const vals=Object.values(answers);
+  const answered=vals.filter(a=>a.status==='ans'||a.status==='am').length;
+  const notAns  =vals.filter(a=>a.status==='na'||a.status==='nv').length;
+  const marked  =vals.filter(a=>a.status==='mrk'||a.status==='am').length;
   document.getElementById('submit-stats').innerHTML=`
-    <div class="stat-mini-card"><div class="n" style="color:var(--success)">${answered}</div><div>Answered</div></div>
-    <div class="stat-mini-card"><div class="n" style="color:var(--danger)">${notAns}</div><div>Not Answered</div></div>
-    <div class="stat-mini-card"><div class="n" style="color:var(--q-marked)">${marked}</div><div>Marked for Review</div></div>
+    <div class="sm-card"><div class="n" style="color:#22c55e;">${answered}</div><div class="l">Answered</div></div>
+    <div class="sm-card"><div class="n" style="color:#ef4444;">${notAns}</div><div class="l">Not Answered</div></div>
+    <div class="sm-card"><div class="n" style="color:#8b5cf6;">${marked}</div><div class="l">Marked for Review</div></div>
   `;
   document.getElementById('submit-modal').classList.add('open');
 }
 
-async function submitExam() {
-  closeModal('submit-modal');
-  clearInterval(timerInt);
-  Utils.toast('Evaluating your answers…','info');
+async function submitExam(){
+  closeModal('submit-modal'); clearInterval(timerInt);
+  Utils.toast('Evaluating answers…','info');
 
-  // Evaluate scores
-  let totalScore=0, maxScore=0, correct=0, wrong=0, partial=0, skipped=0;
-  const evaluation = {};
+  let totalScore=0,maxScore=0,correct=0,wrong=0,partial=0,skipped=0;
+  const evaluation={};
 
   for(const q of questions){
-    const qAns = answers[q.id]||{selected:[]};
-    const posM = parseFloat(q.posMarks||q.marks||1);
-    const negM = parseFloat(q.negMarks||0);
-    const correctOpts = q.correctOptions||[];
-    const correctNat  = q.correctAnswer;
-    maxScore += posM;
-    let qScore=0, qResult='skip';
+    const qAns=answers[q.id]||{selected:[]};
+    const posM=parseFloat(q.posMarks||q.marks||1);
+    const negM=parseFloat(q.negMarks||0);
+    const correctOpts=q.correctOptions||[];
+    const correctNat=q.correctAnswer;
+    maxScore+=posM;
+    let qScore=0,qResult='skip';
 
-    if (q.type==='nat'){
-      const sel = parseFloat(qAns.selected[0]);
-      const cor = parseFloat(correctNat);
-      const tol = parseFloat(q.tolerance||0);
+    if(q.type==='nat'){
+      const sel=parseFloat(qAns.selected[0]);
+      const cor=parseFloat(correctNat);
+      const tol=parseFloat(q.tolerance||0);
       if(!isNaN(sel)){
-        if(Math.abs(sel-cor)<=tol){ qScore=posM; qResult='correct'; correct++; }
-        else { qScore=0; qResult='wrong'; wrong++; }
-      } else { skipped++; }
+        if(Math.abs(sel-cor)<=tol){qScore=posM;qResult='correct';correct++;}
+        else{qScore=0;qResult='wrong';wrong++;}
+      } else skipped++;
     } else if(q.type==='scq'){
       if(qAns.selected.length>0){
-        if(correctOpts.includes(qAns.selected[0])){ qScore=posM; qResult='correct'; correct++; }
-        else { qScore=-negM; qResult='wrong'; wrong++; }
+        if(correctOpts.includes(qAns.selected[0])){qScore=posM;qResult='correct';correct++;}
+        else{qScore=-negM;qResult='wrong';wrong++;}
       } else skipped++;
     } else if(q.type==='mcq'){
       if(qAns.selected.length>0){
-        const selSet=new Set(qAns.selected), corSet=new Set(correctOpts);
+        const selSet=new Set(qAns.selected),corSet=new Set(correctOpts);
         const hasWrong=[...selSet].some(s=>!corSet.has(s));
-        if(hasWrong){ qScore=-negM; qResult='wrong'; wrong++; }
-        else {
+        if(hasWrong){qScore=-negM;qResult='wrong';wrong++;}
+        else{
           const corrChosen=[...selSet].filter(s=>corSet.has(s)).length;
-          if(corrChosen===corSet.size){ qScore=posM; qResult='correct'; correct++; }
-          else { qScore=posM*(corrChosen/corSet.size); qResult='partial'; partial++; }
+          if(corrChosen===corSet.size){qScore=posM;qResult='correct';correct++;}
+          else{qScore=posM*(corrChosen/corSet.size);qResult='partial';partial++;}
         }
       } else skipped++;
     }
-
     totalScore+=qScore;
-    evaluation[q.id]={ selected:qAns.selected, correct:correctOpts.length>0?correctOpts:[correctNat], score:qScore, result:qResult };
+    evaluation[q.id]={selected:qAns.selected,correct:correctOpts.length>0?correctOpts:[correctNat],score:qScore,result:qResult};
   }
 
-  try {
+  try{
     await db.collection('attempts').doc(attemptId).update({
-      status:'submitted', answers, evaluation,
-      totalScore, maxScore, correct, wrong, partial, skipped,
-      submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+      status:'submitted',answers,evaluation,
+      totalScore,maxScore,correct,wrong,partial,skipped,
+      submittedAt:firebase.firestore.FieldValue.serverTimestamp()
     });
     Utils.toast('Exam submitted successfully!','success');
     setTimeout(()=>window.location.href=`result.html?id=${attemptId}`,1500);
-  } catch(e){ Utils.toast('Submit error: '+e.message,'error'); }
+  }catch(e){Utils.toast('Submit error: '+e.message,'error');}
 }
 
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
 // ── Calculator ──
 function toggleCalc(){ document.getElementById('calc-panel').classList.toggle('show'); }
-function calcDisplay(v){ const el=document.getElementById('calc-display'); el.textContent=String(v).length>12?parseFloat(v).toExponential(4):v; }
-function calcNum(n){ if(calcVal==='0'||calcNewNum){ calcVal=n; calcNewNum=false; }else calcVal+=n; calcDisplay(calcVal); }
+function calcDisplay(v){ const el=document.getElementById('calc-display'); el.textContent=String(v).length>13?parseFloat(v).toExponential(4):v; }
+function calcNum(n){ if(calcVal==='0'||calcNewNum){calcVal=n;calcNewNum=false;}else calcVal+=n; calcDisplay(calcVal); }
 function calcDot(){ if(!calcVal.includes('.'))calcVal+='.'; calcDisplay(calcVal); }
 function calcSign(){ calcVal=String(-parseFloat(calcVal)); calcDisplay(calcVal); }
-function calcOp(op){ calcPrev=parseFloat(calcVal); calcOp_=op; calcNewNum=true; }
+function calcOp(op){ calcPrev=parseFloat(calcVal);calcOp_=op;calcNewNum=true; }
 function calcEquals(){
   if(calcOp_===null||calcPrev===null)return;
-  const cur=parseFloat(calcVal);
-  let res;
-  if(calcOp_==='+'){ res=calcPrev+cur; }
-  else if(calcOp_==='-'){ res=calcPrev-cur; }
-  else if(calcOp_==='*'){ res=calcPrev*cur; }
-  else if(calcOp_==='/'){ res=cur!==0?calcPrev/cur:'Err'; }
-  calcVal=String(res); calcOp_=null; calcPrev=null; calcNewNum=true; calcDisplay(calcVal);
+  const cur=parseFloat(calcVal); let res;
+  if(calcOp_==='+')res=calcPrev+cur;
+  else if(calcOp_==='-')res=calcPrev-cur;
+  else if(calcOp_==='*')res=calcPrev*cur;
+  else if(calcOp_==='/')res=cur!==0?calcPrev/cur:'Err';
+  calcVal=String(res);calcOp_=null;calcPrev=null;calcNewNum=true;calcDisplay(calcVal);
 }
 function calcFunc(f){
   const n=parseFloat(calcVal);
@@ -581,12 +756,11 @@ function calcFunc(f){
   else if(f==='pow2')calcVal=String(n*n);
   else if(f==='log')calcVal=String(Math.log10(n));
   else if(f==='ln')calcVal=String(Math.log(n));
-  calcNewNum=true; calcDisplay(calcVal);
+  calcNewNum=true;calcDisplay(calcVal);
 }
-function calcClear(){ calcVal='0'; calcOp_=null; calcPrev=null; calcNewNum=true; calcDisplay('0'); }
-function calcDel(){ calcVal=calcVal.length>1?calcVal.slice(0,-1):'0'; calcDisplay(calcVal); }
+function calcClear(){ calcVal='0';calcOp_=null;calcPrev=null;calcNewNum=true;calcDisplay('0'); }
+function calcDel(){ calcVal=calcVal.length>1?calcVal.slice(0,-1):'0';calcDisplay(calcVal); }
 
-// ── Prevent accidental close ──
 window.addEventListener('beforeunload',e=>{ e.preventDefault(); e.returnValue=''; });
 </script>
 </body>
