@@ -78,6 +78,10 @@
       <button class="admin-nav-link" onclick="showPanel('attempts')" data-panel="attempts">
         <span class="icon"><i class="fas fa-trophy"></i></span> All Attempts
       </button>
+      <button class="admin-nav-link" onclick="showPanel('flagged')" data-panel="flagged">
+        <span class="icon"><i class="fas fa-flag"></i></span> Flagged Attempts
+        <span id="flagged-badge" style="margin-left:auto;background:#ef4444;color:#fff;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:800;display:none;">0</span>
+      </button>
       <button class="admin-nav-link" onclick="showPanel('users')" data-panel="users">
         <span class="icon"><i class="fas fa-users"></i></span> Users
       </button>
@@ -367,6 +371,78 @@
           <table>
             <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
             <tbody id="users-tbody"><tr><td colspan="6" class="text-center text-muted">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLAGGED ATTEMPTS -->
+    <div id="panel-flagged" class="admin-panel">
+      <style>
+        .flag-reason-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; margin:2px; }
+        .flag-tab { background:#fff;color:#ef4444;border:2px solid #ef4444; }
+        .flag-fs  { background:#fff;color:#f59e0b;border:2px solid #f59e0b; }
+        .flag-idle{ background:#fff;color:#8b5cf6;border:2px solid #8b5cf6; }
+        .integrity-log { font-size:11px; color:var(--text2); font-family:monospace; max-height:160px; overflow-y:auto; background:var(--bg); border-radius:6px; padding:8px; margin-top:8px; border:1px solid var(--border); }
+        .integrity-log-row { padding:3px 0; border-bottom:1px solid var(--border); }
+        .flagged-banner { background:linear-gradient(135deg,#7f1d1d,#991b1b); color:#fff; border-radius:var(--radius-lg); padding:20px 24px; margin-bottom:20px; display:flex; align-items:center; gap:16px; }
+        .flagged-banner .fb-num { font-size:42px; font-weight:800; font-family:'Rajdhani'; }
+        .flag-row-expand { cursor:pointer; }
+        .flag-detail-row { display:none; background:var(--bg); }
+        .flag-detail-row.open { display:table-row; }
+      </style>
+
+      <div class="flagged-banner">
+        <div style="font-size:36px;"><i class="fas fa-shield-alt"></i></div>
+        <div>
+          <div style="font-size:20px;font-weight:800;margin-bottom:4px;">Integrity Monitoring</div>
+          <div style="opacity:.8;font-size:14px;">Attempts flagged for suspicious proctoring activity — tab switching, fullscreen exits, or prolonged idleness.</div>
+        </div>
+        <div style="margin-left:auto;text-align:center;">
+          <div class="fb-num" id="flagged-total-count">—</div>
+          <div style="font-size:12px;opacity:.7;">Flagged Attempts</div>
+        </div>
+      </div>
+
+      <!-- Filter row -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+        <select class="form-control" style="max-width:260px;" id="flagged-exam-filter" onchange="renderFlaggedTable()">
+          <option value="">All Exams</option>
+        </select>
+        <select class="form-control" style="max-width:200px;" id="flagged-type-filter" onchange="renderFlaggedTable()">
+          <option value="">All Flag Types</option>
+          <option value="tab">Tab Switch</option>
+          <option value="fullscreen">Fullscreen Exit</option>
+          <option value="idle">Idle Flagged</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="loadFlaggedAttempts()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <span id="flagged-filter-count" style="font-size:13px;color:var(--text2);margin-left:4px;"></span>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 style="font-size:16px;"><i class="fas fa-flag" style="color:#ef4444;"></i> Flagged Submissions</h3>
+          <span class="badge badge-danger" id="flagged-count-badge">0</span>
+        </div>
+        <div class="table-wrap">
+          <table id="flagged-table">
+            <thead>
+              <tr>
+                <th style="width:28px;"></th>
+                <th>Student</th>
+                <th>Exam</th>
+                <th>Score</th>
+                <th>Violations</th>
+                <th>Tab Switches</th>
+                <th>FS Exits</th>
+                <th>Idle</th>
+                <th>Submitted</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="flagged-tbody">
+              <tr><td colspan="10" class="text-center text-muted">Loading flagged attempts…</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
