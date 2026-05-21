@@ -45,6 +45,14 @@
   .admin-stat .ico { font-size: 36px; }
   .admin-stat .num { font-size: 30px; font-weight: 800; font-family: 'Rajdhani'; color: var(--primary); }
   .admin-stat .lbl { font-size: 12px; color: var(--text2); font-weight: 600; }
+  /* Full-width panel & table improvements */
+  .admin-content { padding: 24px; flex: 1; min-width: 0; }
+  .admin-panel { display: none; width: 100%; }
+  .admin-panel.active { display: block; }
+  .table-wrap { width: 100%; overflow-x: auto; }
+  .table-wrap table { width: 100%; min-width: 600px; border-collapse: collapse; }
+  .card { overflow: hidden; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -183,7 +191,7 @@
 
     <!-- ADD SINGLE QUESTION -->
     <div id="panel-add-single" class="admin-panel">
-      <div class="card" style="max-width:780px;">
+      <div class="card" style="max-width:860px;">
         <div class="card-header"><h3 style="font-size:16px">Add Single Question</h3></div>
         <div class="card-body">
           <div class="grid-2">
@@ -240,7 +248,7 @@
 
     <!-- BULK UPLOAD -->
     <div id="panel-add-bulk" class="admin-panel">
-      <div class="card" style="max-width:720px;">
+      <div class="card" style="max-width:860px;">
         <div class="card-header"><h3 style="font-size:16px"><i class="fas fa-file"></i> Bulk Upload via PDF</h3></div>
         <div class="card-body">
           <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:20px;font-size:13px;">
@@ -284,7 +292,7 @@
 
     <!-- CREATE EXAM -->
     <div id="panel-create-exam" class="admin-panel">
-      <div class="card" style="max-width:800px;">
+      <div class="card" style="">
         <div class="card-header"><h3 style="font-size:16px" id="create-exam-title">Create New Exam</h3></div>
         <div class="card-body">
           <input type="hidden" id="exam-edit-id">
@@ -344,11 +352,11 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
               <div>
                 <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;">Available Questions</div>
-                <div id="qpick-available" style="height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--bg);"></div>
+                <div id="qpick-available" style="height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--bg);"></div>
               </div>
               <div>
                 <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;">Selected Questions <span id="sel-count" class="badge badge-primary">0</span></div>
-                <div id="qpick-selected" style="height:280px;overflow-y:auto;border:2px solid var(--primary);border-radius:8px;padding:8px;background:var(--bg);"></div>
+                <div id="qpick-selected" style="height:420px;overflow-y:auto;border:2px solid var(--primary);border-radius:8px;padding:8px;background:var(--bg);"></div>
               </div>
             </div>
           </div>
@@ -369,8 +377,8 @@
         <div class="card-header"><h3 style="font-size:16px">All Exam Attempts</h3></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Correct/Wrong</th><th><i class="fas fa-clock"></i> Time Spent</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-            <tbody id="attempts-tbody"><tr><td colspan="6" class="text-center text-muted">Loading…</td></tr></tbody>
+            <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Correct/Wrong</th><th><i class="fas fa-clock"></i> Time Spent</th><th>Status</th><th>Date</th><th>ID</th><th>Actions</th></tr></thead>
+            <tbody id="attempts-tbody"><tr><td colspan="9" class="text-center text-muted">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
