@@ -245,12 +245,25 @@
   </div>
 
   <!-- Time Analysis Banner -->
-  <div id="time-analysis-section" style="display:none;background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin-bottom:20px;overflow:hidden;">
-    <div style="padding:14px 18px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;">
-      <h3 style="font-size:14px;color:#1a3c6e;font-family:'Rajdhani',sans-serif;"><i class="fas fa-clock"></i> Time Analysis per Question</h3>
-      <span id="time-total-label" style="font-size:12px;color:#64748b;"></span>
+  <div id="time-analysis-section" style="display:none;background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin-bottom:20px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+    <div style="padding:14px 20px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;background:#f8fafc;">
+      <h3 style="font-size:15px;font-weight:800;color:#0a2540;font-family:'Rajdhani',sans-serif;display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-clock" style="color:#1565c0;"></i> Time Spent per Question
+      </h3>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <span style="font-size:11px;font-weight:700;color:#64748b;background:#e2e8f0;padding:3px 10px;border-radius:10px;">
+          <i class="fas fa-hourglass-half"></i> <span id="time-total-label"></span>
+        </span>
+        <div style="display:flex;align-items:center;gap:10px;font-size:11px;font-weight:700;">
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;"></span>Correct</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span>Wrong</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>Partial</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#94a3b8;display:inline-block;"></span>Skipped</span>
+        </div>
+      </div>
     </div>
-    <div style="padding:14px 18px;" id="time-bars-container"></div>
+    <div style="padding:16px 20px;" id="time-bars-container"></div>
+    <div style="padding:0 20px 14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;" id="time-summary-boxes"></div>
   </div>
 
   <!-- Filter bar -->
@@ -528,14 +541,33 @@ async function loadAttempt() {
         const result = ev.result || 'skipped';
         const colors = {correct:'#22c55e',wrong:'#ef4444',partial:'#f59e0b',skipped:'#94a3b8'};
         const pct = Math.round((d.secs / maxSecs) * 100);
-        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:12px;">
-          <div style="width:30px;text-align:right;color:#64748b;flex-shrink:0;">Q${d.idx}</div>
-          <div style="flex:1;background:#f1f5f9;border-radius:4px;overflow:hidden;height:16px;">
-            <div style="width:${pct}%;background:${colors[result]||'#94a3b8'};height:100%;border-radius:4px;transition:width .3s;"></div>
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:12px;">
+          <div style="width:32px;text-align:right;color:#64748b;font-weight:700;flex-shrink:0;font-family:'Rajdhani',sans-serif;">Q${d.idx}</div>
+          <div style="flex:1;background:#f1f5f9;border-radius:4px;overflow:hidden;height:14px;position:relative;">
+            <div style="width:0%;background:${colors[result]||'#94a3b8'};height:100%;border-radius:4px;transition:width .6s ease;opacity:.85;" data-w="${pct}" class="tbar-fill"></div>
           </div>
-          <div style="width:50px;color:#374151;font-weight:600;flex-shrink:0;">${formatQTime(d.secs)}</div>
+          <div style="width:54px;color:#1e293b;font-weight:700;flex-shrink:0;text-align:right;">${formatQTime(d.secs)}</div>
         </div>`;
       }).join('');
+      // Animate bars
+      setTimeout(() => document.querySelectorAll('.tbar-fill').forEach(el => el.style.width = el.dataset.w + '%'), 100);
+
+      // Summary boxes
+      const avgSecs = Math.round(totalSecs / tData.length);
+      const maxQ = tData.reduce((a,b) => a.secs > b.secs ? a : b, tData[0]);
+      const minQ = tData.reduce((a,b) => a.secs < b.secs ? a : b, tData[0]);
+      const timeSummary = document.getElementById('time-summary-boxes');
+      if (timeSummary) timeSummary.innerHTML = [
+        { icon:'fa-hourglass-half', label:'Total Time',    val: formatQTime(totalSecs), color:'#1565c0' },
+        { icon:'fa-calculator',     label:'Avg per Q',     val: formatQTime(avgSecs),   color:'#15803d' },
+        { icon:'fa-arrow-up',       label:'Most Time',     val: `Q${maxQ.idx} (${formatQTime(maxQ.secs)})`, color:'#b45309' },
+        { icon:'fa-arrow-down',     label:'Least Time',    val: `Q${minQ.idx} (${formatQTime(minQ.secs)})`, color:'#64748b' },
+      ].map(b => `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${b.color};margin-bottom:4px;">
+          <i class="fas ${b.icon}"></i> ${b.label}
+        </div>
+        <div style="font-size:15px;font-weight:800;font-family:'Rajdhani',sans-serif;color:#1e293b;">${b.val}</div>
+      </div>`).join('');
     }
 
     // Update filter badges
