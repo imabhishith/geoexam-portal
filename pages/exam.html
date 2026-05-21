@@ -1019,26 +1019,6 @@ const TAB_SWITCH_FLAG_THRESHOLD = 3;
 let windowBlurCount = 0;
 let windowResizeCount = 0;
 
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    tabSwitchCount++;
-    tabSwitchLog.push({ at: new Date().toISOString(), count: tabSwitchCount });
-    if (attemptId) {
-      db.collection('attempts').doc(attemptId).update({
-        tabSwitchCount, tabSwitchLog,
-        flagged: tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD
-      }).catch(() => {});
-    }
-    if (tabSwitchCount === 1) {
-      Utils.toast('⚠️ Tab switch detected! Activity is logged.', 'warning', 5000);
-    } else if (tabSwitchCount <= TAB_SWITCH_FLAG_THRESHOLD) {
-      Utils.toast(`⚠️ Warning ${tabSwitchCount}/${TAB_SWITCH_FLAG_THRESHOLD}: Repeated tab switching will flag your attempt.`, 'warning', 5000);
-    } else {
-      Utils.toast(`🚨 Attempt flagged for admin review (${tabSwitchCount} tab switches).`, 'error', 6000);
-    }
-  }
-});
-
 // ── Auth & Init ──
 auth.onAuthStateChanged(async user => {
   if (!user) { window.location.href = '../index.html'; return; }
@@ -1580,7 +1560,11 @@ function isFullscreen() {
 }
 
 function handleFullscreenChange() {
-  if (!isFullscreen() && attemptId) {
+  if (isFullscreen()) {
+    // Fullscreen restored — hide the overlay
+    fsOverlay.classList.remove('show');
+    winSizeBar.classList.remove('show');
+  } else if (attemptId) {
     fsExitCount++;
     fsCountEl.textContent = `Exit count: ${fsExitCount} / ${FS_MAX_EXITS} allowed`;
     fsOverlay.classList.add('show');
@@ -1601,8 +1585,7 @@ function handleFullscreenChange() {
   ev => document.addEventListener(ev, handleFullscreenChange)
 );
 
-// ── Window blur (focus lost — alt-tab, other app, etc.) ──
-let windowBlurCount = 0;
+// ── Window blur — alt-tab / focus lost ──
 window.addEventListener('blur', () => {
   if (!attemptId) return;
   windowBlurCount++;
@@ -1614,19 +1597,16 @@ window.addEventListener('blur', () => {
   if (windowBlurCount === 1)
     Utils.toast('⚠️ Window focus lost — this is logged.', 'warning', 5000);
   else
-    Utils.toast(`⚠️ Window focus lost again (${windowBlurCount}×). Repeated violations flag your attempt.`, 'warning', 5000);
+    Utils.toast(`⚠️ Window focus lost (${windowBlurCount}×). Repeated violations flag your attempt.`, 'warning', 5000);
 });
 
-// ── Window resize / un-maximize detection ──
+// ── Window resize / un-maximize ──
 const winSizeBar = document.getElementById('window-size-bar');
-let windowResizeCount = 0;
 let windowResizeViolationActive = false;
 
 function isWindowMaximized() {
-  // Allow 5% slack for taskbars / browser chrome
-  return (window.outerWidth  >= screen.availWidth  * 0.95 &&
-          window.outerHeight >= screen.availHeight * 0.95) ||
-          isFullscreen();
+  return (window.outerWidth  >= screen.availWidth  * 0.92 &&
+          window.outerHeight >= screen.availHeight * 0.92) || isFullscreen();
 }
 
 function checkWindowSize() {
@@ -1635,15 +1615,10 @@ function checkWindowSize() {
     if (!windowResizeViolationActive) {
       windowResizeViolationActive = true;
       windowResizeCount++;
-      logViolation('window_resized', { count: windowResizeCount,
-        w: window.outerWidth, h: window.outerHeight,
-        sw: screen.availWidth, sh: screen.availHeight });
-      db.collection('attempts').doc(attemptId).update({
-        windowResizeCount,
-        flagged: true
-      }).catch(() => {});
+      logViolation('window_resized', { count: windowResizeCount });
+      db.collection('attempts').doc(attemptId).update({ windowResizeCount, flagged: true }).catch(() => {});
       winSizeBar.classList.add('show');
-      Utils.toast(`🚨 Window size violation logged (#${windowResizeCount}). Restore full-screen!`, 'error', 7000);
+      Utils.toast(`🚨 Window size violation logged. Restore full-screen!`, 'error', 7000);
     }
   } else {
     windowResizeViolationActive = false;
@@ -1653,13 +1628,12 @@ function checkWindowSize() {
 
 window.addEventListener('resize', () => {
   checkWindowSize();
-  // If user exits fullscreen by resize, trigger fullscreen re-entry prompt
   if (!isFullscreen() && attemptId && !fsOverlay.classList.contains('show')) {
     fsOverlay.classList.add('show');
   }
 });
 
-// ── Visibility / Tab switch ──
+// ── Tab / Visibility switch ──
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     tabSwitchCount++;
@@ -1670,17 +1644,16 @@ document.addEventListener('visibilitychange', () => {
         flagged: tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD
       }).catch(() => {});
     }
-    if (tabSwitchCount === 1) {
+    if (tabSwitchCount === 1)
       Utils.toast('⚠️ Tab switch detected! Activity is logged.', 'warning', 5000);
-    } else if (tabSwitchCount <= TAB_SWITCH_FLAG_THRESHOLD) {
-      Utils.toast(`⚠️ Warning ${tabSwitchCount}/${TAB_SWITCH_FLAG_THRESHOLD}: Repeated tab switching will flag your attempt.`, 'warning', 5000);
-    } else {
+    else if (tabSwitchCount <= TAB_SWITCH_FLAG_THRESHOLD)
+      Utils.toast(`⚠️ Warning ${tabSwitchCount}/${TAB_SWITCH_FLAG_THRESHOLD}: Tab switching will flag your attempt.`, 'warning', 5000);
+    else
       Utils.toast(`🚨 Attempt flagged for admin review (${tabSwitchCount} tab switches).`, 'error', 6000);
-    }
   }
 });
 
-// ── Violation logger (central) ──
+// ── Central violation logger ──
 function logViolation(type, extra = {}) {
   if (!attemptId) return;
   const entry = { at: new Date().toISOString(), type, ...extra };
@@ -1697,7 +1670,7 @@ const idleCountdown = document.getElementById('idle-countdown');
 
 function resetIdle() {
   idleTimer = 0;
-  if (idleBar.classList.contains('show')) idleBar.classList.remove('show');
+  idleBar.classList.remove('show');
 }
 
 function tickIdle() {
@@ -1710,9 +1683,7 @@ function tickIdle() {
       if (!idleFlagged && attemptId) {
         idleFlagged = true;
         logViolation('idle_flag', { idleSeconds: idleTimer });
-        db.collection('attempts').doc(attemptId).update({
-          idleFlagged: true, flagged: true
-        }).catch(() => {});
+        db.collection('attempts').doc(attemptId).update({ idleFlagged: true, flagged: true }).catch(() => {});
         Utils.toast('🚨 Attempt flagged: prolonged inactivity.', 'error', 8000);
       }
     }
@@ -1723,13 +1694,22 @@ function tickIdle() {
   document.addEventListener(ev, resetIdle, { passive: true })
 );
 
+// ── startProctoring — called after exam loads ──
+// NOTE: fullscreen is requested on exam-instructions.html button click (user gesture).
+// Here we only start monitoring. If fullscreen was lost during page navigation,
+// show the re-enter overlay so the user can click back in.
 function startProctoring() {
-  // Request fullscreen automatically — user already consented on exam-instructions page
-  enterFullscreen().catch(() => {
-    Utils.toast('⚠️ Could not auto-enter full screen. Press F11 for full-screen mode.', 'warning', 6000);
-  });
   idleInterval = setInterval(tickIdle, 1000);
-  setTimeout(checkWindowSize, 1500);
+
+  // Check if we're already fullscreen (carried over from instructions page navigation)
+  // If not, show the overlay so user can re-enter with a click (required user gesture)
+  setTimeout(() => {
+    if (!isFullscreen()) {
+      fsOverlay.classList.add('show');
+    }
+    checkWindowSize();
+  }, 800);
+
   setInterval(checkWindowSize, 5000);
 }
 </script>
