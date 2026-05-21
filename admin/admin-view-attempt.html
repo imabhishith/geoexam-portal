@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="../css/global.css">
   <style>
     body { background: var(--bg); }
-    .page-wrap { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+    .page-wrap { max-width: 1400px; margin: 0 auto; padding: 24px 24px; }
 
     /* ── Header ── */
     .attempt-header {
@@ -193,8 +193,12 @@
     .back-bar {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin-bottom: 22px;
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
     }
 
     @media (max-width: 700px) {
@@ -214,22 +218,23 @@
     <span style="font-size:26px;"><i class="fas fa-gem"></i></span>
     <div>
       <h1>GeoExam Admin</h1>
-      <span>Attempt Review</span>
+      <span>Attempt Viewer</span>
     </div>
   </div>
   <div class="navbar-nav">
-    <a href="index.html" class="nav-link"><i class="fas fa-arrow-left"></i> Admin Panel</a>
-    <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,.8)">Logout</button>
+    <a href="index.html" class="nav-link"><i class="fas fa-th-large"></i> Admin Panel</a>
+    <a href="index.html#attempts" class="nav-link"><i class="fas fa-list-alt"></i> All Attempts</a>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,.8)"><i class="fas fa-sign-out-alt"></i> Logout</button>
   </div>
 </nav>
 
 <div class="page-wrap">
 
   <div class="back-bar">
-    <button class="btn btn-ghost btn-sm" onclick="history.back()">
-      <i class="fas fa-chevron-left"></i> Back
-    </button>
-    <span style="font-size:13px;color:var(--text2);">Admin · Attempt Viewer</span>
+    <a href="index.html" class="btn btn-outline btn-sm">
+      <i class="fas fa-arrow-left"></i> Back to Admin Panel
+    </a>
+    <span style="font-size:13px;color:var(--text2);"><i class="fas fa-shield-alt" style="color:var(--primary);margin-right:4px;"></i> Admin &rsaquo; Attempt Viewer</span>
   </div>
 
   <!-- Header populated by JS -->
