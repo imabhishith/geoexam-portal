@@ -239,6 +239,25 @@
       </div>
     </div>
 
+    <!-- Proctoring Rules -->
+    <div class="inst-section">
+      <h3><i class="fas fa-shield-alt"></i> Proctoring &amp; Integrity Monitoring</h3>
+      <ol class="gate-list">
+        <li>This exam will run in <strong>full-screen mode</strong>. You will be prompted to enter full screen when the exam starts. Exiting full screen at any point is logged and will flag your attempt for admin review.</li>
+        <li><strong>Tab switching</strong> is detected. Switching to another tab or application is recorded. More than 3 tab switches will automatically flag your submission.</li>
+        <li><strong>Window minimising or resizing</strong> is monitored. The exam must occupy the full screen at all times. Violations are logged with timestamps.</li>
+        <li><strong>Window focus loss</strong> (alt-tab, clicking outside the browser) is tracked and logged as a violation.</li>
+        <li><strong>Copy, Cut, Paste, Right-click, and developer tool shortcuts</strong> (F12, Ctrl+Shift+I, etc.) are blocked during the examination.</li>
+        <li><strong>Screenshot shortcuts</strong> (PrintScreen) are intercepted and logged as a violation.</li>
+        <li><strong>Prolonged inactivity</strong> (more than 5 minutes without any mouse or keyboard activity) will trigger an idle warning. If inactivity continues beyond 6 minutes, your attempt will be flagged.</li>
+        <li>All violations are stored with exact timestamps and are visible to the exam administrator in the Flagged Attempts dashboard.</li>
+      </ol>
+      <div class="notice-box" style="margin-top:12px;">
+        <i class="fas fa-shield-alt"></i>
+        <span>Your examination session is being <strong>actively monitored</strong>. Any attempt to circumvent proctoring measures will result in immediate disqualification.</span>
+      </div>
+    </div>
+
     <!-- Confirm & Start -->
     <div class="confirm-strip">
       <div class="confirm-check-wrap">
@@ -288,6 +307,10 @@ function toggleStart() {
 }
 
 async function startExam() {
+  const btn = document.getElementById('btn-start');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting…';
+
   const user = auth.currentUser;
   const existing = await db.collection('attempts')
     .where('userId','==',user.uid)
@@ -299,6 +322,18 @@ async function startExam() {
     setTimeout(() => window.location.href = `result.html?id=${existing.docs[0].id}`, 2000);
     return;
   }
+
+  // Request fullscreen NOW — we have a user gesture (button click), so browsers allow it
+  try {
+    const el = document.documentElement;
+    if (el.requestFullscreen)            await el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+    else if (el.mozRequestFullScreen)    await el.mozRequestFullScreen();
+    else if (el.msRequestFullscreen)     await el.msRequestFullscreen();
+  } catch(e) {
+    // Fullscreen blocked — proceed anyway, exam.html will retry
+  }
+
   window.location.href = `exam.html?id=${examId}`;
 }
 </script>

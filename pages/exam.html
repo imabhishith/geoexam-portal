@@ -689,37 +689,6 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ═══════════════════════════════════════
-       PRE-EXAM GATE (fullscreen consent)
-    ═══════════════════════════════════════ */
-    #pre-exam-gate {
-      display: flex; position: fixed; inset: 0; z-index: 10000;
-      background: #0a1628;
-      flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; color: #fff; padding: 32px;
-    }
-    #pre-exam-gate.hidden { display: none; }
-    .gate-logo { font-size: 44px; color: var(--accent2); margin-bottom: 16px; }
-    .gate-title { font-family: 'Rajdhani',sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 6px; }
-    .gate-sub   { font-size: 13px; opacity: .6; margin-bottom: 28px; }
-    .gate-rules {
-      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
-      border-radius: 12px; padding: 20px 28px; max-width: 520px; margin-bottom: 28px; text-align: left;
-    }
-    .gate-rules h4 { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--accent2); margin-bottom: 12px; }
-    .gate-rule-row { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; margin-bottom: 10px; line-height: 1.5; opacity: .88; }
-    .gate-rule-row i { color: var(--accent2); margin-top: 2px; flex-shrink: 0; font-size: 12px; }
-    .gate-rule-row:last-child { margin-bottom: 0; }
-    .gate-start-btn {
-      background: var(--accent2); color: #fff; border: none; border-radius: 8px;
-      padding: 14px 36px; font-size: 15px; font-weight: 800; cursor: pointer;
-      font-family: var(--font); display: flex; align-items: center; gap: 10px;
-      transition: background .15s, transform .1s;
-    }
-    .gate-start-btn:hover { background: var(--accent); }
-    .gate-start-btn:active { transform: scale(.97); }
-    .gate-consent { font-size: 11px; opacity: .45; margin-top: 12px; max-width: 400px; }
-
-    /* ═══════════════════════════════════════
        FULLSCREEN WARNING
     ═══════════════════════════════════════ */
     #fs-warning-overlay {
@@ -995,26 +964,6 @@
   </div>
 </div>
 
-<!-- ════════════════ PRE-EXAM GATE ════════════════ -->
-<div id="pre-exam-gate">
-  <div class="gate-logo"><i class="fas fa-shield-alt"></i></div>
-  <div class="gate-title">Secure Exam Environment</div>
-  <div class="gate-sub">GeoExam Portal · GATE / CSIR-NET CBT</div>
-  <div class="gate-rules">
-    <h4><i class="fas fa-exclamation-triangle"></i> &nbsp;Proctoring Rules — Read Carefully</h4>
-    <div class="gate-rule-row"><i class="fas fa-expand-arrows-alt"></i><span>The exam runs in <strong>full-screen mode only</strong>. Exiting full screen is logged and flags your attempt.</span></div>
-    <div class="gate-rule-row"><i class="fas fa-window-maximize"></i><span>Do <strong>not</strong> minimise, resize, or switch windows during the exam. Every violation is recorded.</span></div>
-    <div class="gate-rule-row"><i class="fas fa-exchange-alt"></i><span><strong>Tab switching</strong> is monitored. More than 3 switches will automatically flag your submission.</span></div>
-    <div class="gate-rule-row"><i class="fas fa-moon"></i><span>Prolonged inactivity (&gt;5 min) will raise an idle alert and flag your attempt.</span></div>
-    <div class="gate-rule-row"><i class="fas fa-ban"></i><span>Copy, paste, right-click, and developer tools are <strong>disabled</strong> during the exam.</span></div>
-    <div class="gate-rule-row"><i class="fas fa-camera"></i><span>Screen-capture shortcuts are blocked. Any attempt is logged as a violation.</span></div>
-  </div>
-  <button class="gate-start-btn" onclick="startExamFromGate()">
-    <i class="fas fa-expand"></i> Enter Full Screen &amp; Begin Exam
-  </button>
-  <div class="gate-consent">By clicking above, you acknowledge you have read the proctoring rules and consent to activity monitoring for this examination session.</div>
-</div>
-
 <!-- ════════════════ WINDOW-SIZE WARNING BAR ════════════════ -->
 <div id="window-size-bar">
   <i class="fas fa-exclamation-triangle"></i>
@@ -1069,7 +1018,6 @@ const TAB_SWITCH_FLAG_THRESHOLD = 3;
 // ── Window integrity counters ──
 let windowBlurCount = 0;
 let windowResizeCount = 0;
-let examReady = false; // set true by initExam; gate button checks this
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
@@ -1149,8 +1097,9 @@ async function initExam() {
     buildSectionTabs();
     renderQuestion();
     renderPalette();
-    // Timer + proctoring start only after the user clicks through the pre-exam gate
-    examReady = true;
+    startTimer();
+    autoSaveInterval();
+    startProctoring();
   } catch(e) { console.error(e); Utils.toast('Error loading exam: '+e.message,'error'); }
 }
 
@@ -1774,56 +1723,13 @@ function tickIdle() {
   document.addEventListener(ev, resetIdle, { passive: true })
 );
 
-// ── Pre-exam gate ──
-const preExamGate = document.getElementById('pre-exam-gate');
-let gateActivated = false;
-
-function startExamFromGate() {
-  if (gateActivated) return;          // prevent double-click
-
-  const btn = document.querySelector('.gate-start-btn');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading…'; }
-
-  const doActivate = () => {
-    gateActivated = true;
-    preExamGate.classList.add('hidden');
-    startTimer();
-    autoSaveInterval();
-    startProctoring();
-  };
-
-  const tryFullscreen = () =>
-    enterFullscreen()
-      .then(doActivate)
-      .catch(() => {
-        // Fullscreen rejected (some browsers need repeated gesture) — proceed anyway
-        doActivate();
-        Utils.toast('⚠️ Could not auto-enter full screen. Press F11 for best experience.', 'warning', 6000);
-      });
-
-  if (examReady) {
-    tryFullscreen();
-  } else {
-    // Exam data still loading — poll until ready (max 10 s)
-    let waited = 0;
-    const poll = setInterval(() => {
-      waited += 200;
-      if (examReady) { clearInterval(poll); tryFullscreen(); }
-      else if (waited >= 10000) {
-        clearInterval(poll);
-        Utils.toast('Exam data took too long to load. Please refresh.', 'error');
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-expand"></i> Enter Full Screen & Begin Exam'; }
-        gateActivated = false;
-      }
-    }, 200);
-  }
-}
-
 function startProctoring() {
+  // Request fullscreen automatically — user already consented on exam-instructions page
+  enterFullscreen().catch(() => {
+    Utils.toast('⚠️ Could not auto-enter full screen. Press F11 for full-screen mode.', 'warning', 6000);
+  });
   idleInterval = setInterval(tickIdle, 1000);
-  // Initial window-size check (after a brief delay so the layout settles)
-  setTimeout(checkWindowSize, 1000);
-  // Periodic re-check every 5 s
+  setTimeout(checkWindowSize, 1500);
   setInterval(checkWindowSize, 5000);
 }
 </script>
