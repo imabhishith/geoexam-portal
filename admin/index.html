@@ -105,6 +105,13 @@
       </button>
     </div>
     <div class="nav-section">
+      <div class="nav-section-title">Community</div>
+      <button class="admin-nav-link" onclick="showPanel('discussion')" data-panel="discussion">
+        <span class="icon"><i class="fas fa-comments"></i></span> Discussion
+        <span id="nav-discussion-badge" class="badge" style="background:#ef4444;color:#fff;display:none;margin-left:auto;font-size:11px;padding:1px 8px;border-radius:20px;font-weight:800;">0</span>
+      </button>
+    </div>
+    <div class="nav-section">
       <div class="nav-section-title">Tools</div>
       <button class="admin-nav-link" onclick="showPanel('revaluation')" data-panel="revaluation">
         <span class="icon"><i class="fas fa-sync-alt"></i></span> Revaluation
@@ -612,6 +619,105 @@
 
       </div>
     </div>
+
+    <!-- ── DISCUSSION PANEL ── -->
+    <div class="admin-panel" id="panel-discussion">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h2 style="font-size:20px;font-weight:800;color:var(--primary);margin-bottom:4px;">
+            <i class="fas fa-comments"></i> Discussion Moderation
+          </h2>
+          <p style="font-size:13px;color:var(--text2);">Monitor, moderate and post announcements across all channels.</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <select class="form-control" id="admin-ch-filter" style="width:180px;" onchange="adminLoadDiscussion()">
+            <option value="">All Channels</option>
+            <option value="general">general</option>
+            <option value="gate-geology">gate-geology</option>
+            <option value="csir-net">csir-net</option>
+            <option value="doubts">doubts</option>
+            <option value="announcements">announcements</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="adminOpenAnnouncement()">
+            <i class="fas fa-bullhorn"></i> Post Announcement
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+        <div class="card" style="padding:16px;text-align:center;">
+          <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--primary);" id="disc-stat-total">—</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:600;">Total Messages</div>
+        </div>
+        <div class="card" style="padding:16px;text-align:center;">
+          <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--success);" id="disc-stat-today">—</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:600;">Today</div>
+        </div>
+        <div class="card" style="padding:16px;text-align:center;">
+          <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--warning);" id="disc-stat-flagged">—</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:600;">Flagged</div>
+        </div>
+        <div class="card" style="padding:16px;text-align:center;">
+          <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--accent);" id="disc-stat-online">—</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:600;">Online Now</div>
+        </div>
+      </div>
+
+      <!-- Announcement Composer (hidden by default) -->
+      <div class="card" id="announce-composer" style="display:none;margin-bottom:20px;border:2px solid var(--primary);">
+        <div class="card-header" style="background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);color:#fff;">
+          <h3 style="font-size:15px;color:#fff;"><i class="fas fa-bullhorn"></i> Post Announcement</h3>
+          <button class="btn btn-ghost btn-sm" onclick="adminCloseAnnouncement()" style="color:rgba(255,255,255,.8)"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="card-body" style="padding:16px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div>
+              <label class="form-label">Channel</label>
+              <select class="form-control" id="ann-channel">
+                <option value="announcements">announcements (read-only for students)</option>
+                <option value="general">general</option>
+                <option value="gate-geology">gate-geology</option>
+                <option value="csir-net">csir-net</option>
+                <option value="doubts">doubts</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
+                <input type="checkbox" id="ann-pin"> <span>📌 Pin this message</span>
+              </label>
+            </div>
+          </div>
+          <label class="form-label">Message</label>
+          <textarea class="form-control" id="ann-text" rows="4" placeholder="Write your announcement here…" style="resize:vertical;"></textarea>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+            <button class="btn btn-ghost btn-sm" onclick="adminCloseAnnouncement()">Cancel</button>
+            <button class="btn btn-primary" onclick="adminPostAnnouncement()"><i class="fas fa-paper-plane"></i> Post</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 style="font-size:15px;">Recent Messages</h3>
+          <div style="display:flex;gap:8px;">
+            <input type="text" class="form-control" id="disc-search" placeholder="Search…" style="width:200px;" oninput="adminFilterDiscussion()">
+            <button class="btn btn-ghost btn-sm" onclick="adminLoadDiscussion()"><i class="fas fa-sync-alt"></i></button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div id="disc-msg-list" style="max-height:580px;overflow-y:auto;">
+            <div style="text-align:center;padding:48px;color:var(--text3);">
+              <i class="fas fa-comments" style="font-size:36px;opacity:.3;margin-bottom:12px;display:block;"></i>
+              Click the Discussion nav item to load messages.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ── END DISCUSSION PANEL ── -->
+
   </div>
 </div>
 
@@ -643,6 +749,7 @@ const PANEL_LABELS = {
   'flagged': ['Analytics', 'Flagged Attempts'],
   'users': ['Analytics', 'Users'],
   'revaluation': ['Tools', 'Revaluation Centre'],
+  'discussion': ['Community', 'Discussion Moderation'],
 };
 const _origShowPanel = typeof showPanel === 'function' ? showPanel : null;
 document.addEventListener('DOMContentLoaded', () => {
@@ -654,9 +761,172 @@ document.addEventListener('DOMContentLoaded', () => {
       const lbl = PANEL_LABELS[id] || ['Admin', id];
       const bc = document.getElementById('panel-breadcrumb');
       if (bc) bc.textContent = 'GeoExam Admin › ' + lbl[0] + ' › ' + lbl[1];
+      // Auto-load discussion when panel is shown
+      if (id === 'discussion') {
+        if (typeof adminLoadDiscussion === 'function') adminLoadDiscussion();
+      }
     };
   }
 });
+
+/* ─── ADMIN DISCUSSION LOGIC ─── */
+let adminDiscMessages = [];
+let adminDiscUnsubscribe = null;
+
+function adminLoadDiscussion() {
+  const chFilter = document.getElementById('admin-ch-filter')?.value || '';
+  if (adminDiscUnsubscribe) adminDiscUnsubscribe();
+
+  let query = db.collection('discussion_messages').orderBy('createdAt', 'desc').limit(200);
+  if (chFilter) query = query.where('channel', '==', chFilter);
+
+  adminDiscUnsubscribe = query.onSnapshot(snap => {
+    adminDiscMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    adminUpdateDiscStats();
+    adminRenderMessages(adminDiscMessages);
+    // Update badge with flagged count
+    const flagged = adminDiscMessages.filter(m => m.flagged).length;
+    const badge = document.getElementById('nav-discussion-badge');
+    if (badge) { badge.textContent = flagged; badge.style.display = flagged > 0 ? 'inline' : 'none'; }
+  });
+
+  db.collection('presence').where('online', '==', true).get().then(s => {
+    const el = document.getElementById('disc-stat-online');
+    if (el) el.textContent = s.size;
+  }).catch(() => {});
+}
+
+function adminUpdateDiscStats() {
+  const total = document.getElementById('disc-stat-total');
+  const today = document.getElementById('disc-stat-today');
+  const flagged = document.getElementById('disc-stat-flagged');
+  if (!total) return;
+  total.textContent = adminDiscMessages.length;
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+  today.textContent = adminDiscMessages.filter(m => {
+    const ts = m.createdAt?.toDate?.();
+    return ts && ts >= todayStart;
+  }).length;
+  flagged.textContent = adminDiscMessages.filter(m => m.flagged).length;
+}
+
+function adminFilterDiscussion() {
+  const q = (document.getElementById('disc-search')?.value || '').toLowerCase();
+  const filtered = q
+    ? adminDiscMessages.filter(m => m.text?.toLowerCase().includes(q) || m.senderName?.toLowerCase().includes(q))
+    : adminDiscMessages;
+  adminRenderMessages(filtered);
+}
+
+function adminRenderMessages(msgs) {
+  const list = document.getElementById('disc-msg-list');
+  if (!list) return;
+  if (!msgs.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);">No messages found.</div>';
+    return;
+  }
+  const CH_COLORS = {
+    general: '#dbeafe', 'gate-geology': '#dcfce7', 'csir-net': '#fef9c3',
+    doubts: '#fce7f3', announcements: '#f3e8ff'
+  };
+  list.innerHTML = msgs.slice(0, 100).map(msg => {
+    const ts = msg.createdAt?.toDate?.()?.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) || '—';
+    const chColor = CH_COLORS[msg.channel] || '#f1f5f9';
+    const flagBg = msg.flagged ? 'background:#fff7ed;border-left:3px solid #f97316;' : '';
+    return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);${flagBg}transition:background .15s;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">
+        ${(msg.senderName || 'S')[0].toUpperCase()}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+          <strong style="font-size:14px;">${msg.senderName || 'Student'}</strong>
+          ${msg.senderRole === 'admin' ? '<span class="badge" style="background:#7c3aed;color:#fff;font-size:10px;">ADMIN</span>' : ''}
+          <span style="background:${chColor};color:var(--text);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;">#${msg.channel}</span>
+          ${msg.pinned ? '<span class="badge badge-warning" style="font-size:10px;">📌 Pinned</span>' : ''}
+          ${msg.flagged ? '<span class="badge badge-danger" style="font-size:10px;">🚩 Flagged</span>' : ''}
+          <span style="font-size:11px;color:var(--text3);margin-left:auto;">${ts}</span>
+        </div>
+        <div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;">${msg.text || ''}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        <button class="btn btn-ghost btn-sm" onclick="adminPinMsg('${msg.id}',${!msg.pinned})" title="${msg.pinned ? 'Unpin' : 'Pin'}">
+          <i class="fas fa-thumbtack" style="color:${msg.pinned ? 'var(--warning)' : 'var(--text3)'}"></i>
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="adminFlagMsg('${msg.id}',${!msg.flagged})" title="${msg.flagged ? 'Unflag' : 'Flag'}">
+          <i class="fas fa-flag" style="color:${msg.flagged ? 'var(--danger)' : 'var(--text3)'}"></i>
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="adminDeleteMsg('${msg.id}')" title="Delete">
+          <i class="fas fa-trash" style="color:var(--danger)"></i>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function adminPinMsg(id, pinned) {
+  if (pinned) {
+    const msg = adminDiscMessages.find(m => m.id === id);
+    if (msg) {
+      const others = adminDiscMessages.filter(m => m.channel === msg.channel && m.pinned && m.id !== id);
+      await Promise.all(others.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
+    }
+  }
+  await db.collection('discussion_messages').doc(id).update({ pinned });
+  Utils.toast(pinned ? 'Message pinned.' : 'Message unpinned.', 'success');
+}
+
+async function adminFlagMsg(id, flagged) {
+  await db.collection('discussion_messages').doc(id).update({ flagged });
+  Utils.toast(flagged ? 'Message flagged.' : 'Message unflagged.', flagged ? 'error' : 'success');
+}
+
+async function adminDeleteMsg(id) {
+  if (!confirm('Delete this message permanently?')) return;
+  await db.collection('discussion_messages').doc(id).delete();
+  Utils.toast('Message deleted.', 'success');
+}
+
+function adminOpenAnnouncement() {
+  const el = document.getElementById('announce-composer');
+  if (el) { el.style.display = 'block'; document.getElementById('ann-text')?.focus(); }
+}
+
+function adminCloseAnnouncement() {
+  const el = document.getElementById('announce-composer');
+  if (el) el.style.display = 'none';
+}
+
+async function adminPostAnnouncement() {
+  const text = document.getElementById('ann-text')?.value.trim();
+  const channel = document.getElementById('ann-channel')?.value;
+  const pin = document.getElementById('ann-pin')?.checked;
+  if (!text) { Utils.toast('Please enter a message.', 'error'); return; }
+
+  const adminUser = auth.currentUser;
+  const ud = (await db.collection('users').doc(adminUser.uid).get()).data();
+
+  if (pin) {
+    const existing = adminDiscMessages.filter(m => m.channel === channel && m.pinned);
+    await Promise.all(existing.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
+  }
+
+  await db.collection('discussion_messages').add({
+    channel,
+    userId: adminUser.uid,
+    senderName: `${ud?.firstName || 'Admin'} ${ud?.lastName || ''}`.trim(),
+    senderRole: 'admin',
+    text,
+    pinned: pin,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    reactions: {},
+  });
+
+  document.getElementById('ann-text').value = '';
+  if (document.getElementById('ann-pin')) document.getElementById('ann-pin').checked = false;
+  adminCloseAnnouncement();
+  Utils.toast('Announcement posted!', 'success');
+}
+/* ─── END ADMIN DISCUSSION LOGIC ─── */
 </script>
 <script src="js/admin.js"></script>
 </body>
