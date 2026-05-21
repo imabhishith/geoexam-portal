@@ -1069,6 +1069,7 @@ const TAB_SWITCH_FLAG_THRESHOLD = 3;
 // ── Window integrity counters ──
 let windowBlurCount = 0;
 let windowResizeCount = 0;
+let examReady = false; // set true by initExam; gate button checks this
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
@@ -1148,9 +1149,8 @@ async function initExam() {
     buildSectionTabs();
     renderQuestion();
     renderPalette();
-    startTimer();
-    autoSaveInterval();
-    // startProctoring() is called by the pre-exam gate overlay
+    // Timer + proctoring start only after the user clicks through the pre-exam gate
+    examReady = true;
   } catch(e) { console.error(e); Utils.toast('Error loading exam: '+e.message,'error'); }
 }
 
@@ -1776,19 +1776,47 @@ function tickIdle() {
 
 // ── Pre-exam gate ──
 const preExamGate = document.getElementById('pre-exam-gate');
+let gateActivated = false;
 
 function startExamFromGate() {
-  enterFullscreen()
-    .then(() => {
-      preExamGate.classList.add('hidden');
-      startProctoring();
-    })
-    .catch(() => {
-      // Some browsers require user gesture — button click counts, so retry once
-      preExamGate.classList.add('hidden');
-      Utils.toast('⚠️ Could not enter full screen automatically. Please press F11.', 'warning', 6000);
-      startProctoring();
-    });
+  if (gateActivated) return;          // prevent double-click
+
+  const btn = document.querySelector('.gate-start-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading…'; }
+
+  const doActivate = () => {
+    gateActivated = true;
+    preExamGate.classList.add('hidden');
+    startTimer();
+    autoSaveInterval();
+    startProctoring();
+  };
+
+  const tryFullscreen = () =>
+    enterFullscreen()
+      .then(doActivate)
+      .catch(() => {
+        // Fullscreen rejected (some browsers need repeated gesture) — proceed anyway
+        doActivate();
+        Utils.toast('⚠️ Could not auto-enter full screen. Press F11 for best experience.', 'warning', 6000);
+      });
+
+  if (examReady) {
+    tryFullscreen();
+  } else {
+    // Exam data still loading — poll until ready (max 10 s)
+    let waited = 0;
+    const poll = setInterval(() => {
+      waited += 200;
+      if (examReady) { clearInterval(poll); tryFullscreen(); }
+      else if (waited >= 10000) {
+        clearInterval(poll);
+        Utils.toast('Exam data took too long to load. Please refresh.', 'error');
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-expand"></i> Enter Full Screen & Begin Exam'; }
+        gateActivated = false;
+      }
+    }, 200);
+  }
 }
 
 function startProctoring() {
