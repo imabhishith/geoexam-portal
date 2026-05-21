@@ -989,6 +989,8 @@ let timerSec  = 0;
 let timerInt  = null;
 let attemptId = null;
 let currentUser = null;
+let timeSpent = {};     // { questionId: seconds }
+let qStartTime = null;  // when current question was first shown
 
 // ── Tab-Switch Detection ──
 let tabSwitchCount = 0;
@@ -1055,6 +1057,7 @@ async function initExam() {
       answers   = attData.answers || {};
       timerSec  = attData.remainingSeconds ?? timerSec;
       tabSwitchCount = attData.tabSwitchCount || 0;
+      timeSpent = attData.timeSpent || {};
       tabSwitchLog.push(...(attData.tabSwitchLog || []));
     } else {
       questions.forEach(q => { answers[q.id] = { selected:[], status:'nv' }; });
@@ -1091,9 +1094,18 @@ function switchSection(idx) {
   if(qi>=0){ currentQ=qi; renderQuestion(); renderPalette(); }
 }
 
+function recordTimeOnCurrentQuestion() {
+  const q = questions[currentQ];
+  if (!q || !qStartTime) return;
+  const elapsed = Math.round((Date.now() - qStartTime) / 1000);
+  timeSpent[q.id] = (timeSpent[q.id] || 0) + elapsed;
+  qStartTime = Date.now();
+}
+
 function renderQuestion() {
   const q = questions[currentQ];
   if(!q) return;
+  qStartTime = qStartTime || Date.now(); // start timer for first render
   const ans = answers[q.id]||{selected:[],status:'na'};
   if(ans.status==='nv'){ answers[q.id]={...ans,status:'na'}; }
   const posM = q.posMarks||q.marks||1;
@@ -1168,14 +1180,14 @@ function toggleOption(idx){
   renderQuestion();
 }
 
-function saveAndNext(){
+function saveAndNext(){ recordTimeOnCurrentQuestion();
   const q=questions[currentQ]; const ans=answers[q.id];
   if(q.type==='nat'){ const v=document.getElementById('nat-input')?.value; if(v!==undefined&&v!=='')ans.selected=[v]; }
   ans.status=ans.selected.length>0?'ans':'na';
   navigate(1);
 }
 
-function markForReview(){
+function markForReview(){ recordTimeOnCurrentQuestion();
   const q=questions[currentQ]; const ans=answers[q.id];
   if(q.type==='nat'){ const v=document.getElementById('nat-input')?.value; if(v)ans.selected=[v]; }
   ans.status=ans.selected.length>0?'am':'mrk';
@@ -1189,9 +1201,10 @@ function clearResponse(){
 }
 
 function navigate(dir){
+  recordTimeOnCurrentQuestion();
   const ni=currentQ+dir;
   if(ni<0||ni>=questions.length) return;
-  currentQ=ni; renderQuestion(); renderPalette();
+  currentQ=ni; qStartTime=Date.now(); renderQuestion(); renderPalette();
   for(let i=0;i<sections.length;i++){
     if(sections[i].questionIds?.includes(questions[currentQ].id)){
       if(i!==currentSec){ currentSec=i; document.querySelectorAll('.sec-tab').forEach((t,idx)=>t.classList.toggle('active',idx===i)); }
@@ -1228,7 +1241,7 @@ function renderPalette(){
   `;
 }
 
-function goTo(idx){ currentQ=idx; renderQuestion(); renderPalette(); }
+function goTo(idx){ recordTimeOnCurrentQuestion(); currentQ=idx; qStartTime=Date.now(); renderQuestion(); renderPalette(); }
 
 // ── Timer ──
 function startTimer(){
@@ -1244,7 +1257,7 @@ function startTimer(){
 function autoSaveInterval(){
   setInterval(async()=>{
     if(!attemptId) return;
-    try{ await db.collection('attempts').doc(attemptId).update({answers,remainingSeconds:timerSec}); }catch(e){}
+    try{ await db.collection('attempts').doc(attemptId).update({answers,remainingSeconds:timerSec,timeSpent}); }catch(e){}
   },15000);
 }
 
@@ -1308,6 +1321,7 @@ async function submitExam(){
       status:'submitted',answers,evaluation,
       totalScore,maxScore,correct,wrong,partial,skipped,
       tabSwitchCount, tabSwitchLog,
+      timeSpent,
       fullscreenExitCount: fsExitCount,
       idleFlagged,
       flagged: tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD || fsExitCount > FS_MAX_EXITS || idleFlagged,
