@@ -849,11 +849,18 @@ function filterAttempts() {
   renderAttempts(filtered);
 }
 
+function formatQTimeAdmin(secs) {
+  if (!secs || secs < 1) return '—';
+  if (secs < 60) return secs + 's';
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return s > 0 ? `${m}m ${s}s` : `${m}m`;
+}
+
 function renderAttempts(list) {
   const tbody = document.getElementById('attempts-tbody');
   if (!tbody) return;
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No attempts found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No attempts found.</td></tr>';
     return;
   }
 
@@ -871,6 +878,11 @@ function renderAttempts(list) {
     const flagBadge = a.flagged
       ? ' <span class="badge badge-danger"><i class="fas fa-flag"></i> Flagged</span>'
       : '';
+    // Total time spent across all questions
+    const totalTimeSecs = a.timeSpent ? Object.values(a.timeSpent).reduce((s, v) => s + (v || 0), 0) : 0;
+    const timeDisplay = totalTimeSecs > 0
+      ? `<span style="font-size:12px;font-weight:700;color:#1565c0;">${formatQTimeAdmin(totalTimeSecs)}</span>`
+      : '<span style="font-size:12px;color:#94a3b8;">—</span>';
 
     return `<tr>
       <td><strong>${name}</strong><div style="font-size:11px;color:var(--text2);">${u.email||''}</div></td>
@@ -887,6 +899,7 @@ function renderAttempts(list) {
         <span style="color:var(--text3);margin:0 3px;">·</span>
         <span style="color:var(--text2);font-size:12px;"><i class="fas fa-minus"></i> ${a.skipped||0}</span>
       </td>
+      <td><i class="fas fa-clock" style="color:#1565c0;margin-right:4px;"></i>${timeDisplay}</td>
       <td>${statusBadge}${flagBadge}</td>
       <td style="font-size:13px;color:var(--text2);">${date}</td>
       <td style="font-size:12px;font-family:monospace;color:var(--text3);">${a.id.substring(0,10)}…</td>
