@@ -132,21 +132,24 @@ async function loadQBank() {
   try {
     const snap = await db.collection('questions').orderBy('createdAt','desc').get();
     allQuestions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    filteredQuestions = allQuestions;
     renderQBank(allQuestions);
   } catch(e) { Utils.toast('Error loading questions: '+e.message, 'error'); }
 }
+
+let filteredQuestions = []; // tracks current filtered list for stable pagination
 
 function filterQBank() {
   const s = document.getElementById('qbank-search').value.toLowerCase();
   const t = document.getElementById('qbank-type').value;
   const y = document.getElementById('qbank-year').value;
-  const filtered = allQuestions.filter(q =>
+  filteredQuestions = allQuestions.filter(q =>
     (!s || (q.text||'').toLowerCase().includes(s) || (q.tags||[]).join(' ').toLowerCase().includes(s)) &&
     (!t || q.type === t) &&
     (!y || q.year === y)
   );
   currentPage = 1;
-  renderQBank(filtered);
+  renderQBank(filteredQuestions);
 }
 
 function renderQBank(list) {
@@ -180,13 +183,15 @@ function renderQBank(list) {
   if (totalPages <= 1) { pgEl.innerHTML = ''; return; }
   pgEl.innerHTML = `
     <span style="font-size:13px;color:var(--text2);">Page ${currentPage} of ${totalPages}</span>
-    <button class="btn btn-ghost btn-sm" onclick="changePage(-1)" ${currentPage===1?'disabled':''}>← Prev</button>
-    <button class="btn btn-ghost btn-sm" onclick="changePage(1,${list.length})" ${currentPage===totalPages?'disabled':''}>Next →</button>`;
+    <button class="btn btn-ghost btn-sm" onclick="changePage(-1)" ${currentPage===1?'disabled':''}><i class="fas fa-chevron-left"></i> Prev</button>
+    <button class="btn btn-ghost btn-sm" onclick="changePage(1)" ${currentPage===totalPages?'disabled':''}>Next <i class="fas fa-chevron-right"></i></button>`;
 }
 
 function changePage(dir) {
-  currentPage += dir;
-  filterQBank();
+  const list = filteredQuestions.length ? filteredQuestions : allQuestions;
+  const totalPages = Math.ceil(list.length / PAGE_SIZE);
+  currentPage = Math.max(1, Math.min(currentPage + dir, totalPages));
+  renderQBank(list);
 }
 
 // ── Add Single Question (free image) ──
@@ -491,13 +496,13 @@ function autoCropQuestions(text) {
 function renderPDFPreview(questions) {
   const list = document.getElementById('pdf-questions-list');
   if (!questions.length) {
-    list.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No questions auto-detected. Try a different PDF or add questions manually.</p></div>';
+    list.innerHTML = '<div class="empty-state"><div class="icon"><i class="fas fa-inbox"></i></div><p>No questions auto-detected. Try a different PDF or add questions manually.</p></div>';
     return;
   }
   let html = `<div style="margin-top:20px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <h3 style="font-size:16px;color:var(--primary);">Detected Questions (${questions.length})</h3>
-      <button class="btn btn-success" onclick="saveAllPDFQuestions()">💾 Save All to Question Bank</button>
+      <button class="btn btn-success" onclick="saveAllPDFQuestions()"><i class="fas fa-save"></i> Save All to Question Bank</button>
     </div>`;
 
   questions.forEach((q, i) => {
@@ -508,7 +513,7 @@ function renderPDFPreview(questions) {
           <select class="form-control" style="width:90px;height:30px;font-size:12px;" id="pq-type-${i}" onclick="event.stopPropagation()">
             <option value="scq">SCQ</option><option value="mcq">MCQ</option><option value="nat">NAT</option>
           </select>
-          <button class="btn btn-danger btn-sm" onclick="removePDFQ(${i},event)">✕</button>
+          <button class="btn btn-danger btn-sm" onclick="removePDFQ(${i},event)"><i class="fas fa-times"></i></button>
           <span style="color:var(--text2);font-size:12px;">▼</span>
         </div>
       </div>
@@ -619,7 +624,7 @@ function renderSections() {
         style="max-width:220px;">
       <span class="badge badge-muted" style="white-space:nowrap;">${s.questionIds.length} Qs</span>
       ${sectionData.length > 1
-        ? `<button class="btn btn-danger btn-sm" onclick="removeSection(${i})">✕</button>`
+        ? `<button class="btn btn-danger btn-sm" onclick="removeSection(${i})"><i class="fas fa-times"></i></button>`
         : ''}
     </div>`).join('');
   updateQPickerSections();
@@ -670,7 +675,7 @@ function filterQPicker() {
         style="font-size:9px;">${(q.type||'').toUpperCase()}</span>
       <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(q.text||'').substring(0,55)}</span>
       ${q.year?`<span style="color:var(--text3);font-size:10px;">${q.year}</span>`:''}
-      ${sel?'<span style="color:var(--success);">✓</span>':''}
+      ${sel?'<span style="color:var(--success);"><i class="fas fa-check"></i></span>':''}
     </div>`;
   }).join('') || '<p class="text-muted text-small text-center" style="padding:16px;">No questions found.</p>';
 }
@@ -710,9 +715,9 @@ function renderSelectedQs() {
       <span style="color:var(--text2);min-width:20px;font-weight:700;">${i+1}</span>
       <span class="badge ${q.type==='scq'?'badge-info':q.type==='mcq'?'badge-warning':'badge-primary'}"
         style="font-size:9px;">${(q.type||'').toUpperCase()}</span>
-      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${q.text ? (q.text||'').substring(0,45) : '📷 Image Question'}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${q.text ? (q.text||'').substring(0,45) : '<i class="fas fa-image"></i> Image Question'}</span>
       <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:11px;color:var(--danger);"
-        onclick="removeQFromExam('${qid}')">✕</button>
+        onclick="removeQFromExam('${qid}')"><i class="fas fa-times"></i></button>
     </div>`;
   }).join('');
 }
@@ -994,7 +999,7 @@ function renderFlaggedTable() {
   if (!tbody) return;
 
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted" style="padding:40px;"><div style="font-size:40px;margin-bottom:12px;">✅</div><div style="font-weight:700;">No flagged attempts found.</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted" style="padding:40px;"><div style="font-size:40px;margin-bottom:12px;"><i class="fas fa-check-circle" style="color:var(--success);"></i></div><div style="font-weight:700;">No flagged attempts found.</div></td></tr>`;
     return;
   }
 
@@ -1058,7 +1063,7 @@ function renderFlaggedTable() {
                 <div>FS Exits: <strong style="color:#f59e0b">${fsEx}</strong></div>
                 <div>Window Blur: <strong style="color:#7c3aed">${winBlur}</strong></div>
                 <div>Window Resize: <strong style="color:#0369a1">${winResize}</strong></div>
-                <div>Idle Flag: <strong style="color:#8b5cf6">${a.idleFlagged ? 'Yes ⚠️' : 'No ✅'}</strong></div>
+                <div>Idle Flag: <strong style="color:#8b5cf6">${a.idleFlagged ? 'Yes <i class="fas fa-exclamation-triangle"></i>' : 'No <i class="fas fa-check-circle"></i>'}</strong></div>
                 <div>Status: <strong>${a.status||'—'}</strong></div>
               </div>
             </div>
