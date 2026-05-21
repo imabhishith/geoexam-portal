@@ -2,154 +2,463 @@
 <html lang="en">
 <head>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Result Analysis — GeoExam Portal</title>
-<link rel="stylesheet" href="../css/global.css">
-<style>
-  .page-content { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
-  .result-hero { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #fff; border-radius: var(--radius-lg); padding: 32px; margin-bottom: 24px; text-align: center; }
-  .result-hero h1 { font-size: 36px; margin-bottom: 8px; }
-  .score-display { font-size: 72px; font-weight: 800; font-family: 'Rajdhani'; margin: 16px 0 4px; color: var(--accent-light); }
-  .score-max { font-size: 22px; opacity: .8; }
-  .score-pct { font-size: 24px; margin-top: 8px; }
-  .stats-banner { display: grid; grid-template-columns: repeat(5,1fr); gap: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px; }
-  .stat-item { padding: 18px 12px; text-align: center; border-right: 1px solid var(--border); }
-  .stat-item:last-child { border-right: none; }
-  .stat-item .num { font-size: 28px; font-weight: 800; font-family: 'Rajdhani'; }
-  .stat-item .lbl { font-size: 12px; color: var(--text2); font-weight: 600; margin-top: 2px; }
-  .correct-num { color: var(--success); }
-  .wrong-num   { color: var(--danger); }
-  .partial-num { color: var(--warning); }
-  .skip-num    { color: var(--text3); }
-  .donut-wrap { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; padding: 20px; }
-  .donut-svg { width: 160px; height: 160px; }
-  .donut-legend { display: flex; flex-direction: column; gap: 8px; }
-  .legend-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-  .legend-clr { width: 14px; height: 14px; border-radius: 3px; }
-  .review-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .review-filters .btn.active { background: var(--primary); color: #fff; }
-  .q-review-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 12px; overflow: hidden; }
-  .q-review-header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--bg); border-bottom: 1px solid var(--border); }
-  .q-review-header:hover { background: var(--bg2); }
-  .q-review-body { padding: 16px; display: none; }
-  .q-review-body.open { display: block; }
-  .result-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-  .rb-correct { background: #dcfce7; color: #166534; }
-  .rb-wrong   { background: #fee2e2; color: #991b1b; }
-  .rb-partial { background: #fef3c7; color: #92400e; }
-  .rb-skip    { background: var(--bg2); color: var(--text2); }
-  .answer-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-  .ans-box { border-radius: 8px; padding: 12px 14px; font-size: 13px; }
-  .ans-your { background: #fef3c7; border: 1px solid #fcd34d; }
-  .ans-correct { background: #dcfce7; border: 1px solid #86efac; }
-  .rank-card { display: flex; align-items: center; gap: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px; }
-  .rank-big { font-size: 64px; font-weight: 800; font-family: 'Rajdhani'; color: var(--accent); }
-  .perf-bar { margin: 8px 0; }
-  .perf-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 4px; }
-  .perf-track { height: 10px; background: var(--bg2); border-radius: 5px; overflow: hidden; }
-  .perf-fill  { height: 100%; border-radius: 5px; transition: width 1s ease; }
-</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Result Analysis — GeoExam Portal</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:   #0a2540;
+      --blue:   #1565c0;
+      --accent: #e65100;
+      --green:  #15803d;
+      --red:    #991b1b;
+      --amber:  #92400e;
+      --gray50: #f8fafc;
+      --gray100:#f1f5f9;
+      --gray200:#e2e8f0;
+      --gray600:#64748b;
+      --gray800:#1e293b;
+      --font:   'Noto Sans', 'Segoe UI', Arial, sans-serif;
+      --raj:    'Rajdhani', sans-serif;
+    }
+    body { background: var(--gray100); font-family: var(--font); color: var(--gray800); font-size: 13px; }
+
+    /* ── Navbar ── */
+    .navbar {
+      background: var(--navy);
+      padding: 0 24px;
+      height: 52px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      border-bottom: 3px solid #e65100;
+    }
+    .navbar-brand { display: flex; align-items: center; gap: 12px; color: #fff; }
+    .navbar-brand h1 { font-size: 17px; font-weight: 700; font-family: var(--raj); letter-spacing: .02em; }
+    .navbar-brand span { font-size: 11px; color: rgba(255,255,255,.5); }
+    .navbar-nav { display: flex; align-items: center; gap: 8px; }
+    .nav-link {
+      color: rgba(255,255,255,.8); font-size: 13px; font-weight: 600;
+      padding: 6px 14px; border-radius: 4px; text-decoration: none;
+      display: flex; align-items: center; gap: 6px;
+      transition: background .15s;
+    }
+    .nav-link:hover { background: rgba(255,255,255,.1); color: #fff; }
+
+    /* ── Page ── */
+    .page { max-width: 1020px; margin: 0 auto; padding: 28px 20px 48px; }
+
+    /* ── Hero ── */
+    .result-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #1a3c6e 55%, #2563ab 100%);
+      border-radius: 14px;
+      padding: 36px 32px 28px;
+      color: #fff;
+      margin-bottom: 20px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 24px;
+    }
+    .hero-left {}
+    .hero-exam-tag {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+      color: rgba(255,255,255,.55); margin-bottom: 6px;
+    }
+    .hero-title {
+      font-family: var(--raj); font-size: 26px; font-weight: 800;
+      color: #fff; margin-bottom: 4px;
+    }
+    .hero-meta { font-size: 12px; color: rgba(255,255,255,.55); display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+    .hero-meta span { display: flex; align-items: center; gap: 5px; }
+    .hero-right { text-align: right; }
+    .hero-score-num {
+      font-family: var(--raj); font-size: 64px; font-weight: 800;
+      line-height: 1; color: #fff;
+    }
+    .hero-score-denom { font-size: 18px; color: rgba(255,255,255,.6); margin-top: 2px; }
+    .hero-pct-pill {
+      display: inline-block;
+      margin-top: 8px;
+      font-family: var(--raj); font-size: 20px; font-weight: 800;
+      padding: 4px 18px; border-radius: 20px;
+      background: rgba(255,255,255,.18);
+    }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      background: #fff;
+      border: 1px solid var(--gray200);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .stat-cell {
+      padding: 18px 10px;
+      text-align: center;
+      border-right: 1px solid var(--gray200);
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-cell .num {
+      font-family: var(--raj); font-size: 30px; font-weight: 800;
+      line-height: 1; margin-bottom: 4px;
+    }
+    .stat-cell .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--gray600); }
+    .stat-cell .lbl i { margin-right: 4px; }
+
+    /* ── Grid 2 ── */
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+    /* ── Card ── */
+    .card {
+      background: #fff;
+      border: 1px solid var(--gray200);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .card-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--gray200);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-head h3 {
+      font-size: 14px; font-weight: 700;
+      color: var(--gray800);
+      display: flex; align-items: center; gap: 7px;
+    }
+    .card-body { padding: 18px; }
+
+    /* ── Rank card ── */
+    .rank-card {
+      background: #fff;
+      border: 1px solid var(--gray200);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex; align-items: center; gap: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      flex-wrap: wrap;
+    }
+    .rank-num {
+      font-family: var(--raj); font-size: 60px; font-weight: 800;
+      color: var(--accent); line-height: 1; flex-shrink: 0;
+    }
+    .rank-detail { flex: 1; }
+    .rank-detail .title { font-size: 16px; font-weight: 700; color: var(--blue); margin-bottom: 4px; }
+    .rank-detail .sub { font-size: 13px; color: var(--gray600); }
+    .rank-pct-side { text-align: right; }
+    .rank-pct-side .pct-lbl { font-size: 12px; color: var(--gray600); margin-bottom: 4px; }
+    .rank-pct-val { font-family: var(--raj); font-size: 40px; font-weight: 800; color: var(--blue); line-height: 1; }
+    .rank-link-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 10px;
+      font-size: 12px; font-weight: 700; color: var(--blue);
+      padding: 5px 14px; border-radius: 6px;
+      border: 1.5px solid var(--blue);
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .rank-link-btn:hover { background: #eff6ff; }
+
+    /* ── Donut chart ── */
+    .donut-wrap { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; padding: 16px 0; }
+    .donut-svg  { width: 150px; height: 150px; flex-shrink: 0; }
+    .donut-legend { display: flex; flex-direction: column; gap: 10px; }
+    .leg-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .leg-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .leg-val { font-weight: 700; margin-left: auto; padding-left: 12px; }
+
+    /* ── Perf bars ── */
+    .perf-item { margin-bottom: 14px; }
+    .perf-item:last-child { margin-bottom: 0; }
+    .perf-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+    .perf-row .label { font-weight: 600; color: var(--gray800); }
+    .perf-row .val { font-weight: 700; }
+    .perf-track { height: 8px; background: var(--gray100); border-radius: 4px; overflow: hidden; }
+    .perf-fill  { height: 100%; border-radius: 4px; transition: width 1s ease; }
+
+    /* ── Review section ── */
+    .section-head {
+      font-family: var(--raj); font-size: 18px; font-weight: 800;
+      color: var(--gray800); margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .filter-tabs {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .ftab {
+      padding: 6px 14px; border-radius: 20px;
+      border: 1.5px solid var(--gray200);
+      background: #fff;
+      font-size: 12px; font-weight: 700; color: var(--gray600);
+      cursor: pointer; transition: all .15s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .ftab:hover { border-color: var(--blue); color: var(--blue); }
+    .ftab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .ftab.correct.active  { background: #15803d; border-color: #15803d; }
+    .ftab.wrong.active    { background: #991b1b; border-color: #991b1b; }
+    .ftab.partial.active  { background: #b45309; border-color: #b45309; }
+    .ftab.skip.active     { background: var(--gray600); border-color: var(--gray600); }
+
+    /* ── Question review items ── */
+    .q-item {
+      background: #fff;
+      border: 1px solid var(--gray200);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+    .q-item.correct { border-left: 4px solid #22c55e; }
+    .q-item.wrong   { border-left: 4px solid #ef4444; }
+    .q-item.partial { border-left: 4px solid #f59e0b; }
+    .q-item.skip    { border-left: 4px solid #94a3b8; }
+
+    .q-item-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 16px;
+      cursor: pointer;
+      background: var(--gray50);
+      border-bottom: 1px solid transparent;
+      gap: 10px;
+      flex-wrap: wrap;
+      transition: background .1s;
+    }
+    .q-item-head:hover { background: #f1f5f9; }
+    .q-item-head.open { border-bottom-color: var(--gray200); background: #fff; }
+
+    .q-head-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .q-num { font-family: var(--raj); font-size: 13px; font-weight: 800; color: var(--blue); flex-shrink: 0; }
+    .q-preview {
+      font-size: 13px; color: var(--gray800);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 480px;
+    }
+    .q-head-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+    .badge-result {
+      font-size: 11px; font-weight: 800;
+      padding: 3px 10px; border-radius: 12px;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .br-correct { background: #dcfce7; color: #15803d; }
+    .br-wrong   { background: #fee2e2; color: #991b1b; }
+    .br-partial { background: #fef9c3; color: #92400e; }
+    .br-skip    { background: var(--gray100); color: var(--gray600); }
+
+    .score-chip { font-family: var(--raj); font-size: 16px; font-weight: 800; }
+    .sc-pos { color: #15803d; }
+    .sc-neg { color: #991b1b; }
+    .sc-zero { color: var(--gray600); }
+
+    .time-chip {
+      font-size: 11px; color: var(--gray600);
+      background: var(--gray100); border: 1px solid var(--gray200);
+      border-radius: 10px; padding: 2px 8px;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+
+    .q-item-body { padding: 16px 18px; display: none; }
+    .q-item-body.open { display: block; }
+
+    .q-text-full { font-size: 14px; line-height: 1.8; color: var(--gray800); margin-bottom: 16px; }
+    .q-img { max-width: 100%; max-height: 240px; border-radius: 6px; margin-bottom: 12px; }
+
+    .ans-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+    .ans-box { border-radius: 8px; padding: 12px 14px; font-size: 13px; }
+    .ab-yours   { background: #fef9c3; border: 1px solid #fcd34d; }
+    .ab-correct { background: #dcfce7; border: 1px solid #86efac; }
+    .ab-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; color: var(--gray600); }
+    .ab-val { font-size: 14px; font-weight: 700; }
+
+    .solution-box {
+      margin-top: 14px;
+      background: #f0fdf4;
+      border-left: 3px solid #22c55e;
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-size: 13px; color: var(--gray800);
+    }
+    .solution-box strong { display: flex; align-items: center; gap: 6px; color: #15803d; margin-bottom: 4px; }
+
+    /* ── Loading ── */
+    .loading-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 14px; color: var(--gray600); }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--gray200); border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+
+    /* ── Toast ── */
+    #toast-container { position: fixed; top: 64px; right: 16px; z-index: 9000; display: flex; flex-direction: column; gap: 6px; }
+    .toast { background: #1f2937; color: #fff; padding: 11px 16px; border-radius: 8px; font-size: 13px; opacity: 0; transform: translateX(40px); transition: all .3s; }
+    .toast.show { opacity: 1; transform: translateX(0); }
+    .toast-success { background: #065f46; }
+    .toast-error   { background: #7f1d1d; }
+    .toast-warning { background: #78350f; }
+
+    @media (max-width: 700px) {
+      .grid2 { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+      .ans-compare { grid-template-columns: 1fr; }
+      .result-hero { padding: 24px 20px; }
+      .hero-score-num { font-size: 44px; }
+    }
+  </style>
 </head>
 <body>
+
 <nav class="navbar">
   <div class="navbar-brand">
-    <span style="font-size:28px;"><i class="fas fa-gem"></i></span>
-    <div><h1>GeoExam Portal</h1><span>Result Analysis</span></div>
+    <i class="fas fa-gem" style="font-size:20px;color:#e65100;"></i>
+    <div>
+      <h1>GeoExam Portal</h1>
+      <span>Result Analysis</span>
+    </div>
   </div>
   <div class="navbar-nav">
     <a href="dashboard.html" class="nav-link"><i class="fas fa-arrow-left"></i> Dashboard</a>
-    <a href="ranklist.html" class="nav-link" id="ranklist-link">Ranklist</a>
+    <a href="#" class="nav-link" id="ranklist-link"><i class="fas fa-trophy"></i> Ranklist</a>
   </div>
 </nav>
 
-<div class="page-content">
-  <div id="loading-screen" class="loading-screen" style="min-height:60vh;">
-    <div class="spinner"></div><p>Loading your results…</p>
+<div id="toast-container"></div>
+
+<div class="page">
+
+  <!-- Loading -->
+  <div class="loading-center" id="loading-screen">
+    <div class="spinner"></div>
+    <p>Loading your results…</p>
   </div>
+
+  <!-- Result Content -->
   <div id="result-content" class="hidden">
+
     <!-- Hero -->
     <div class="result-hero">
-      <div style="font-size:20px;margin-bottom:4px;" id="res-exam-title">Exam</div>
-      <h1><i class="fas fa-award"></i> Exam Completed!</h1>
-      <div class="score-display" id="res-score">0</div>
-      <div class="score-max" id="res-max">/ 100</div>
-      <div class="score-pct" id="res-pct">0%</div>
-      <div style="margin-top:16px;opacity:.8;font-size:14px;" id="res-date">—</div>
+      <div class="hero-left">
+        <div class="hero-exam-tag"><i class="fas fa-clipboard-list"></i> Examination Result</div>
+        <div class="hero-title" id="res-exam-title">—</div>
+        <div class="hero-meta">
+          <span><i class="fas fa-check-circle"></i> <span id="res-status">Submitted</span></span>
+          <span><i class="fas fa-calendar-alt"></i> <span id="res-date">—</span></span>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-score-num" id="res-score">0</div>
+        <div class="hero-score-denom" id="res-max">/ 100</div>
+        <div class="hero-pct-pill" id="res-pct">0%</div>
+      </div>
     </div>
 
     <!-- Rank -->
     <div class="rank-card" id="rank-card">
-      <div class="rank-big" id="rank-num">—</div>
-      <div style="flex:1">
-        <div style="font-size:18px;font-weight:700;color:var(--primary);margin-bottom:4px;">Your Rank</div>
-        <div style="font-size:13px;color:var(--text2);" id="rank-out-of">Calculating…</div>
-        <a id="rank-link" href="#" class="btn btn-outline btn-sm mt-1">View Full Ranklist <i class="fas fa-arrow-right"></i></a>
+      <div class="rank-num" id="rank-num">—</div>
+      <div class="rank-detail">
+        <div class="title">Your Rank</div>
+        <div class="sub" id="rank-out-of">Calculating…</div>
+        <a id="rank-link" href="#" class="rank-link-btn">
+          <i class="fas fa-list-ol"></i> View Full Ranklist
+        </a>
       </div>
-      <div style="text-align:right">
-        <div style="font-size:13px;color:var(--text2);">Percentile</div>
-        <div style="font-size:36px;font-weight:700;font-family:'Rajdhani';color:var(--primary)" id="rank-percentile">—</div>
+      <div class="rank-pct-side">
+        <div class="pct-lbl">Percentile</div>
+        <div class="rank-pct-val" id="rank-percentile">—</div>
       </div>
     </div>
 
-    <!-- Stats Banner -->
-    <div class="stats-banner">
-      <div class="stat-item"><div class="num correct-num" id="s-correct">0</div><div class="lbl"><i class="fas fa-check-circle"></i> Correct</div></div>
-      <div class="stat-item"><div class="num wrong-num" id="s-wrong">0</div><div class="lbl"><i class="fas fa-times-circle"></i> Wrong</div></div>
-      <div class="stat-item"><div class="num partial-num" id="s-partial">0</div><div class="lbl"><i class="fas fa-bolt"></i> Partial</div></div>
-      <div class="stat-item"><div class="num skip-num" id="s-skip">0</div><div class="lbl"><i class="far fa-square"></i> Skipped</div></div>
-      <div class="stat-item"><div class="num" id="s-total">0</div><div class="lbl"><i class="fas fa-clipboard-list"></i> Total</div></div>
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-cell">
+        <div class="num" style="color:#15803d;" id="s-correct">0</div>
+        <div class="lbl"><i class="fas fa-check-circle"></i>Correct</div>
+      </div>
+      <div class="stat-cell">
+        <div class="num" style="color:#991b1b;" id="s-wrong">0</div>
+        <div class="lbl"><i class="fas fa-times-circle"></i>Wrong</div>
+      </div>
+      <div class="stat-cell">
+        <div class="num" style="color:#b45309;" id="s-partial">0</div>
+        <div class="lbl"><i class="fas fa-bolt"></i>Partial</div>
+      </div>
+      <div class="stat-cell">
+        <div class="num" style="color:#64748b;" id="s-skip">0</div>
+        <div class="lbl"><i class="fas fa-minus-circle"></i>Skipped</div>
+      </div>
+      <div class="stat-cell">
+        <div class="num" style="color:#1565c0;" id="s-total">0</div>
+        <div class="lbl"><i class="fas fa-clipboard-list"></i>Total</div>
+      </div>
     </div>
 
-    <!-- Performance Chart + Bars -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    <!-- Charts + Perf Bars -->
+    <div class="grid2">
+
       <div class="card">
-        <div class="card-header"><h3 style="font-size:16px">Score Distribution</h3></div>
+        <div class="card-head">
+          <h3><i class="fas fa-chart-pie" style="color:#1565c0;"></i> Score Distribution</h3>
+        </div>
         <div class="card-body">
           <div class="donut-wrap">
             <svg class="donut-svg" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f4f8" stroke-width="16"/>
-              <circle id="donut-correct" cx="50" cy="50" r="40" fill="none" stroke="#22c55e" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 251.2" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
-              <circle id="donut-wrong"   cx="50" cy="50" r="40" fill="none" stroke="#ef4444" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 251.2" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
-              <circle id="donut-partial" cx="50" cy="50" r="40" fill="none" stroke="#f59e0b" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 251.2" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
-              <text x="50" y="46" text-anchor="middle" font-size="14" font-weight="800" fill="#1e293b" font-family="Rajdhani" id="donut-pct-text">0%</text>
-              <text x="50" y="58" text-anchor="middle" font-size="7" fill="#64748b">Score</text>
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#e2e8f0" stroke-width="14"/>
+              <circle id="donut-correct" cx="50" cy="50" r="38" fill="none" stroke="#22c55e" stroke-width="14" stroke-linecap="butt" stroke-dasharray="0 238.76" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
+              <circle id="donut-wrong"   cx="50" cy="50" r="38" fill="none" stroke="#ef4444" stroke-width="14" stroke-linecap="butt" stroke-dasharray="0 238.76" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
+              <circle id="donut-partial" cx="50" cy="50" r="38" fill="none" stroke="#f59e0b" stroke-width="14" stroke-linecap="butt" stroke-dasharray="0 238.76" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 1s"/>
+              <text x="50" y="46" text-anchor="middle" font-size="13" font-weight="800" fill="#1e293b" font-family="Rajdhani" id="donut-pct-text">0%</text>
+              <text x="50" y="57" text-anchor="middle" font-size="6.5" fill="#64748b">Score</text>
             </svg>
             <div class="donut-legend">
-              <div class="legend-row"><div class="legend-clr" style="background:#22c55e"></div>Correct</div>
-              <div class="legend-row"><div class="legend-clr" style="background:#ef4444"></div>Wrong</div>
-              <div class="legend-row"><div class="legend-clr" style="background:#f59e0b"></div>Partial</div>
-              <div class="legend-row"><div class="legend-clr" style="background:#e2e8f0"></div>Skipped</div>
+              <div class="leg-row"><div class="leg-dot" style="background:#22c55e;"></div><span>Correct</span><span class="leg-val" id="leg-c">0</span></div>
+              <div class="leg-row"><div class="leg-dot" style="background:#ef4444;"></div><span>Wrong</span><span class="leg-val" id="leg-w">0</span></div>
+              <div class="leg-row"><div class="leg-dot" style="background:#f59e0b;"></div><span>Partial</span><span class="leg-val" id="leg-p">0</span></div>
+              <div class="leg-row"><div class="leg-dot" style="background:#e2e8f0;"></div><span>Skipped</span><span class="leg-val" id="leg-s">0</span></div>
             </div>
           </div>
         </div>
       </div>
+
       <div class="card">
-        <div class="card-header"><h3 style="font-size:16px">Performance Breakdown</h3></div>
+        <div class="card-head">
+          <h3><i class="fas fa-chart-bar" style="color:#1565c0;"></i> Performance Breakdown</h3>
+        </div>
         <div class="card-body" id="perf-bars"></div>
       </div>
+
     </div>
 
     <!-- Question-wise Review -->
-    <div class="card mb-3">
-      <div class="card-header">
-        <h3 style="font-size:16px">Question-wise Analysis</h3>
-      </div>
-      <div class="card-body">
-        <div class="review-filters">
-          <button class="btn btn-outline btn-sm active" onclick="filterReview('all',this)">All</button>
-          <button class="btn btn-outline btn-sm" onclick="filterReview('correct',this)"><i class="fas fa-check-circle"></i> Correct</button>
-          <button class="btn btn-outline btn-sm" onclick="filterReview('wrong',this)"><i class="fas fa-times-circle"></i> Wrong</button>
-          <button class="btn btn-outline btn-sm" onclick="filterReview('partial',this)"><i class="fas fa-bolt"></i> Partial</button>
-          <button class="btn btn-outline btn-sm" onclick="filterReview('skip',this)"><i class="far fa-square"></i> Skipped</button>
-        </div>
-        <div id="review-list"></div>
-      </div>
+    <div class="section-head">
+      <i class="fas fa-list-alt" style="color:#1565c0;"></i> Question-wise Analysis
     </div>
+
+    <div class="filter-tabs">
+      <button class="ftab active" onclick="filterReview('all',this)">
+        <i class="fas fa-th-list"></i> All <span id="ft-all">0</span>
+      </button>
+      <button class="ftab correct" onclick="filterReview('correct',this)">
+        <i class="fas fa-check-circle"></i> Correct <span id="ft-correct">0</span>
+      </button>
+      <button class="ftab wrong" onclick="filterReview('wrong',this)">
+        <i class="fas fa-times-circle"></i> Wrong <span id="ft-wrong">0</span>
+      </button>
+      <button class="ftab partial" onclick="filterReview('partial',this)">
+        <i class="fas fa-bolt"></i> Partial <span id="ft-partial">0</span>
+      </button>
+      <button class="ftab skip" onclick="filterReview('skip',this)">
+        <i class="fas fa-minus-circle"></i> Skipped <span id="ft-skip">0</span>
+      </button>
+    </div>
+
+    <div id="review-list"></div>
+
   </div>
 </div>
-
-<div id="toast-container"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -162,33 +471,27 @@ let attempt = null, questions = [];
 
 auth.onAuthStateChanged(async user => {
   if (!user) { window.location.href = '../index.html'; return; }
-  if (!attemptId) { Utils.toast('No result ID provided', 'error'); return; }
-
+  if (!attemptId) { showToast('No result ID provided', 'error'); return; }
   try {
     const attDoc = await db.collection('attempts').doc(attemptId).get();
-    if (!attDoc.exists) { Utils.toast('Result not found', 'error'); return; }
+    if (!attDoc.exists) { showToast('Result not found', 'error'); return; }
     attempt = attDoc.data();
-
-    // Security: only the owner can view their own result
     if (attempt.userId !== user.uid) {
-      Utils.toast('Access denied', 'error');
-      window.location.href = 'dashboard.html';
-      return;
+      showToast('Access denied', 'error');
+      window.location.href = 'dashboard.html'; return;
     }
-
     document.getElementById('ranklist-link').href = `ranklist.html?examId=${attempt.examId}`;
     document.getElementById('rank-link').href     = `ranklist.html?examId=${attempt.examId}`;
 
-    // Load questions for this exam
     const examDoc = await db.collection('exams').doc(attempt.examId).get();
     const qIds    = examDoc.data().questionIds || [];
     const qDocs   = await Promise.all(qIds.map(id => db.collection('questions').doc(id).get()));
     questions     = qDocs.filter(d => d.exists).map(d => ({ id: d.id, ...d.data() }));
 
     renderResult();
-    loadRank(); // non-blocking
+    loadRank();
   } catch(e) {
-    Utils.toast('Error loading result: ' + e.message, 'error');
+    showToast('Error: ' + e.message, 'error');
     console.error(e);
   }
 });
@@ -199,65 +502,93 @@ function renderResult() {
 
   const score = attempt.totalScore || 0;
   const max   = attempt.maxScore   || 100;
-  const pct   = ((score / max) * 100).toFixed(1);
+  const pct   = max > 0 ? ((score / max) * 100).toFixed(1) : 0;
+  const pctNum = parseFloat(pct);
+  const pctColor = pctNum >= 65 ? '#22c55e' : pctNum >= 40 ? '#f59e0b' : '#ef4444';
 
   document.getElementById('res-exam-title').textContent = attempt.examTitle || 'Exam';
   document.getElementById('res-score').textContent      = score.toFixed(2);
   document.getElementById('res-max').textContent        = `/ ${max}`;
   document.getElementById('res-pct').textContent        = `${pct}%`;
+  document.getElementById('res-pct').style.color        = pctColor;
   document.getElementById('res-date').textContent       =
-    attempt.submittedAt?.toDate?.()?.toLocaleString('en-IN') || '—';
+    attempt.submittedAt?.toDate?.()?.toLocaleString('en-IN', {
+      day: 'numeric', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    }) || '—';
 
-  document.getElementById('s-correct').textContent = attempt.correct  || 0;
-  document.getElementById('s-wrong').textContent   = attempt.wrong    || 0;
-  document.getElementById('s-partial').textContent = attempt.partial  || 0;
-  document.getElementById('s-skip').textContent    = attempt.skipped  || 0;
-  document.getElementById('s-total').textContent   = questions.length;
+  const c = attempt.correct  || 0;
+  const w = attempt.wrong    || 0;
+  const p = attempt.partial  || 0;
+  const s = attempt.skipped  || 0;
+  const t = questions.length;
 
-  renderChart(attempt.correct || 0, attempt.wrong || 0, attempt.partial || 0, attempt.skipped || 0, questions.length);
-  renderPerfBars(score, max, attempt.correct || 0, attempt.wrong || 0, questions.length);
+  document.getElementById('s-correct').textContent = c;
+  document.getElementById('s-wrong').textContent   = w;
+  document.getElementById('s-partial').textContent = p;
+  document.getElementById('s-skip').textContent    = s;
+  document.getElementById('s-total').textContent   = t;
+
+  // Filter counts
+  document.getElementById('ft-all').textContent     = t;
+  document.getElementById('ft-correct').textContent = c;
+  document.getElementById('ft-wrong').textContent   = w;
+  document.getElementById('ft-partial').textContent = p;
+  document.getElementById('ft-skip').textContent    = s;
+
+  renderDonut(c, w, p, s, t, score, max);
+  renderPerfBars(score, max, c, w, p, s, t);
   renderReview('all');
 }
 
-function renderChart(c, w, p, s, total) {
+function renderDonut(c, w, p, s, total, score, max) {
   if (!total) return;
-  const circ  = 2 * Math.PI * 40;
+  const circ = 2 * Math.PI * 38;
   const cDash = circ * (c / total);
   const wDash = circ * (w / total);
   const pDash = circ * (p / total);
 
-  const score = parseFloat(document.getElementById('res-score').textContent);
-  const max   = parseFloat(document.getElementById('res-max').textContent.replace('/', '').trim());
-  document.getElementById('donut-pct-text').textContent = ((score / max) * 100).toFixed(0) + '%';
+  document.getElementById('donut-pct-text').textContent =
+    max > 0 ? Math.round((score / max) * 100) + '%' : '0%';
+  document.getElementById('leg-c').textContent = c;
+  document.getElementById('leg-w').textContent = w;
+  document.getElementById('leg-p').textContent = p;
+  document.getElementById('leg-s').textContent = s;
 
   setTimeout(() => {
     const dc = document.getElementById('donut-correct');
     dc.style.strokeDasharray  = `${cDash} ${circ - cDash}`;
     dc.style.strokeDashoffset = 0;
-
     const dw = document.getElementById('donut-wrong');
     dw.style.strokeDasharray  = `${wDash} ${circ - wDash}`;
     dw.style.strokeDashoffset = -cDash;
-
     const dp = document.getElementById('donut-partial');
     dp.style.strokeDasharray  = `${pDash} ${circ - pDash}`;
     dp.style.strokeDashoffset = -(cDash + wDash);
   }, 300);
 }
 
-function renderPerfBars(score, max, c, w, total) {
-  const acc = total > 0 ? ((c / total) * 100).toFixed(1) : 0;
-  const pct = max  > 0 ? ((score / max)  * 100).toFixed(1) : 0;
+function renderPerfBars(score, max, c, w, p, s, total) {
+  const pct  = max   > 0 ? ((score / max) * 100).toFixed(1) : 0;
+  const acc  = total > 0 ? ((c / total) * 100).toFixed(1) : 0;
+  const wrt  = total > 0 ? ((w / total) * 100).toFixed(1) : 0;
+  const skpR = total > 0 ? ((s / total) * 100).toFixed(1) : 0;
+
   const bars = [
-    { label: 'Score %',     val: pct, color: 'var(--primary)' },
-    { label: 'Accuracy',    val: acc, color: 'var(--success)' },
-    { label: 'Correct Rate',val: total ? ((c / total) * 100).toFixed(1) : 0, color: 'var(--success)' },
-    { label: 'Wrong Rate',  val: total ? ((w / total) * 100).toFixed(1) : 0, color: 'var(--danger)'  },
+    { label: 'Score %',       val: pct,  color: '#1565c0' },
+    { label: 'Accuracy',      val: acc,  color: '#15803d' },
+    { label: 'Wrong Rate',    val: wrt,  color: '#991b1b' },
+    { label: 'Skipped Rate',  val: skpR, color: '#64748b' },
   ];
   document.getElementById('perf-bars').innerHTML = bars.map(b => `
-    <div class="perf-bar">
-      <div class="perf-label"><span>${b.label}</span><span>${b.val}%</span></div>
-      <div class="perf-track"><div class="perf-fill" style="width:0;background:${b.color}" data-w="${b.val}"></div></div>
+    <div class="perf-item">
+      <div class="perf-row">
+        <span class="label">${b.label}</span>
+        <span class="val" style="color:${b.color}">${b.val}%</span>
+      </div>
+      <div class="perf-track">
+        <div class="perf-fill" style="width:0;background:${b.color}" data-w="${b.val}"></div>
+      </div>
     </div>`).join('');
   setTimeout(() => {
     document.querySelectorAll('.perf-fill').forEach(el => el.style.width = el.dataset.w + '%');
@@ -266,93 +597,116 @@ function renderPerfBars(score, max, c, w, total) {
 
 function renderReview(filter) {
   const ev   = attempt.evaluation || {};
+  const ts   = attempt.timeSpent  || {};
   const list = document.getElementById('review-list');
   let html   = '';
+  let count  = 0;
 
   questions.forEach((q, i) => {
     const ev_ = ev[q.id] || { result: 'skip', selected: [], correct: [], score: 0 };
-    if (filter !== 'all' && ev_.result !== filter) return;
+    const res = ev_.result === 'skip' ? 'skip' : ev_.result;
+    if (filter !== 'all' && res !== filter) return;
+    count++;
 
-    const rbCls = { correct:'rb-correct', wrong:'rb-wrong', partial:'rb-partial', skip:'rb-skip' }[ev_.result] || 'rb-skip';
-    const rbTxt = { correct:'<i class="fas fa-check-circle"></i> Correct', wrong:'<i class="fas fa-times-circle"></i> Wrong', partial:'<i class="fas fa-bolt"></i> Partial', skip:'<i class="far fa-square"></i> Skipped' }[ev_.result] || '—';
+    const scoreVal = ev_.score || 0;
+    const scoreCls = scoreVal > 0 ? 'sc-pos' : scoreVal < 0 ? 'sc-neg' : 'sc-zero';
+    const scoreTxt = scoreVal > 0 ? `+${scoreVal.toFixed(2)}` : scoreVal.toFixed(2);
+    const bCls  = { correct: 'br-correct', wrong: 'br-wrong', partial: 'br-partial', skip: 'br-skip' }[res] || 'br-skip';
+    const bIcon = { correct: 'fa-check-circle', wrong: 'fa-times-circle', partial: 'fa-bolt', skip: 'fa-minus-circle' }[res] || 'fa-minus-circle';
+    const bTxt  = res.charAt(0).toUpperCase() + res.slice(1);
     const optLabels = arr => arr.map(x => typeof x === 'number' ? String.fromCharCode(65 + x) : x).join(', ');
+    const timeStr = ts[q.id] ? formatTime(ts[q.id]) : null;
 
-    html += `<div class="q-review-item" id="rv-${i}">
-      <div class="q-review-header" onclick="toggleReview(${i})">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span style="font-weight:700;color:var(--primary)">Q${i + 1}</span>
-          <span style="font-size:13px;color:var(--text2);max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-            ${(q.text || '').substring(0, 80)}${(q.text || '').length > 80 ? '…' : ''}
-          </span>
+    html += `
+    <div class="q-item ${res}">
+      <div class="q-item-head" id="qh-${i}" onclick="toggleItem(${i})">
+        <div class="q-head-left">
+          <span class="q-num">Q${i + 1}</span>
+          <span class="q-preview">${(q.text || '').replace(/<[^>]+>/g, '').substring(0, 90)}${(q.text||'').length > 90 ? '…' : ''}</span>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span class="result-badge ${rbCls}">${rbTxt}</span>
-          <span style="font-weight:700;color:${ev_.score >= 0 ? 'var(--success)' : 'var(--danger)'}">
-            ${ev_.score >= 0 ? '+' : ''}${(ev_.score || 0).toFixed(2)}
-          </span>
-          <span style="color:var(--text2);font-size:13px;"><i class="fas fa-chevron-down"></i></span>
+        <div class="q-head-right">
+          ${timeStr ? `<span class="time-chip"><i class="fas fa-clock"></i> ${timeStr}</span>` : ''}
+          <span class="badge-result ${bCls}"><i class="fas ${bIcon}"></i> ${bTxt}</span>
+          <span class="score-chip ${scoreCls}">${scoreTxt}</span>
+          <i class="fas fa-chevron-down" style="color:#94a3b8;font-size:11px;"></i>
         </div>
       </div>
-      <div class="q-review-body" id="rvb-${i}">
-        ${q.imageUrl ? `<img src="${q.imageUrl}" style="max-height:200px;border-radius:8px;margin-bottom:12px;">` : ''}
-        <p style="font-size:14px;line-height:1.7;margin-bottom:12px;">${q.text || ''}</p>
-        <div class="answer-comparison">
-          <div class="ans-box ans-your">
-            <strong>Your Answer:</strong><br>
-            ${ev_.selected?.length > 0 ? optLabels(ev_.selected) : 'Not attempted'}
+      <div class="q-item-body" id="qb-${i}">
+        ${q.imageUrl ? `<img src="${q.imageUrl}" class="q-img" alt="">` : ''}
+        <div class="q-text-full">${q.text || ''}</div>
+        <div class="ans-compare">
+          <div class="ans-box ab-yours">
+            <div class="ab-title"><i class="fas fa-user"></i> Your Answer</div>
+            <div class="ab-val">${ev_.selected?.length > 0 ? optLabels(ev_.selected) : '<span style="color:#94a3b8;font-weight:400;">Not attempted</span>'}</div>
           </div>
-          <div class="ans-box ans-correct">
-            <strong>Correct Answer:</strong><br>
-            ${ev_.correct?.length > 0 ? optLabels(ev_.correct) : '—'}
+          <div class="ans-box ab-correct">
+            <div class="ab-title"><i class="fas fa-check-circle"></i> Correct Answer</div>
+            <div class="ab-val">${ev_.correct?.length > 0 ? optLabels(ev_.correct) : '—'}</div>
           </div>
         </div>
-        ${q.solution ? `<div style="margin-top:12px;background:#f0fdf4;border-left:3px solid var(--success);padding:12px;border-radius:6px;font-size:13px;"><strong>Solution:</strong><br>${q.solution}</div>` : ''}
+        ${q.solution ? `<div class="solution-box"><strong><i class="fas fa-lightbulb"></i> Solution</strong>${q.solution}</div>` : ''}
       </div>
     </div>`;
   });
 
-  list.innerHTML = html || '<div class="empty-state"><div class="icon"><i class="fas fa-check-circle"></i></div><p>No questions match this filter.</p></div>';
+  if (!count) {
+    list.innerHTML = `<div style="text-align:center;padding:48px;color:#94a3b8;">
+      <i class="fas fa-inbox" style="font-size:36px;margin-bottom:12px;display:block;"></i>
+      No questions match this filter.
+    </div>`;
+    return;
+  }
+  list.innerHTML = html;
 }
 
-function toggleReview(i) {
-  document.getElementById(`rvb-${i}`).classList.toggle('open');
+function toggleItem(i) {
+  const head = document.getElementById(`qh-${i}`);
+  const body = document.getElementById(`qb-${i}`);
+  const open = body.classList.toggle('open');
+  head.classList.toggle('open', open);
 }
 
 function filterReview(f, btn) {
-  document.querySelectorAll('.review-filters .btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderReview(f);
 }
 
-// ── FIX: loadRank now sorts client-side to avoid composite index error ──
+function formatTime(secs) {
+  if (!secs || secs < 1) return '< 1s';
+  if (secs < 60) return secs + 's';
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return s > 0 ? `${m}m ${s}s` : `${m}m`;
+}
+
 async function loadRank() {
   try {
-    // Fetch only by examId + status (2 fields = no composite index needed)
     const snap = await db.collection('attempts')
       .where('examId', '==', attempt.examId)
-      .where('status', '==', 'submitted')
-      .get();
-
+      .where('status', '==', 'submitted').get();
     if (snap.empty) return;
-
-    // Sort client-side by totalScore descending
-    const all = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
+    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0));
-
     const myIdx = all.findIndex(d => d.id === attemptId);
     const rank  = myIdx + 1;
     const total = all.length;
     const pct   = total > 1 ? (((total - rank) / (total - 1)) * 100).toFixed(1) : '100.0';
-
     document.getElementById('rank-num').textContent        = `#${rank}`;
     document.getElementById('rank-out-of').textContent     = `out of ${total} candidate${total !== 1 ? 's' : ''}`;
     document.getElementById('rank-percentile').textContent = `${pct}%`;
   } catch(e) {
-    console.error('loadRank error:', e);
     document.getElementById('rank-num').textContent    = '—';
     document.getElementById('rank-out-of').textContent = 'Could not load rank';
   }
+}
+
+function showToast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 4000);
 }
 </script>
 </body>
