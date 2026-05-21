@@ -689,6 +689,37 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ═══════════════════════════════════════
+       PRE-EXAM GATE (fullscreen consent)
+    ═══════════════════════════════════════ */
+    #pre-exam-gate {
+      display: flex; position: fixed; inset: 0; z-index: 10000;
+      background: #0a1628;
+      flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; color: #fff; padding: 32px;
+    }
+    #pre-exam-gate.hidden { display: none; }
+    .gate-logo { font-size: 44px; color: var(--accent2); margin-bottom: 16px; }
+    .gate-title { font-family: 'Rajdhani',sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+    .gate-sub   { font-size: 13px; opacity: .6; margin-bottom: 28px; }
+    .gate-rules {
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px; padding: 20px 28px; max-width: 520px; margin-bottom: 28px; text-align: left;
+    }
+    .gate-rules h4 { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--accent2); margin-bottom: 12px; }
+    .gate-rule-row { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; margin-bottom: 10px; line-height: 1.5; opacity: .88; }
+    .gate-rule-row i { color: var(--accent2); margin-top: 2px; flex-shrink: 0; font-size: 12px; }
+    .gate-rule-row:last-child { margin-bottom: 0; }
+    .gate-start-btn {
+      background: var(--accent2); color: #fff; border: none; border-radius: 8px;
+      padding: 14px 36px; font-size: 15px; font-weight: 800; cursor: pointer;
+      font-family: var(--font); display: flex; align-items: center; gap: 10px;
+      transition: background .15s, transform .1s;
+    }
+    .gate-start-btn:hover { background: var(--accent); }
+    .gate-start-btn:active { transform: scale(.97); }
+    .gate-consent { font-size: 11px; opacity: .45; margin-top: 12px; max-width: 400px; }
+
+    /* ═══════════════════════════════════════
        FULLSCREEN WARNING
     ═══════════════════════════════════════ */
     #fs-warning-overlay {
@@ -708,6 +739,18 @@
       display: flex; align-items: center; gap: 8px; font-family: var(--font);
     }
     .fw-btn:hover { background: var(--accent); }
+
+    /* ═══════════════════════════════════════
+       WINDOW SIZE WARNING BAR
+    ═══════════════════════════════════════ */
+    #window-size-bar {
+      display: none; position: fixed; top: var(--hdr-h); left: 0; right: 0; z-index: 8000;
+      background: #7f1d1d;
+      color: #fff; padding: 8px 16px; font-size: 13px; font-weight: 700;
+      text-align: center; border-bottom: 2px solid #ef4444;
+      animation: pblink 1.2s ease-in-out infinite;
+    }
+    #window-size-bar.show { display: block; }
 
     /* ═══════════════════════════════════════
        IDLE BAR
@@ -952,6 +995,32 @@
   </div>
 </div>
 
+<!-- ════════════════ PRE-EXAM GATE ════════════════ -->
+<div id="pre-exam-gate">
+  <div class="gate-logo"><i class="fas fa-shield-alt"></i></div>
+  <div class="gate-title">Secure Exam Environment</div>
+  <div class="gate-sub">GeoExam Portal · GATE / CSIR-NET CBT</div>
+  <div class="gate-rules">
+    <h4><i class="fas fa-exclamation-triangle"></i> &nbsp;Proctoring Rules — Read Carefully</h4>
+    <div class="gate-rule-row"><i class="fas fa-expand-arrows-alt"></i><span>The exam runs in <strong>full-screen mode only</strong>. Exiting full screen is logged and flags your attempt.</span></div>
+    <div class="gate-rule-row"><i class="fas fa-window-maximize"></i><span>Do <strong>not</strong> minimise, resize, or switch windows during the exam. Every violation is recorded.</span></div>
+    <div class="gate-rule-row"><i class="fas fa-exchange-alt"></i><span><strong>Tab switching</strong> is monitored. More than 3 switches will automatically flag your submission.</span></div>
+    <div class="gate-rule-row"><i class="fas fa-moon"></i><span>Prolonged inactivity (&gt;5 min) will raise an idle alert and flag your attempt.</span></div>
+    <div class="gate-rule-row"><i class="fas fa-ban"></i><span>Copy, paste, right-click, and developer tools are <strong>disabled</strong> during the exam.</span></div>
+    <div class="gate-rule-row"><i class="fas fa-camera"></i><span>Screen-capture shortcuts are blocked. Any attempt is logged as a violation.</span></div>
+  </div>
+  <button class="gate-start-btn" onclick="startExamFromGate()">
+    <i class="fas fa-expand"></i> Enter Full Screen &amp; Begin Exam
+  </button>
+  <div class="gate-consent">By clicking above, you acknowledge you have read the proctoring rules and consent to activity monitoring for this examination session.</div>
+</div>
+
+<!-- ════════════════ WINDOW-SIZE WARNING BAR ════════════════ -->
+<div id="window-size-bar">
+  <i class="fas fa-exclamation-triangle"></i>
+  &nbsp;⚠ Window not maximised — this violation is being logged. Please restore full screen immediately.
+</div>
+
 <!-- ════════════════ FULLSCREEN WARNING ════════════════ -->
 <div id="fs-warning-overlay">
   <div class="fw-icon"><i class="fas fa-expand-arrows-alt"></i></div>
@@ -996,6 +1065,10 @@ let qStartTime = null;  // when current question was first shown
 let tabSwitchCount = 0;
 const tabSwitchLog = [];
 const TAB_SWITCH_FLAG_THRESHOLD = 3;
+
+// ── Window integrity counters ──
+let windowBlurCount = 0;
+let windowResizeCount = 0;
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
@@ -1059,6 +1132,8 @@ async function initExam() {
       tabSwitchCount = attData.tabSwitchCount || 0;
       timeSpent = attData.timeSpent || {};
       tabSwitchLog.push(...(attData.tabSwitchLog || []));
+      windowBlurCount = attData.windowBlurCount || 0;
+      windowResizeCount = attData.windowResizeCount || 0;
     } else {
       questions.forEach(q => { answers[q.id] = { selected:[], status:'nv' }; });
       const ref = await db.collection('attempts').add({
@@ -1075,7 +1150,7 @@ async function initExam() {
     renderPalette();
     startTimer();
     autoSaveInterval();
-    startProctoring();
+    // startProctoring() is called by the pre-exam gate overlay
   } catch(e) { console.error(e); Utils.toast('Error loading exam: '+e.message,'error'); }
 }
 
@@ -1323,8 +1398,10 @@ async function submitExam(){
       tabSwitchCount, tabSwitchLog,
       timeSpent,
       fullscreenExitCount: fsExitCount,
+      windowBlurCount,
+      windowResizeCount,
       idleFlagged,
-      flagged: tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD || fsExitCount > FS_MAX_EXITS || idleFlagged,
+      flagged: tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD || fsExitCount > FS_MAX_EXITS || idleFlagged || windowBlurCount > 3 || windowResizeCount > 2,
       submittedAt:firebase.firestore.FieldValue.serverTimestamp()
     });
     Utils.toast('Exam submitted successfully!','success');
@@ -1499,93 +1576,227 @@ function calcDel(){
 window.addEventListener('beforeunload',e=>{e.preventDefault();e.returnValue='';});
 
 // ═══════════════════════════════════════
-// PROCTORING
+// PROCTORING — ENHANCED
 // ═══════════════════════════════════════
-document.addEventListener('copy',  e=>e.preventDefault());
-document.addEventListener('cut',   e=>e.preventDefault());
-document.addEventListener('paste', e=>e.preventDefault());
-document.addEventListener('contextmenu', e=>e.preventDefault());
-document.addEventListener('keydown', e=>{
-  const blocked=((e.ctrlKey&&['c','v','x','a','u','s','p'].includes(e.key.toLowerCase()))||e.key==='F12'||e.key==='PrintScreen');
-  if(blocked){e.preventDefault();e.stopPropagation();}
+
+// ── Block copy/paste/right-click/devtools ──
+document.addEventListener('copy',        e => e.preventDefault());
+document.addEventListener('cut',         e => e.preventDefault());
+document.addEventListener('paste',       e => e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  // Block: Ctrl+C/V/X/A/U/S/P, F12, PrintScreen, F5 reload, Ctrl+Shift+I/J/C (devtools)
+  const ctrl = e.ctrlKey || e.metaKey;
+  const shift = e.shiftKey;
+  const k = e.key.toLowerCase();
+  const blocked =
+    (ctrl  && ['c','v','x','a','u','s','p'].includes(k)) ||
+    (ctrl  && shift && ['i','j','c'].includes(k)) ||
+    e.key === 'F12' || e.key === 'PrintScreen' ||
+    (ctrl  && e.key === 'F5') || e.key === 'F5';
+  if (blocked) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.key === 'PrintScreen') {
+      logViolation('screenshot_attempt');
+      Utils.toast('🚨 Screenshot blocked and logged.', 'error', 5000);
+    }
+  }
 });
 
-let fsExitCount=0;
-const FS_MAX_EXITS=3;
-const fsOverlay=document.getElementById('fs-warning-overlay');
-const fsCountEl=document.getElementById('fs-exit-count');
+// ── Fullscreen ──
+let fsExitCount = 0;
+const FS_MAX_EXITS = 3;
+const fsOverlay = document.getElementById('fs-warning-overlay');
+const fsCountEl = document.getElementById('fs-exit-count');
 
-function enterFullscreen(){
-  const el=document.documentElement;
-  if(el.requestFullscreen)           return el.requestFullscreen();
-  if(el.webkitRequestFullscreen)     return el.webkitRequestFullscreen();
-  if(el.mozRequestFullScreen)        return el.mozRequestFullScreen();
-  if(el.msRequestFullscreen)         return el.msRequestFullscreen();
+function enterFullscreen() {
+  const el = document.documentElement;
+  if (el.requestFullscreen)       return el.requestFullscreen();
+  if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+  if (el.mozRequestFullScreen)    return el.mozRequestFullScreen();
+  if (el.msRequestFullscreen)     return el.msRequestFullscreen();
+  return Promise.resolve();
 }
 
-function reenterFullscreen(){
-  enterFullscreen().then(()=>fsOverlay.classList.remove('show'))
-    .catch(()=>Utils.toast('Please allow full screen.','error'));
+function reenterFullscreen() {
+  enterFullscreen()
+    .then(() => { fsOverlay.classList.remove('show'); checkWindowSize(); })
+    .catch(() => Utils.toast('Please allow full screen in your browser.', 'error'));
 }
 
-function isFullscreen(){
-  return !!(document.fullscreenElement||document.webkitFullscreenElement||
-            document.mozFullScreenElement||document.msFullscreenElement);
+function isFullscreen() {
+  return !!(document.fullscreenElement || document.webkitFullscreenElement ||
+            document.mozFullScreenElement || document.msFullscreenElement);
 }
 
-function handleFullscreenChange(){
-  if(!isFullscreen()&&attemptId){
+function handleFullscreenChange() {
+  if (!isFullscreen() && attemptId) {
     fsExitCount++;
-    fsCountEl.textContent=`Exit count: ${fsExitCount} / ${FS_MAX_EXITS} allowed`;
+    fsCountEl.textContent = `Exit count: ${fsExitCount} / ${FS_MAX_EXITS} allowed`;
     fsOverlay.classList.add('show');
-    const log={at:new Date().toISOString(),type:'fullscreen_exit',count:fsExitCount};
-    const flagged=fsExitCount>FS_MAX_EXITS||tabSwitchCount>TAB_SWITCH_FLAG_THRESHOLD;
+    logViolation('fullscreen_exit', { count: fsExitCount });
+    const shouldFlag = fsExitCount > FS_MAX_EXITS || tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD;
     db.collection('attempts').doc(attemptId).update({
-      fullscreenExitCount:fsExitCount,flagged,
-      [`integrityLog`]:firebase.firestore.FieldValue.arrayUnion(log)
-    }).catch(()=>{});
-    if(fsExitCount>FS_MAX_EXITS) Utils.toast(`🚨 Flagged: exceeded full-screen exit limit.`,'error',7000);
+      fullscreenExitCount: fsExitCount,
+      flagged: shouldFlag
+    }).catch(() => {});
+    if (fsExitCount > FS_MAX_EXITS)
+      Utils.toast(`🚨 Flagged: exceeded full-screen exit limit.`, 'error', 7000);
+    else
+      Utils.toast(`⚠️ Full-screen exit logged (${fsExitCount}/${FS_MAX_EXITS}).`, 'warning', 5000);
   }
 }
 
 ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange'].forEach(
-  e=>document.addEventListener(e,handleFullscreenChange)
+  ev => document.addEventListener(ev, handleFullscreenChange)
 );
 
-const IDLE_WARNING_SECS=5*60, IDLE_FLAG_SECS=6*60;
-let idleTimer=0, idleInterval=null, idleFlagged=false;
-const idleBar=document.getElementById('idle-warning-bar');
-const idleCountdown=document.getElementById('idle-countdown');
+// ── Window blur (focus lost — alt-tab, other app, etc.) ──
+let windowBlurCount = 0;
+window.addEventListener('blur', () => {
+  if (!attemptId) return;
+  windowBlurCount++;
+  logViolation('window_blur', { count: windowBlurCount });
+  db.collection('attempts').doc(attemptId).update({
+    windowBlurCount,
+    flagged: windowBlurCount > 3 || tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD || fsExitCount > FS_MAX_EXITS
+  }).catch(() => {});
+  if (windowBlurCount === 1)
+    Utils.toast('⚠️ Window focus lost — this is logged.', 'warning', 5000);
+  else
+    Utils.toast(`⚠️ Window focus lost again (${windowBlurCount}×). Repeated violations flag your attempt.`, 'warning', 5000);
+});
 
-function resetIdle(){idleTimer=0;if(idleBar.classList.contains('show'))idleBar.classList.remove('show');}
+// ── Window resize / un-maximize detection ──
+const winSizeBar = document.getElementById('window-size-bar');
+let windowResizeCount = 0;
+let windowResizeViolationActive = false;
 
-function tickIdle(){
+function isWindowMaximized() {
+  // Allow 5% slack for taskbars / browser chrome
+  return (window.outerWidth  >= screen.availWidth  * 0.95 &&
+          window.outerHeight >= screen.availHeight * 0.95) ||
+          isFullscreen();
+}
+
+function checkWindowSize() {
+  if (!attemptId) return;
+  if (!isWindowMaximized()) {
+    if (!windowResizeViolationActive) {
+      windowResizeViolationActive = true;
+      windowResizeCount++;
+      logViolation('window_resized', { count: windowResizeCount,
+        w: window.outerWidth, h: window.outerHeight,
+        sw: screen.availWidth, sh: screen.availHeight });
+      db.collection('attempts').doc(attemptId).update({
+        windowResizeCount,
+        flagged: true
+      }).catch(() => {});
+      winSizeBar.classList.add('show');
+      Utils.toast(`🚨 Window size violation logged (#${windowResizeCount}). Restore full-screen!`, 'error', 7000);
+    }
+  } else {
+    windowResizeViolationActive = false;
+    winSizeBar.classList.remove('show');
+  }
+}
+
+window.addEventListener('resize', () => {
+  checkWindowSize();
+  // If user exits fullscreen by resize, trigger fullscreen re-entry prompt
+  if (!isFullscreen() && attemptId && !fsOverlay.classList.contains('show')) {
+    fsOverlay.classList.add('show');
+  }
+});
+
+// ── Visibility / Tab switch ──
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    tabSwitchCount++;
+    tabSwitchLog.push({ at: new Date().toISOString(), count: tabSwitchCount });
+    if (attemptId) {
+      db.collection('attempts').doc(attemptId).update({
+        tabSwitchCount, tabSwitchLog,
+        flagged: tabSwitchCount > TAB_SWITCH_FLAG_THRESHOLD
+      }).catch(() => {});
+    }
+    if (tabSwitchCount === 1) {
+      Utils.toast('⚠️ Tab switch detected! Activity is logged.', 'warning', 5000);
+    } else if (tabSwitchCount <= TAB_SWITCH_FLAG_THRESHOLD) {
+      Utils.toast(`⚠️ Warning ${tabSwitchCount}/${TAB_SWITCH_FLAG_THRESHOLD}: Repeated tab switching will flag your attempt.`, 'warning', 5000);
+    } else {
+      Utils.toast(`🚨 Attempt flagged for admin review (${tabSwitchCount} tab switches).`, 'error', 6000);
+    }
+  }
+});
+
+// ── Violation logger (central) ──
+function logViolation(type, extra = {}) {
+  if (!attemptId) return;
+  const entry = { at: new Date().toISOString(), type, ...extra };
+  db.collection('attempts').doc(attemptId).update({
+    integrityLog: firebase.firestore.FieldValue.arrayUnion(entry)
+  }).catch(() => {});
+}
+
+// ── Idle detection ──
+const IDLE_WARNING_SECS = 5 * 60, IDLE_FLAG_SECS = 6 * 60;
+let idleTimer = 0, idleInterval = null, idleFlagged = false;
+const idleBar = document.getElementById('idle-warning-bar');
+const idleCountdown = document.getElementById('idle-countdown');
+
+function resetIdle() {
+  idleTimer = 0;
+  if (idleBar.classList.contains('show')) idleBar.classList.remove('show');
+}
+
+function tickIdle() {
   idleTimer++;
-  if(idleTimer>=IDLE_WARNING_SECS){
-    const remaining=IDLE_FLAG_SECS-idleTimer;
-    if(remaining>0){idleCountdown.textContent=remaining;idleBar.classList.add('show');}
-    else{
+  if (idleTimer >= IDLE_WARNING_SECS) {
+    const remaining = IDLE_FLAG_SECS - idleTimer;
+    if (remaining > 0) { idleCountdown.textContent = remaining; idleBar.classList.add('show'); }
+    else {
       idleBar.classList.remove('show');
-      if(!idleFlagged&&attemptId){
-        idleFlagged=true;
-        const log={at:new Date().toISOString(),type:'idle_flag',idleSeconds:idleTimer};
+      if (!idleFlagged && attemptId) {
+        idleFlagged = true;
+        logViolation('idle_flag', { idleSeconds: idleTimer });
         db.collection('attempts').doc(attemptId).update({
-          idleFlagged:true,flagged:true,
-          [`integrityLog`]:firebase.firestore.FieldValue.arrayUnion(log)
-        }).catch(()=>{});
-        Utils.toast('🚨 Attempt flagged: prolonged inactivity.','error',8000);
+          idleFlagged: true, flagged: true
+        }).catch(() => {});
+        Utils.toast('🚨 Attempt flagged: prolonged inactivity.', 'error', 8000);
       }
     }
   }
 }
 
-['mousemove','keydown','mousedown','touchstart','scroll'].forEach(ev=>
-  document.addEventListener(ev,resetIdle,{passive:true})
+['mousemove','keydown','mousedown','touchstart','scroll'].forEach(ev =>
+  document.addEventListener(ev, resetIdle, { passive: true })
 );
 
-function startProctoring(){
-  enterFullscreen().catch(()=>{});
-  idleInterval=setInterval(tickIdle,1000);
+// ── Pre-exam gate ──
+const preExamGate = document.getElementById('pre-exam-gate');
+
+function startExamFromGate() {
+  enterFullscreen()
+    .then(() => {
+      preExamGate.classList.add('hidden');
+      startProctoring();
+    })
+    .catch(() => {
+      // Some browsers require user gesture — button click counts, so retry once
+      preExamGate.classList.add('hidden');
+      Utils.toast('⚠️ Could not enter full screen automatically. Please press F11.', 'warning', 6000);
+      startProctoring();
+    });
+}
+
+function startProctoring() {
+  idleInterval = setInterval(tickIdle, 1000);
+  // Initial window-size check (after a brief delay so the layout settles)
+  setTimeout(checkWindowSize, 1000);
+  // Periodic re-check every 5 s
+  setInterval(checkWindowSize, 5000);
 }
 </script>
 </body>
