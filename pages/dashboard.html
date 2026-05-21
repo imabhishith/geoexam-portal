@@ -277,7 +277,7 @@
     /* ── Quick Links ── */
     .quick-links {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
       margin-bottom: 28px;
     }
@@ -322,7 +322,7 @@
     /* ── Responsive ── */
     @media (max-width: 900px) {
       .stats-row { grid-template-columns: repeat(2,1fr); }
-      .quick-links { grid-template-columns: 1fr; }
+      .quick-links { grid-template-columns: repeat(2,1fr); }
     }
     @media (max-width: 600px) {
       .stats-row { grid-template-columns: 1fr 1fr; }
@@ -346,6 +346,7 @@
     <a href="dashboard.html" class="nav-link active">Dashboard</a>
     <a href="my-results.html" class="nav-link">My Results</a>
     <a href="ranklist.html" class="nav-link">Ranklist</a>
+    <a href="discussion.html" class="nav-link" style="display:flex;align-items:center;gap:5px;"><i class="fas fa-comments"></i> Discussion</a>
     <div id="user-menu" style="position:relative;">
       <div id="user-avatar"
            onclick="toggleUserMenu()"
@@ -365,6 +366,10 @@
         <a href="ranklist.html" style="display:flex;align-items:center;gap:10px;
            padding:10px 16px;font-size:13px;color:var(--text);text-decoration:none;">
           <i class="fas fa-trophy" style="color:var(--accent)"></i> Ranklist
+        </a>
+        <a href="discussion.html" style="display:flex;align-items:center;gap:10px;
+           padding:10px 16px;font-size:13px;color:var(--text);text-decoration:none;">
+          <i class="fas fa-comments" style="color:#7c3aed"></i> Discussion
         </a>
         <div style="border-top:1px solid var(--border);">
           <div onclick="doLogout()" style="display:flex;align-items:center;gap:10px;
@@ -449,6 +454,13 @@
       <div class="ql-text">
         <strong>Take an Exam</strong>
         <span>Browse available tests</span>
+      </div>
+    </a>
+    <a class="quick-link-card" href="discussion.html">
+      <div class="ql-icon" style="background:#f3e8ff;color:#7c3aed;"><i class="fas fa-comments"></i></div>
+      <div class="ql-text">
+        <strong>Discussion</strong>
+        <span>Chat with peers &amp; ask doubts</span>
       </div>
     </a>
   </div>
