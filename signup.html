@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeoExam Portal — Sign Up</title>
+  <link rel="stylesheet" href="css/global.css">
+  <style>
+    body { background: linear-gradient(135deg, #0f2545 0%, #1a3c6e 50%, #2563ab 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .auth-container { width: 100%; max-width: 480px; padding: 16px; }
+    .auth-logo { text-align: center; margin-bottom: 28px; }
+    .auth-logo .logo-icon { width: 72px; height: 72px; background: rgba(255,255,255,.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 36px; border: 2px solid rgba(255,255,255,.3); }
+    .auth-logo h1 { color: #fff; font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+    .auth-logo p  { color: rgba(255,255,255,.7); font-size: 14px; }
+    .auth-card { background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #374151; }
+    .form-control { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box; outline: none; transition: border .2s; }
+    .form-control:focus { border-color: #2563ab; box-shadow: 0 0 0 3px rgba(37,99,171,.15); }
+    .btn-primary { background: #2563ab; color: #fff; border: none; border-radius: 8px; padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; transition: background .2s; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+    .login-link { display: block; margin-top: 20px; text-align: center; font-size: 14px; color: #6b7280; }
+    .login-link a { color: #2563ab; font-weight: 600; text-decoration: none; }
+    .progress-wrap { margin-bottom: 20px; }
+    .progress-label { font-size: 12px; color: #6b7280; margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .progress-bar { height: 4px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #2563ab; border-radius: 4px; transition: width .4s; }
+    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+    .toast { background: #1f2937; color: #fff; padding: 12px 18px; border-radius: 8px; font-size: 14px; opacity: 0; transform: translateX(40px); transition: all .3s; max-width: 340px; }
+    .toast.show { opacity: 1; transform: translateX(0); }
+    .toast-success { background: #065f46; }
+    .toast-error   { background: #7f1d1d; }
+    .toast-warning { background: #78350f; }
+  </style>
+</head>
+<body>
+<div id="toast-container" class="toast-container"></div>
+
+<div class="auth-container">
+  <div class="auth-logo">
+    <div class="logo-icon"><i class="fas fa-gem"></i></div>
+    <h1>GeoExam Portal</h1>
+    <p>GATE Geology · CSIR-NET Geology · CBT Platform</p>
+  </div>
+  <div class="auth-card">
+    <h2 style="margin:0 0 6px;font-size:20px;color:#111827;">Create your account</h2>
+    <p style="margin:0 0 20px;font-size:13px;color:#6b7280;">Fill in the details below to get started.</p>
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span id="progress-text">Step 1 of 2 — Personal Details</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:50%"></div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" id="signup-fname" class="form-control" placeholder="First Name">
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" id="signup-lname" class="form-control" placeholder="Last Name">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="signup-email" class="form-control" placeholder="yourname@example.com">
+    </div>
+    <div class="form-group">
+      <label>Mobile Number</label>
+      <input type="tel" id="signup-mobile" class="form-control" placeholder="10-digit mobile number">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="signup-password" class="form-control" placeholder="Minimum 8 characters">
+    </div>
+    <div class="form-group">
+      <label>Confirm Password</label>
+      <input type="password" id="signup-confirm" class="form-control" placeholder="Re-enter password">
+    </div>
+
+    <button class="btn-primary" onclick="doSignup()" id="btn-signup">Create Account</button>
+    <span class="login-link">Already have an account? <a href="login.html">Login</a></span>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+
+// ─────────────────────────────────────────────────────────────
+// IMPORTANT: There is NO onAuthStateChanged on this page.
+// That listener is what was causing the redirect to fire
+// before the Firestore write completed on the old index.html.
+// ─────────────────────────────────────────────────────────────
+
+async function doSignup() {
+  const fname  = document.getElementById('signup-fname').value.trim();
+  const lname  = document.getElementById('signup-lname').value.trim();
+  const email  = document.getElementById('signup-email').value.trim();
+  const mobile = document.getElementById('signup-mobile').value.trim();
+  const pass   = document.getElementById('signup-password').value;
+  const conf   = document.getElementById('signup-confirm').value;
+
+  // ── Validation ────────────────────────────────────────────
+  if (!fname || !lname || !email || !pass || !conf) {
+    showToast('Please fill all required fields', 'error'); return;
+  }
+  if (pass !== conf)   { showToast('Passwords do not match', 'error'); return; }
+  if (pass.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
+
+  const btn = document.getElementById('btn-signup');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account…';
+  setProgress('Step 1 of 2 — Creating account…', 50);
+
+  // ── STEP 1: Firebase Auth ─────────────────────────────────
+  let cred;
+  try {
+    cred = await auth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({ displayName: `${fname} ${lname}` });
+    console.log('[Signup] ✅ Auth user created:', cred.user.uid);
+  } catch (authErr) {
+    console.error('[Signup] ❌ Auth failed:', authErr);
+    showToast(friendlyError(authErr.code, authErr.message), 'error');
+    btn.disabled = false;
+    btn.textContent = 'Create Account';
+    setProgress('Step 1 of 2 — Personal Details', 50);
+    return;
+  }
+
+  // ── STEP 2: Firestore write ───────────────────────────────
+  setProgress('Step 2 of 2 — Saving profile…', 100);
+  try {
+    // Force fresh token so Firestore rules see auth.uid
+    await cred.user.getIdToken(true);
+    console.log('[Signup] Token refreshed. Writing Firestore doc…');
+
+    await db.collection('users').doc(cred.user.uid).set({
+      uid:       cred.user.uid,
+      firstName: fname,
+      lastName:  lname,
+      email:     email,
+      mobile:    mobile,
+      role:      'student',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    console.log('[Signup] ✅ Firestore users/' + cred.user.uid + ' written successfully!');
+    showToast('Account created! Redirecting…', 'success');
+
+    // Only redirect AFTER confirmed Firestore write
+    setTimeout(() => { window.location.href = 'pages/dashboard.html'; }, 1500);
+
+  } catch (fsErr) {
+    console.error('[Signup] ❌ Firestore write failed:', fsErr.code, fsErr.message);
+    // Auth user was created — don't delete it, just warn
+    showToast('Account created but profile save failed: ' + friendlyError(fsErr.code, fsErr.message), 'error', 8000);
+    btn.disabled = false;
+    btn.textContent = 'Retry Save Profile';
+    setProgress('Step 2 of 2 — Save failed', 75);
+
+    // Retry button re-runs only the Firestore write
+    btn.onclick = () => retryFirestoreWrite(cred.user, { fname, lname, email, mobile });
+  }
+}
+
+// Retry just the Firestore write without recreating the Auth user
+async function retryFirestoreWrite(user, { fname, lname, email, mobile }) {
+  const btn = document.getElementById('btn-signup');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Retrying…';
+  try {
+    await user.getIdToken(true);
+    await db.collection('users').doc(user.uid).set({
+      uid:       user.uid,
+      firstName: fname,
+      lastName:  lname,
+      email,
+      mobile,
+      role:      'student',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    console.log('[Signup] ✅ Retry succeeded!');
+    showToast('Profile saved! Redirecting…', 'success');
+    setTimeout(() => { window.location.href = 'pages/dashboard.html'; }, 1500);
+  } catch(e) {
+    console.error('[Signup] ❌ Retry failed:', e);
+    showToast('Still failing: ' + friendlyError(e.code, e.message), 'error', 8000);
+    btn.disabled = false;
+    btn.textContent = 'Retry Save Profile';
+  }
+}
+
+function setProgress(text, pct) {
+  document.getElementById('progress-text').textContent = text;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function friendlyError(code, fallback) {
+  const map = {
+    'auth/email-already-in-use':   'An account with this email already exists.',
+    'auth/invalid-email':          'Invalid email address.',
+    'auth/weak-password':          'Password is too weak. Use at least 8 characters.',
+    'auth/too-many-requests':      'Too many attempts. Please wait and try again.',
+    'auth/network-request-failed': 'Network error. Check your connection.',
+    'permission-denied':           'Firestore permission denied — please publish your security rules in Firebase Console.',
+  };
+  return map[code] || fallback;
+}
+
+function showToast(msg, type = 'info', duration = 4000) {
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, duration);
+}
+</script>
+</body>
+</html>
