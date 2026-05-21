@@ -1102,14 +1102,15 @@ function recordTimeOnCurrentQuestion() {
   const q = questions[currentQ];
   if (!q || !qStartTime) return;
   const elapsed = Math.round((Date.now() - qStartTime) / 1000);
-  timeSpent[q.id] = (timeSpent[q.id] || 0) + elapsed;
-  qStartTime = Date.now();
+  if (elapsed > 0) timeSpent[q.id] = (timeSpent[q.id] || 0) + elapsed;
+  qStartTime = null; // caller must set qStartTime for the next question
 }
 
 function renderQuestion() {
   const q = questions[currentQ];
   if(!q) return;
-  qStartTime = qStartTime || Date.now(); // start timer for first render
+  // Only start timing if not already started for this question
+  if (!qStartTime) qStartTime = Date.now();
   const ans = answers[q.id]||{selected:[],status:'na'};
   if(ans.status==='nv'){ answers[q.id]={...ans,status:'na'}; }
   const posM = q.posMarks||q.marks||1;
@@ -1184,14 +1185,14 @@ function toggleOption(idx){
   renderQuestion();
 }
 
-function saveAndNext(){ recordTimeOnCurrentQuestion();
+function saveAndNext(){
   const q=questions[currentQ]; const ans=answers[q.id];
   if(q.type==='nat'){ const v=document.getElementById('nat-input')?.value; if(v!==undefined&&v!=='')ans.selected=[v]; }
   ans.status=ans.selected.length>0?'ans':'na';
   navigate(1);
 }
 
-function markForReview(){ recordTimeOnCurrentQuestion();
+function markForReview(){
   const q=questions[currentQ]; const ans=answers[q.id];
   if(q.type==='nat'){ const v=document.getElementById('nat-input')?.value; if(v)ans.selected=[v]; }
   ans.status=ans.selected.length>0?'am':'mrk';
@@ -1205,10 +1206,12 @@ function clearResponse(){
 }
 
 function navigate(dir){
-  recordTimeOnCurrentQuestion();
+  recordTimeOnCurrentQuestion();           // record time on OLD question, nulls qStartTime
   const ni=currentQ+dir;
   if(ni<0||ni>=questions.length) return;
-  currentQ=ni; qStartTime=Date.now(); renderQuestion(); renderPalette();
+  currentQ=ni;
+  qStartTime=Date.now();                   // start clock for NEW question
+  renderQuestion(); renderPalette();
   for(let i=0;i<sections.length;i++){
     if(sections[i].questionIds?.includes(questions[currentQ].id)){
       if(i!==currentSec){ currentSec=i; document.querySelectorAll('.sec-tab').forEach((t,idx)=>t.classList.toggle('active',idx===i)); }
@@ -1245,7 +1248,12 @@ function renderPalette(){
   `;
 }
 
-function goTo(idx){ recordTimeOnCurrentQuestion(); currentQ=idx; qStartTime=Date.now(); renderQuestion(); renderPalette(); }
+function goTo(idx){
+  recordTimeOnCurrentQuestion();           // record time on OLD question
+  currentQ=idx;
+  qStartTime=Date.now();                   // start clock for NEW question
+  renderQuestion(); renderPalette();
+}
 
 // ── Timer ──
 function startTimer(){
@@ -1280,6 +1288,7 @@ function confirmSubmit(){
 }
 
 async function submitExam(){
+  recordTimeOnCurrentQuestion();           // capture final question's time
   closeModal('submit-modal'); clearInterval(timerInt); clearInterval(idleInterval);
   Utils.toast('Evaluating answers…','info');
   let totalScore=0,maxScore=0,correct=0,wrong=0,partial=0,skipped=0;
