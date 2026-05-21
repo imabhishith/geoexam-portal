@@ -994,6 +994,20 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="../js/firebase-config.js"></script>
 <script>
+// ── Enter fullscreen immediately on page load ──
+// The "I am ready to begin" click on exam-instructions.html creates a transient
+// user-activation that browsers propagate to the navigated-to page for ~5 seconds.
+// Calling requestFullscreen() here (before any async Firestore awaits) catches
+// that window — so the exam starts fullscreen without requiring a manual click.
+(function () {
+  const el  = document.documentElement;
+  const req = el.requestFullscreen       ||
+              el.webkitRequestFullscreen ||
+              el.mozRequestFullScreen    ||
+              el.msRequestFullscreen;
+  if (req && !document.fullscreenElement) req.call(el).catch(() => {});
+})();
+
 // ── State ──
 const params  = new URLSearchParams(location.search);
 const examId  = params.get('id');
@@ -1710,14 +1724,15 @@ function tickIdle() {
 function startProctoring() {
   idleInterval = setInterval(tickIdle, 1000);
 
-  // Check if we're already fullscreen (carried over from instructions page navigation)
-  // If not, show the overlay so user can re-enter with a click (required user gesture)
+  // Verify fullscreen status once the exam UI has fully rendered.
+  // The IIFE above already attempted auto-fullscreen on load; this just
+  // shows the overlay if that attempt was blocked by the browser.
   setTimeout(() => {
     if (!isFullscreen()) {
       fsOverlay.classList.add('show');
     }
     checkWindowSize();
-  }, 800);
+  }, 400);
 
   setInterval(checkWindowSize, 5000);
 }
