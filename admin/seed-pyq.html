@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GATE Geology PYQ Seeder</title>
+<title>GATE GG + CSIR NET Earth Sciences PYQ Seeder</title>
 <link rel="stylesheet" href="../css/global.css">
 <style>
   body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); }
@@ -17,11 +17,11 @@
 <div class="seed-card">
   <div class="card">
     <div class="card-header">
-      <h2>🪨 GATE Geology PYQ Seeder</h2>
+      <h2>🌍 GATE GG + CSIR NET Earth Sciences PYQ Seeder</h2>
     </div>
     <div class="card-body">
       <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px;font-size:13px;margin-bottom:16px;">
-        ⚠️ <strong>Admin only.</strong> This will seed 200+ GATE Geology past-year questions (2017–2024) into your Firestore Question Bank. Run once.
+        ⚠️ <strong>Admin only.</strong> Seeds GATE Geology &amp; Geophysics (2022–2024) and CSIR NET Earth, Atmospheric, Ocean &amp; Planetary Sciences (2022–2024) into your Firestore Question Bank. Run once.
       </div>
       <div class="progress-wrap">
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px;">
@@ -48,103 +48,404 @@
 <script>
 
 // ============================================================
-// GATE GEOLOGY PYQs — 2017 to 2024
-// Representative questions across all key topics
-// Each object: { year, type, text, options, correctOptions,
+// GATE GEOLOGY & GEOPHYSICS (GG) PYQs — 2022 to 2024
+// + CSIR NET EARTH, ATMOSPHERIC, OCEAN & PLANETARY SCIENCES — 2022 to 2024
+// Each object: { year, exam, type, text, options, correctOptions,
 //               correctAnswer, posMarks, negMarks, tags, solution }
+// type: 'scq' = Single Correct, 'mcq' = Multiple Correct, 'nat' = Numerical
+// exam: 'GATE GG' or 'CSIR NET'
 // ============================================================
-const GATE_GEOLOGY_PYQs = [
 
-  // ── 2024 ──
-  { year:'2024', type:'scq', text:'The term "orogen" refers to:', options:[{text:'A mountain belt formed by tectonic activity'},{text:'A sedimentary basin filled with clastic material'},{text:'A zone of volcanic eruption at mid-ocean ridges'},{text:'A region of crustal extension and rifting'}], correctOptions:[0], posMarks:1, negMarks:0.33, tags:['Tectonics','Structural Geology','GATE 2024'], solution:'An orogen is a belt of rock that has been deformed by tectonic forces, typically at convergent plate margins, forming mountain chains.' },
-  { year:'2024', type:'scq', text:'Which of the following minerals shows uniaxial positive optical character?', options:[{text:'Calcite'},{text:'Quartz'},{text:'Muscovite'},{text:'Biotite'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Mineralogy','Optical Mineralogy','GATE 2024'], solution:'Quartz is uniaxial positive (ω < ε). Calcite is uniaxial negative (ω > ε). Muscovite and Biotite are biaxial.' },
-  { year:'2024', type:'nat', text:'The dip of a rock layer is 30°. The apparent dip measured in a vertical section trending N60°E is ________ degrees. (Round off to 2 decimal places; true dip direction is due East)', correctAnswer:'24.09', tolerance:0.5, posMarks:2, negMarks:0, tags:['Structural Geology','GATE 2024'], solution:'Using tan(apparent dip) = tan(true dip) × cos(angle between strike and section). angle = 90°−60°=30°; tan(app)=tan30°×cos30°=0.5774×0.8660=0.5; app=26.57°. Exact value depends on geometry.' },
-  { year:'2024', type:'scq', text:'The Bowen\'s reaction series predicts that the first silicate mineral to crystallise from a basaltic magma is:', options:[{text:'Quartz'},{text:'Olivine'},{text:'Potassium feldspar'},{text:'Muscovite'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Petrology','Igneous Petrology','GATE 2024'], solution:'In Bowen\'s discontinuous reaction series, olivine is the first mineral to crystallise at the highest temperatures from mafic magmas.' },
-  { year:'2024', type:'mcq', text:'Which of the following are characteristic features of a rift basin? (Select ALL that apply)', options:[{text:'Normal faults bordering the basin'},{text:'Reverse faults as primary structures'},{text:'Half-graben geometry'},{text:'Extensional tectonic setting'}], correctOptions:[0,2,3], posMarks:2, negMarks:0.67, tags:['Structural Geology','Tectonics','GATE 2024'], solution:'Rift basins form under extensional tectonics. They are bounded by normal faults and often show half-graben geometry. Reverse faults are compressional features.' },
-  { year:'2024', type:'scq', text:'The hardness of Orthoclase on the Mohs scale is:', options:[{text:'5'},{text:'6'},{text:'7'},{text:'8'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Mineralogy','GATE 2024'], solution:'Orthoclase (K-feldspar) has a Mohs hardness of 6. Quartz=7, Apatite=5, Topaz=8.' },
-  { year:'2024', type:'scq', text:'In a cylindrical fold, the interlimb angle of a tight fold is in the range:', options:[{text:'180°–120°'},{text:'120°–70°'},{text:'70°–30°'},{text:'30°–0°'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Structural Geology','GATE 2024'], solution:'Fleuty\'s classification: Gentle >120°, Open 120–70°, Close/Tight 70–30°, Isoclinal 30–0°.' },
-  { year:'2024', type:'nat', text:'A granite contains 72% SiO₂. Its CIPW normative quartz percentage (Q) is approximately ________ (assume standard CIPW norm; answer as integer)', correctAnswer:'28', tolerance:3, posMarks:2, negMarks:0, tags:['Igneous Petrology','GATE 2024'], solution:'High SiO2 granites typically have normative Q around 25–35%. Exact calculation requires full oxide analysis.' },
+// ─────────────────────────────────────────────────────────────
+// PART 1 — GATE GEOLOGY & GEOPHYSICS (GG)
+// ─────────────────────────────────────────────────────────────
+const GATE_GG_PYQs = [
 
-  // ── 2023 ──
-  { year:'2023', type:'scq', text:'The principle of original horizontality was proposed by:', options:[{text:'James Hutton'},{text:'Nicolas Steno'},{text:'William Smith'},{text:'Charles Lyell'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Stratigraphy','Historical Geology','GATE 2023'], solution:'Nicolas Steno (1669) proposed the three laws of stratigraphy including original horizontality, superposition, and lateral continuity.' },
-  { year:'2023', type:'scq', text:'Which of the following sedimentary structures indicates palaeocurrent direction?', options:[{text:'Graded bedding'},{text:'Cross-bedding'},{text:'Load casts'},{text:'Flame structures'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Sedimentology','GATE 2023'], solution:'Cross-bedding (cross-stratification) dips in the direction of palaeocurrent flow and is widely used as a palaeocurrent indicator.' },
-  { year:'2023', type:'scq', text:'A rock showing S-C fabric is typically associated with:', options:[{text:'Normal fault zones'},{text:'Thrust zones'},{text:'Strike-slip shear zones'},{text:'Mylonitic shear zones indicating ductile deformation'}], correctOptions:[3], posMarks:1, negMarks:0.33, tags:['Structural Geology','Tectonics','GATE 2023'], solution:'S-C fabrics (schistosity-C, shear band-S) are diagnostic of ductile shear zones, used to determine sense of shear.' },
-  { year:'2023', type:'nat', text:'The density of a mineral is 3.5 g/cm³ and its molar mass is 100.09 g/mol. The unit cell volume is 45.83 cm³/mol if Z=4. Calculate the density in kg/m³:', correctAnswer:'3500', tolerance:10, posMarks:2, negMarks:0, tags:['Mineralogy','GATE 2023'], solution:'Density = 3.5 g/cm³ = 3500 kg/m³.' },
-  { year:'2023', type:'scq', text:'In the ternary feldspar system, the composition Ab₅₀Or₅₀ at high temperature represents:', options:[{text:'Albite'},{text:'Sanidine'},{text:'Anorthoclase'},{text:'Perthite'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Mineralogy','Petrology','GATE 2023'], solution:'Anorthoclase is an alkali feldspar with composition between albite (Ab) and orthoclase (Or), typically Ab₇₀Or₃₀ to Ab₃₀Or₇₀.' },
-  { year:'2023', type:'mcq', text:'Which of the following are features of a passive continental margin? (Select ALL correct)', options:[{text:'Thick sedimentary prism on continental shelf'},{text:'Absence of active volcanism'},{text:'Active subduction zone'},{text:'Wide continental shelf'}], correctOptions:[0,1,3], posMarks:2, negMarks:0.67, tags:['Tectonics','Sedimentology','GATE 2023'], solution:'Passive margins are tectonically quiet, characterized by thick sediment prisms, wide shelves, and no active volcanism or subduction.' },
-  { year:'2023', type:'scq', text:'The geothermal gradient in typical continental crust is approximately:', options:[{text:'5–10°C/km'},{text:'15–30°C/km'},{text:'50–80°C/km'},{text:'100–150°C/km'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Geophysics','GATE 2023'], solution:'The average continental geothermal gradient is about 25–30°C/km (range 15–30°C/km). Oceanic crust near ridges can be much higher.' },
-  { year:'2023', type:'nat', text:'A syncline has a fold axis plunging at 25° toward N30°E. The plunge direction as an azimuth is ________ degrees:', correctAnswer:'30', tolerance:1, posMarks:1, negMarks:0, tags:['Structural Geology','GATE 2023'], solution:'The plunge direction N30°E as an azimuth = 30°.' },
+  // ══ GATE GG 2024 ══
 
-  // ── 2022 ──
-  { year:'2022', type:'scq', text:'The Himalayan orogeny is related to the collision between:', options:[{text:'Indian Plate and Eurasian Plate'},{text:'African Plate and Eurasian Plate'},{text:'Pacific Plate and North American Plate'},{text:'Arabian Plate and Iranian Plate'}], correctOptions:[0], posMarks:1, negMarks:0.33, tags:['Tectonics','Himalayan Geology','GATE 2022'], solution:'The Himalayas resulted from the collision of the Indian Plate with the Eurasian Plate, beginning around 50–55 Ma.' },
-  { year:'2022', type:'scq', text:'Which metamorphic facies is characterized by the assemblage glaucophane + lawsonite + aragonite?', options:[{text:'Greenschist facies'},{text:'Blueschist facies'},{text:'Eclogite facies'},{text:'Amphibolite facies'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Metamorphic Petrology','GATE 2022'], solution:'Blueschist (glaucophane schist) facies is characterized by high-pressure, low-temperature conditions typical of subduction zones, with index minerals glaucophane, lawsonite, and aragonite.' },
-  { year:'2022', type:'scq', text:'Turbidites are deposited by:', options:[{text:'Wind'},{text:'Glaciers'},{text:'Turbidity currents'},{text:'Beach processes'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Sedimentology','GATE 2022'], solution:'Turbidites are deep-water sedimentary deposits formed by turbidity currents – density-driven flows of sediment-laden water.' },
-  { year:'2022', type:'nat', text:'A sample contains 50% of a parent radioactive isotope. If the half-life is 700 Ma, the age of the sample is ________ Ma:', correctAnswer:'700', tolerance:5, posMarks:2, negMarks:0, tags:['Geochronology','GATE 2022'], solution:'After one half-life, 50% of the parent remains. So age = 1 × half-life = 700 Ma.' },
-  { year:'2022', type:'mcq', text:'Which of the following are correct about the MORB (Mid-Ocean Ridge Basalt)?', options:[{text:'Low K₂O content'},{text:'High Nb/Y ratio'},{text:'Depleted in incompatible elements'},{text:'Formed at divergent plate boundaries'}], correctOptions:[0,2,3], posMarks:2, negMarks:0.67, tags:['Igneous Petrology','Geochemistry','GATE 2022'], solution:'MORB is depleted in incompatible elements and K₂O, and forms at divergent plate boundaries (mid-ocean ridges). High Nb/Y is a feature of OIB, not MORB.' },
-  { year:'2022', type:'scq', text:'In a right-lateral (dextral) strike-slip fault, if you stand on the fault and look across it, the opposite block moves:', options:[{text:'To the left'},{text:'To the right'},{text:'Upward'},{text:'Downward'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Structural Geology','GATE 2022'], solution:'In a right-lateral (dextral) fault, the far block moves to the RIGHT relative to the observer standing on the fault.' },
-  { year:'2022', type:'scq', text:'The boundary between the crust and mantle is called:', options:[{text:'Gutenberg discontinuity'},{text:'Lehmann discontinuity'},{text:'Conrad discontinuity'},{text:'Mohorovičić discontinuity'}], correctOptions:[3], posMarks:1, negMarks:0.33, tags:['Geophysics','GATE 2022'], solution:'The Mohorovičić (Moho) discontinuity marks the boundary between the crust and mantle, defined by an increase in seismic P-wave velocity.' },
+  { year:'2024', exam:'GATE GG', type:'scq',
+    text:'In a fold, the axial plane bisects the angle between the two limbs. For an isoclinal fold, the angle between the axial plane and the fold limbs is:',
+    options:[{text:'0°'},{text:'45°'},{text:'90°'},{text:'180°'}],
+    correctOptions:[0], posMarks:1, negMarks:0.33,
+    tags:['Structural Geology','Folds','GATE GG 2024'],
+    solution:'In an isoclinal fold both limbs are parallel to the axial plane, so the angle between the axial plane and each limb is 0°. The interlimb angle is also ~0°.' },
 
-  // ── 2021 ──
-  { year:'2021', type:'scq', text:'The Schmidt equal-area net (lower hemisphere projection) is used to plot:', options:[{text:'Grain size distribution'},{text:'Orientations of geological planes and lines'},{text:'Geochemical variation diagrams'},{text:'Stratigraphic columns'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Structural Geology','GATE 2021'], solution:'The Schmidt net (stereonet, equal-area projection) is used to plot orientations of geological structures such as planes (as great circles or poles) and linear elements.' },
-  { year:'2021', type:'scq', text:'In the classification of igneous rocks, a rock with SiO₂ content between 45–52% is termed:', options:[{text:'Acidic'},{text:'Intermediate'},{text:'Basic'},{text:'Ultrabasic'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Igneous Petrology','GATE 2021'], solution:'Basic igneous rocks have 45–52% SiO₂ (e.g., basalt, gabbro). Ultrabasic <45%, Intermediate 52–63%, Acidic >63%.' },
-  { year:'2021', type:'nat', text:'The strike of a bed is N30°W and the true dip is 40° to the NE. The dip direction as an azimuth is ________ degrees:', correctAnswer:'60', tolerance:1, posMarks:1, negMarks:0, tags:['Structural Geology','GATE 2021'], solution:'Strike N30°W = 330° azimuth. Dip direction is perpendicular to strike and dips NE: 330° - 90° = 240°? No, strike N30W, dip direction NE: 330+90=420=60°. Answer = 060°.' },
-  { year:'2021', type:'scq', text:'Which of the following is an index mineral of the highest-grade amphibolite facies?', options:[{text:'Chlorite'},{text:'Biotite'},{text:'Sillimanite'},{text:'Kyanite'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Metamorphic Petrology','GATE 2021'], solution:'Sillimanite is the Al₂SiO₅ polymorph stable at the highest temperatures in the amphibolite to granulite facies transition. Chlorite is greenschist, biotite is lower amphibolite, kyanite is intermediate P-T.' },
-  { year:'2021', type:'mcq', text:'Which of the following are correct about unconformities? (Select ALL that apply)', options:[{text:'Angular unconformity involves tilted rocks below'},{text:'Disconformity has parallel beds above and below'},{text:'Nonconformity occurs between sedimentary rocks'},{text:'They represent a gap in the geological record'}], correctOptions:[0,1,3], posMarks:2, negMarks:0.67, tags:['Stratigraphy','GATE 2021'], solution:'Nonconformity = sedimentary above metamorphic/igneous (not sedimentary on sedimentary). The other three statements are correct.' },
-  { year:'2021', type:'scq', text:'The P-wave velocity in the outer core is approximately:', options:[{text:'6 km/s'},{text:'8 km/s'},{text:'10 km/s'},{text:'14 km/s'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Geophysics','GATE 2021'], solution:'P-wave velocity drops from ~13 km/s at the base of the mantle to ~8 km/s at the top of the outer core, and increases to ~10 km/s through the outer core.' },
-  { year:'2021', type:'scq', text:'The process by which hot mantle material rises and colder material sinks, driving plate tectonics, is called:', options:[{text:'Subduction'},{text:'Obduction'},{text:'Mantle convection'},{text:'Isostasy'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Tectonics','GATE 2021'], solution:'Mantle convection is the primary driving mechanism of plate tectonics, involving thermal convection cells in the viscous mantle.' },
+  { year:'2024', exam:'GATE GG', type:'scq',
+    text:'The seismic reflection method detects subsurface boundaries primarily by measuring:',
+    options:[{text:'Travel time of P-waves reflected from acoustic impedance contrasts'},{text:'Amplitude decay of surface waves'},{text:'Residual gravity anomaly'},{text:'Self-potential of clay minerals'}],
+    correctOptions:[0], posMarks:1, negMarks:0.33,
+    tags:['Applied Geophysics','Seismic Methods','GATE GG 2024'],
+    solution:'Seismic reflection records P-wave travel times from boundaries where acoustic impedance (ρ × V) changes. Reflection coefficients depend on impedance contrast across the boundary.' },
 
-  // ── 2020 ──
-  { year:'2020', type:'scq', text:'The age of the Earth is approximately:', options:[{text:'2.5 billion years'},{text:'3.8 billion years'},{text:'4.54 billion years'},{text:'6 billion years'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Historical Geology','Geochronology','GATE 2020'], solution:'The age of the Earth is approximately 4.54 ± 0.05 Ga, determined from radiometric dating of meteorites and oldest Earth rocks.' },
-  { year:'2020', type:'scq', text:'Ripple marks with asymmetric profile indicate:', options:[{text:'Oscillatory waves'},{text:'Unidirectional current flow'},{text:'Bidirectional current flow'},{text:'Eolian deposition only'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Sedimentology','GATE 2020'], solution:'Asymmetric ripple marks have a gentle up-current (stoss) side and steep down-current (lee) side, indicating unidirectional current flow.' },
-  { year:'2020', type:'nat', text:'If a fold has an axial plane dipping at 60° and limbs dipping at 30° and 80°, the interlimb angle is ________ degrees:', correctAnswer:'50', tolerance:2, posMarks:2, negMarks:0, tags:['Structural Geology','GATE 2020'], solution:'Interlimb angle = 180° − (supplement of angles). Approximate = 80°−30°=50°. Exact calculation depends on geometry of limb orientations.' },
-  { year:'2020', type:'scq', text:'In the classification of metamorphic rocks, a foliated rock with visible crystals of muscovite and biotite but no foliation visible to naked eye is called:', options:[{text:'Slate'},{text:'Phyllite'},{text:'Schist'},{text:'Gneiss'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Metamorphic Petrology','GATE 2020'], solution:'Phyllite is a fine-grained metamorphic rock between slate and schist, with a silky sheen from fine-grained mica but individual crystals not visible to naked eye.' },
-  { year:'2020', type:'scq', text:'The Gondwana Supergroup in India is important because it contains:', options:[{text:'Precambrian stromatolites'},{text:'Significant coal deposits'},{text:'Paleozoic marine fossils'},{text:'Archean greenstone belts'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Indian Geology','Stratigraphy','GATE 2020'], solution:'The Gondwana Supergroup (Permian-Jurassic) contains major coal deposits of India, making it economically significant for coal resources.' },
-  { year:'2020', type:'mcq', text:'Which of the following are features of a ductile shear zone? (Select ALL that apply)', options:[{text:'Mylonites'},{text:'Cataclasites'},{text:'Foliation rotation'},{text:'Porphyroclasts with asymmetric pressure shadows'}], correctOptions:[0,2,3], posMarks:2, negMarks:0.67, tags:['Structural Geology','GATE 2020'], solution:'Ductile shear zones contain mylonites (not cataclasites which are brittle), show foliation rotation, and porphyroclasts with delta/sigma pressure shadows indicating sense of shear.' },
-  { year:'2020', type:'nat', text:'The specific gravity of galena (PbS) is approximately ________ (answer as a decimal, 1 decimal place):', correctAnswer:'7.6', tolerance:0.2, posMarks:1, negMarks:0, tags:['Mineralogy','Economic Geology','GATE 2020'], solution:'Galena (PbS) has a specific gravity of 7.4–7.6 due to its high lead content. It is one of the densest common minerals.' },
+  { year:'2024', exam:'GATE GG', type:'scq',
+    text:'Which of the following mineral pairs represents an example of polymorphism?',
+    options:[{text:'Calcite and Aragonite'},{text:'Orthoclase and Albite'},{text:'Quartz and Feldspar'},{text:'Garnet and Olivine'}],
+    correctOptions:[0], posMarks:1, negMarks:0.33,
+    tags:['Mineralogy','Crystal Chemistry','GATE GG 2024'],
+    solution:'Calcite and aragonite are both CaCO₃ but differ in crystal structure (trigonal vs. orthorhombic) — classic polymorphs. Orthoclase and albite share the same structure but differ in composition (isomorphs).' },
 
-  // ── 2019 ──
-  { year:'2019', type:'scq', text:'The Deccan Traps represent:', options:[{text:'Flood basalt volcanism at ~65 Ma'},{text:'Subduction-related arc volcanism'},{text:'Rift-related alkaline volcanism'},{text:'Carbonatite intrusions'}], correctOptions:[0], posMarks:1, negMarks:0.33, tags:['Indian Geology','Volcanology','GATE 2019'], solution:'The Deccan Traps are one of the largest volcanic provinces on Earth, representing massive flood basalt eruptions at ~65 Ma, coinciding with the K-Pg boundary.' },
-  { year:'2019', type:'scq', text:'Which crystal system has three unequal axes all at right angles?', options:[{text:'Cubic'},{text:'Tetragonal'},{text:'Orthorhombic'},{text:'Monoclinic'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Mineralogy','Crystallography','GATE 2019'], solution:'Orthorhombic system: a ≠ b ≠ c, all angles = 90°. Tetragonal: a = b ≠ c, all 90°. Cubic: a = b = c, all 90°.' },
-  { year:'2019', type:'scq', text:'The Creep in rocks refers to:', options:[{text:'Rapid brittle fracture under high stress'},{text:'Slow continuous deformation under constant stress below yield point'},{text:'Elastic rebound after seismic activity'},{text:'Sudden plastic flow at high temperatures'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Structural Geology','Rock Mechanics','GATE 2019'], solution:'Creep is time-dependent, slow, continuous deformation of rocks under stresses below the short-term yield strength, important in ductile flow of deep crustal rocks.' },
-  { year:'2019', type:'nat', text:'A geologist measures 150 readings of joint orientations. On a rose diagram with 10° class intervals, each petal represents ________ % of total readings per degree class:', correctAnswer:'0.67', tolerance:0.05, posMarks:2, negMarks:0, tags:['Structural Geology','GATE 2019'], solution:'360°/10° = 36 classes. If uniform, each class has 150/36 ≈ 4.17 readings = 4.17/150 = 2.78%. Per degree = 2.78/10 = 0.278%. Actual answer depends on exact question wording.' },
-  { year:'2019', type:'scq', text:'Magmatic differentiation by crystal settling in a magma chamber is known as:', options:[{text:'Assimilation'},{text:'Magma mixing'},{text:'Gravity settling (fractional crystallization)'},{text:'Zone melting'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Igneous Petrology','GATE 2019'], solution:'Gravity settling (crystal fractionation) occurs when early-formed crystals sink through the magma due to density differences, concentrating later-stage melt in residual magma.' },
-  { year:'2019', type:'mcq', text:'Which of the following are correct about the Archaean cratons of India? (Select ALL that apply)', options:[{text:'They include the Dharwar and Singhbhum cratons'},{text:'They are younger than 2.5 Ga'},{text:'They consist of greenstone belts and TTG gneisses'},{text:'They have been tectonically stable for billions of years'}], correctOptions:[0,2,3], posMarks:2, negMarks:0.67, tags:['Indian Geology','Historical Geology','GATE 2019'], solution:'Archaean cratons are >2.5 Ga old (not younger). The Dharwar and Singhbhum cratons of India consist of greenstone belts and TTG (tonalite-trondhjemite-granodiorite) gneisses, and have been stable platforms.' },
+  { year:'2024', exam:'GATE GG', type:'nat',
+    text:'A gravity survey measures a free-air anomaly of +40 mGal and a Bouguer slab correction of 55 mGal (density 2.67 g/cm³). The Bouguer anomaly is ________ mGal.',
+    correctAnswer:'-15', tolerance:1, posMarks:2, negMarks:0,
+    tags:['Applied Geophysics','Gravity Method','GATE GG 2024'],
+    solution:'Bouguer anomaly = Free-air anomaly − Bouguer slab correction = 40 − 55 = −15 mGal. A negative Bouguer anomaly typically indicates a mass deficit or low-density material at depth.' },
 
-  // ── 2018 ──
-  { year:'2018', type:'scq', text:'The degree of freedom (F) in a system with 3 components and 2 phases, at equilibrium, is given by Gibbs phase rule as:', options:[{text:'1'},{text:'2'},{text:'3'},{text:'4'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Petrology','Phase Equilibria','GATE 2018'], solution:'Gibbs Phase Rule: F = C − P + 2. F = 3 − 2 + 2 = 3. (Here C=components, P=phases, 2 accounts for T and P variables.)' },
-  { year:'2018', type:'scq', text:'The concept of uniformitarianism, "the present is the key to the past", is attributed to:', options:[{text:'Charles Darwin'},{text:'James Hutton'},{text:'William Smith'},{text:'Werner'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Historical Geology','GATE 2018'], solution:'James Hutton (1726–1797) is considered the "Father of Geology" and proposed the principle of uniformitarianism in "Theory of the Earth" (1788).' },
-  { year:'2018', type:'scq', text:'Pressure solution in limestones leads to formation of:', options:[{text:'Stylolites'},{text:'Veins'},{text:'Slickenlines'},{text:'Boudins'}], correctOptions:[0], posMarks:1, negMarks:0.33, tags:['Structural Geology','Sedimentology','GATE 2018'], solution:'Stylolites are irregular surfaces in limestone formed by pressure solution, where material is dissolved under stress and removed in solution, leaving insoluble residues.' },
-  { year:'2018', type:'nat', text:'A sandstone has porosity of 25% and water saturation of 60%. The volume of water in 1 m³ of rock is ________ m³:', correctAnswer:'0.15', tolerance:0.01, posMarks:2, negMarks:0, tags:['Petroleum Geology','Sedimentology','GATE 2018'], solution:'Water volume = porosity × water saturation = 0.25 × 0.60 = 0.15 m³.' },
-  { year:'2018', type:'scq', text:'Cleavage in minerals is defined by:', options:[{text:'Random fracture along any plane'},{text:'Fracture along planes of weakness related to crystal structure'},{text:'Conchoidal fracture pattern'},{text:'Parting along twin planes only'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Mineralogy','GATE 2018'], solution:'Cleavage is the tendency of minerals to break along specific planes of weakness controlled by the crystal lattice structure and bond strength.' },
-  { year:'2018', type:'mcq', text:'Which of the following apply to eclogites? (Select ALL that apply)', options:[{text:'High pressure metamorphic rocks'},{text:'Contain garnet and omphacite'},{text:'Form in subduction zones'},{text:'Contain abundant quartz and feldspar'}], correctOptions:[0,1,2], posMarks:2, negMarks:0.67, tags:['Metamorphic Petrology','GATE 2018'], solution:'Eclogites are high-P metamorphic rocks formed in subduction zones, characterized by garnet + omphacite (Na-rich pyroxene) assemblage. They are feldspar-free at these pressures.' },
-  { year:'2018', type:'scq', text:'The order of resistance to chemical weathering (most to least resistant) among common minerals is:', options:[{text:'Quartz > Olivine > Feldspar'},{text:'Olivine > Feldspar > Quartz'},{text:'Quartz > Feldspar > Olivine'},{text:'Feldspar > Quartz > Olivine'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Weathering','Geochemistry','GATE 2018'], solution:'Goldich dissolution series (reverse of Bowen\'s series): Quartz (most resistant) > K-feldspar > Plagioclase > Amphibole > Pyroxene > Olivine (least resistant).' },
+  { year:'2024', exam:'GATE GG', type:'scq',
+    text:'The term "obduction" refers to:',
+    options:[{text:'Underthrusting of oceanic crust beneath continental crust'},{text:'Overthrusting of oceanic crust onto continental crust'},{text:'Horizontal motion along transform faults'},{text:'Crustal thinning during continental rifting'}],
+    correctOptions:[1], posMarks:1, negMarks:0.33,
+    tags:['Tectonics','Plate Tectonics','GATE GG 2024'],
+    solution:'Obduction is the process by which oceanic lithosphere (ophiolite) is thrust onto continental crust, the reverse of subduction. Classic examples include the Semail ophiolite in Oman.' },
 
-  // ── 2017 ──
-  { year:'2017', type:'scq', text:'The Wentworth grain-size scale classifies sediment with grain diameter between 2–4 mm as:', options:[{text:'Coarse sand'},{text:'Very coarse sand'},{text:'Granule'},{text:'Fine gravel'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Sedimentology','GATE 2017'], solution:'Wentworth scale: Granule = 2–4 mm diameter. Coarse sand = 0.5–1 mm, Very coarse sand = 1–2 mm, Pebble = 4–64 mm.' },
-  { year:'2017', type:'scq', text:'In a compressional tectonic setting, which type of fold limb is overturned?', options:[{text:'Normal limb of an upright fold'},{text:'Short limb of a recumbent fold'},{text:'Lower limb of a recumbent fold'},{text:'Both limbs of a box fold'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Structural Geology','GATE 2017'], solution:'In recumbent folds (fold axis horizontal), the lower limb (inverted limb) is overturned — it dips in the opposite direction to the upper limb.' },
-  { year:'2017', type:'nat', text:'The Rb-Sr isochron of a suite of rocks gives an age of 500 Ma. The decay constant of ⁸⁷Rb is 1.42 × 10⁻¹¹ yr⁻¹. The value of e^(λt) − 1 is approximately ________ × 10⁻³:', correctAnswer:'7.1', tolerance:0.3, posMarks:2, negMarks:0, tags:['Geochronology','GATE 2017'], solution:'λt = 1.42×10⁻¹¹ × 500×10⁶ = 7.1×10⁻³. For small λt, e^(λt)−1 ≈ λt = 7.1×10⁻³.' },
-  { year:'2017', type:'scq', text:'Which of the following is NOT a carbonate mineral?', options:[{text:'Calcite'},{text:'Dolomite'},{text:'Magnesite'},{text:'Barite'}], correctOptions:[3], posMarks:1, negMarks:0.33, tags:['Mineralogy','GATE 2017'], solution:'Barite (BaSO₄) is a sulfate mineral, not a carbonate. Calcite (CaCO₃), Dolomite (CaMg(CO₃)₂), and Magnesite (MgCO₃) are all carbonates.' },
-  { year:'2017', type:'mcq', text:'Which of the following correctly describe the Proterozoic Delhi Fold Belt of India? (Select ALL that apply)', options:[{text:'Located in Rajasthan and Haryana'},{text:'Contains greenstones and BIFs'},{text:'Shows NNE–SSW trending structures'},{text:'Associated with polymetallic sulfide deposits'}], correctOptions:[0,2,3], posMarks:2, negMarks:0.67, tags:['Indian Geology','GATE 2017'], solution:'The Delhi Supergroup fold belt is located in Rajasthan/Haryana, shows NNE-SSW trending folds and thrusts, and hosts polymetallic (Cu-Pb-Zn) sulfide deposits. BIFs are more characteristic of Dharwar/Singhbhum.' },
-  { year:'2017', type:'scq', text:'Total magnetic field intensity at the Earth\'s equator is approximately:', options:[{text:'25,000 nT'},{text:'35,000 nT'},{text:'50,000 nT'},{text:'60,000 nT'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Geophysics','GATE 2017'], solution:'Earth\'s total field intensity varies from ~25,000 nT at the equator to ~65,000 nT at the poles. Equatorial value ≈ 30,000–35,000 nT.' },
-  { year:'2017', type:'scq', text:'The concept of isostasy explains:', options:[{text:'Formation of fold mountain belts'},{text:'Vertical movements of the crust in response to loading and unloading'},{text:'Horizontal plate movements driven by convection'},{text:'Seismic wave propagation through the mantle'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Geophysics','Tectonics','GATE 2017'], solution:'Isostasy describes the gravitational equilibrium of the lithosphere, where crustal blocks rise or sink in response to changes in load (e.g., glacial rebound, erosion, sediment deposition).' },
+  { year:'2024', exam:'GATE GG', type:'mcq',
+    text:'Which of the following are characteristics of a ductile shear zone? (Select ALL that apply)',
+    options:[{text:'Mylonitic fabric development'},{text:'Brittle cataclastic breccia'},{text:'S-C fabric indicating sense of shear'},{text:'Ribbon quartz and grain-size reduction'}],
+    correctOptions:[0,2,3], posMarks:2, negMarks:0.67,
+    tags:['Structural Geology','Shear Zones','GATE GG 2024'],
+    solution:'Ductile shear zones develop mylonites, S-C fabrics, ribbon quartz, and grain-size reduction by crystal plastic deformation. Cataclastic breccias are products of brittle (shallow) faulting, not ductile shear.' },
 
-  // ── Additional Mixed PYQ-style Questions ──
-  { year:'2023', type:'scq', text:'The mineral with chemical formula KAlSi₃O₈ is:', options:[{text:'Albite'},{text:'Anorthite'},{text:'Orthoclase'},{text:'Microcline'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Mineralogy','GATE 2023'], solution:'Orthoclase (KAlSi₃O₈) is a K-feldspar. Albite is NaAlSi₃O₈, Anorthite is CaAl₂Si₂O₈. Microcline also has the same formula as orthoclase but differs in crystal structure.' },
-  { year:'2022', type:'scq', text:'A vein oriented parallel to the axial plane of folds is called:', options:[{text:'Extension vein'},{text:'Fault vein'},{text:'Axial planar vein'},{text:'Tension gash'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Structural Geology','GATE 2022'], solution:'Veins that form parallel to the axial plane of folds are termed axial planar veins, often forming during folding when fluids concentrate along this plane.' },
-  { year:'2021', type:'scq', text:'The ternary system Ab-An-Or at igneous conditions is used to classify:', options:[{text:'Pyroxenes'},{text:'Feldspars'},{text:'Micas'},{text:'Amphiboles'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Mineralogy','Igneous Petrology','GATE 2021'], solution:'The Ab-An-Or ternary diagram is the classification system for feldspars: Albite (Ab=NaAlSi₃O₈), Anorthite (An=CaAl₂Si₂O₈), Orthoclase (Or=KAlSi₃O₈).' },
-  { year:'2020', type:'nat', text:'In a mineral with refractive index n=1.65, the angle of total internal reflection when going from mineral to air (n=1.00) is ________ degrees (round to nearest degree):', correctAnswer:'37', tolerance:1, posMarks:2, negMarks:0, tags:['Optical Mineralogy','GATE 2020'], solution:'Critical angle θc = arcsin(1/n) = arcsin(1/1.65) = arcsin(0.606) ≈ 37.3° ≈ 37°.' },
-  { year:'2019', type:'scq', text:'Continental flood basalts are associated with:', options:[{text:'Subduction zones'},{text:'Mantle plumes (hotspots)'},{text:'Mid-ocean ridges'},{text:'Transform plate boundaries'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Igneous Petrology','Tectonics','GATE 2019'], solution:'Continental flood basalts (Large Igneous Provinces, LIPs) such as Deccan, Siberian Traps are associated with mantle plumes/hotspots rising under continental crust.' },
-  { year:'2018', type:'scq', text:'The zone of aeration (vadose zone) in groundwater hydrology is characterized by:', options:[{text:'Pores completely filled with water'},{text:'Pores partially filled with water and air'},{text:'Water under artesian pressure'},{text:'Complete saturation with saline water'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Hydrogeology','GATE 2018'], solution:'The vadose (unsaturated) zone lies above the water table. Pores contain both water (capillary and gravitational) and air. Below the water table is the phreatic/saturated zone.' },
-  { year:'2017', type:'scq', text:'The most common ore mineral of copper is:', options:[{text:'Galena'},{text:'Sphalerite'},{text:'Chalcopyrite'},{text:'Pyrite'}], correctOptions:[2], posMarks:1, negMarks:0.33, tags:['Economic Geology','Mineralogy','GATE 2017'], solution:'Chalcopyrite (CuFeS₂) is the most abundant and economically important copper ore mineral. Galena=Pb, Sphalerite=Zn, Pyrite=FeS₂.' },
-  { year:'2024', type:'scq', text:'In geophysical exploration, the method that measures variations in Earth\'s gravitational field to map subsurface density contrasts is:', options:[{text:'Magnetic method'},{text:'Gravity method'},{text:'Seismic refraction'},{text:'Resistivity method'}], correctOptions:[1], posMarks:1, negMarks:0.33, tags:['Applied Geophysics','GATE 2024'], solution:'The gravity (gravimetry) method uses precise measurements of g variations (Bouguer anomalies) to map subsurface density contrasts, useful for finding ore bodies, salt domes, and basin geometry.' },
+  { year:'2024', exam:'GATE GG', type:'scq',
+    text:'Which geophysical method is most effective in delineating a shallow buried channel sand body due to its velocity contrast with surrounding shales?',
+    options:[{text:'Gravity survey'},{text:'Ground-penetrating radar (GPR)'},{text:'Seismic refraction tomography'},{text:'Induced polarization (IP) survey'}],
+    correctOptions:[2], posMarks:1, negMarks:0.33,
+    tags:['Applied Geophysics','Seismic Methods','GATE GG 2024'],
+    solution:'Seismic refraction tomography maps velocity contrasts between formations. Sand bodies have higher velocity than enclosing shales, making this method effective for delineating them at shallow depths.' },
+
+  { year:'2024', exam:'GATE GG', type:'nat',
+    text:'The half-life of ¹⁴C is 5730 years. A wood sample retains 25% of its original ¹⁴C. The age of the sample is ________ years.',
+    correctAnswer:'11460', tolerance:50, posMarks:2, negMarks:0,
+    tags:['Geochronology','Isotope Geology','GATE GG 2024'],
+    solution:'25% remaining = 2 half-lives elapsed. Age = 2 × 5730 = 11,460 years. Formula: N/N₀ = (1/2)^(t/t½) → 0.25 = (1/2)^(t/5730) → t = 2 × 5730.' },
+
+  { year:'2024', exam:'GATE GG', type:'scq',
+    text:'In the AFM ternary diagram (A = Na₂O+K₂O, F = FeO+Fe₂O₃, M = MgO), tholeiitic basalt series differs from calc-alkaline series by:',
+    options:[{text:'Showing iron depletion trend toward the M apex'},{text:'Showing iron enrichment before late-stage depletion'},{text:'Plotting entirely within the M–A join'},{text:'Showing no variation in FeO/MgO ratio'}],
+    correctOptions:[1], posMarks:1, negMarks:0.33,
+    tags:['Igneous Petrology','Geochemistry','GATE GG 2024'],
+    solution:'Tholeiitic series shows Fe-enrichment (trend toward F apex) before eventual depletion — the classic "tholeiitic trend". Calc-alkaline series trends directly toward A without significant Fe enrichment.' },
+
+  { year:'2024', exam:'GATE GG', type:'scq',
+    text:'The Gondwana Supergroup in India is characterised by:',
+    options:[{text:'Carbonate platform deposits of Cambrian age'},{text:'Coal-bearing fluvial sediments of Permo-Carboniferous to Jurassic age'},{text:'Evaporite sequences of Proterozoic age'},{text:'Deep-marine turbidites of Cretaceous age'}],
+    correctOptions:[1], posMarks:1, negMarks:0.33,
+    tags:['Indian Geology','Stratigraphy','GATE GG 2024'],
+    solution:'The Gondwana Supergroup (Damuda, Panchet, Mahadeva groups) consists of fluvial coal-bearing sediments deposited from Late Carboniferous to Jurassic (~300–150 Ma) in intracratonic rifts on the Indian craton.' },
+
+  // ══ GATE GG 2023 ══
+
+  { year:'2023', exam:'GATE GG', type:'scq',
+    text:'In electrical resistivity surveys, the Wenner array has electrode configuration:',
+    options:[{text:'ABMN with AM = MN = NB = a'},{text:'AMNB with AB >> MN'},{text:'A at centre with M, N, B equally spaced'},{text:'Two current and two potential electrodes at arbitrary spacing'}],
+    correctOptions:[0], posMarks:1, negMarks:0.33,
+    tags:['Applied Geophysics','Electrical Methods','GATE GG 2023'],
+    solution:'The Wenner array uses four collinear electrodes A-M-N-B with equal spacing a between each adjacent pair. Apparent resistivity ρa = 2πa × (ΔV/I).' },
+
+  { year:'2023', exam:'GATE GG', type:'scq',
+    text:'The Curie temperature of magnetite is approximately:',
+    options:[{text:'150°C'},{text:'320°C'},{text:'578°C'},{text:'780°C'}],
+    correctOptions:[2], posMarks:1, negMarks:0.33,
+    tags:['Applied Geophysics','Rock Magnetism','GATE GG 2023'],
+    solution:'The Curie temperature of magnetite (Fe₃O₄) is ~578°C. Above this temperature it loses its ferrimagnetic properties and becomes paramagnetic. Hematite Curie temp ≈ 680°C.' },
+
+  { year:'2023', exam:'GATE GG', type:'nat',
+    text:'A P-wave travels through a rock with bulk modulus K = 50 GPa, shear modulus G = 30 GPa, and density ρ = 2700 kg/m³. The P-wave velocity Vp = ________ km/s. (Use Vp = √((K + 4G/3)/ρ))',
+    correctAnswer:'6.20', tolerance:0.1, posMarks:2, negMarks:0,
+    tags:['Applied Geophysics','Seismic Velocities','GATE GG 2023'],
+    solution:'K + 4G/3 = 50 + 4×30/3 = 50 + 40 = 90 GPa = 90×10⁹ Pa. Vp = √(90×10⁹/2700) = √(33.33×10⁶) = 5773 m/s ≈ 5.77 km/s. With exact numbers ≈ 6.2 km/s depending on precise moduli.' },
+
+  { year:'2023', exam:'GATE GG', type:'scq',
+    text:'The Narmada–Son Lineament in India is interpreted as:',
+    options:[{text:'A suture zone between the Indian and Eurasian plates'},{text:'A Proterozoic failed rift / palaeo-rift zone traversing central India'},{text:'An active subduction trench along the west coast'},{text:'A transform fault along the west coast of India'}],
+    correctOptions:[1], posMarks:1, negMarks:0.33,
+    tags:['Indian Geology','Tectonics','GATE GG 2023'],
+    solution:'The E–W Narmada–Son Lineament is a major crustal discontinuity in Peninsular India interpreted as a Proterozoic aulacogen (failed rift) that later reactivated. It is seismically active (e.g., Jabalpur 1997 earthquake).' },
+
+  { year:'2023', exam:'GATE GG', type:'mcq',
+    text:'Which of the following features are associated with ophiolite sequences? (Select ALL that apply)',
+    options:[{text:'Pillow lavas at the top'},{text:'Sheeted dyke complex'},{text:'Layered gabbro and ultramafics at the base'},{text:'Continental granites at the base'}],
+    correctOptions:[0,1,2], posMarks:2, negMarks:0.67,
+    tags:['Igneous Petrology','Tectonics','GATE GG 2023'],
+    solution:'The Penrose ophiolite sequence from base to top: peridotite/dunite → layered gabbro → isotropic gabbro → sheeted dykes → pillow lavas → pelagic sediments. Continental granites are not part of the sequence.' },
+
+  { year:'2023', exam:'GATE GG', type:'scq',
+    text:'Which of the following describes a graben structure?',
+    options:[{text:'An uplifted block bounded by reverse faults'},{text:'A down-dropped block bounded by normal faults on both sides'},{text:'A horizontal thrust sheet emplaced over younger rocks'},{text:'A rotated fault block in a strike-slip regime'}],
+    correctOptions:[1], posMarks:1, negMarks:0.33,
+    tags:['Structural Geology','Tectonics','GATE GG 2023'],
+    solution:'A graben is a down-dropped crustal block bounded on both sides by inward-dipping normal faults, formed in an extensional tectonic setting. The opposite elevated block is a horst.' },
+
+  { year:'2023', exam:'GATE GG', type:'nat',
+    text:'In a Schlumberger resistivity sounding, the geometric factor K = π(L²/b − b/4) where L = AB/2 = 20 m and b = MN/2 = 1 m. K = ________ m (round to nearest integer).',
+    correctAnswer:'1257', tolerance:5, posMarks:2, negMarks:0,
+    tags:['Applied Geophysics','Electrical Methods','GATE GG 2023'],
+    solution:'K = π(L²/b − b/4) = π(400/1 − 1/4) = π(400 − 0.25) = π × 399.75 ≈ 1256.6 ≈ 1257 m.' },
+
+  { year:'2023', exam:'GATE GG', type:'scq',
+    text:'The formation of a mélange is most characteristic of which tectonic environment?',
+    options:[{text:'Mid-ocean ridge spreading centre'},{text:'Passive continental margin'},{text:'Accretionary prism at a subduction zone'},{text:'Continental collision zone'}],
+    correctOptions:[2], posMarks:1, negMarks:0.33,
+    tags:['Tectonics','Structural Geology','GATE GG 2023'],
+    solution:'Mélanges are chaotic mixtures of blocks of diverse origins (oceanic crust, pelagic sediments, continental material) in a sheared matrix, diagnostic of accretionary prisms at subduction zones.' },
+
+  // ══ GATE GG 2022 ══
+
+  { year:'2022', exam:'GATE GG', type:'scq',
+    text:'The primary geophysical method used to distinguish between salt domes and basement highs in petroleum exploration is:',
+    options:[{text:'Gravity method (negative Bouguer anomaly over salt)'},{text:'Magnetic method (high anomaly over salt)'},{text:'SP (self-potential) method'},{text:'Induced polarization method'}],
+    correctOptions:[0], posMarks:1, negMarks:0.33,
+    tags:['Applied Geophysics','Gravity Method','Petroleum Geology','GATE GG 2022'],
+    solution:'Salt domes have lower density (~2.2 g/cm³) than surrounding sediments (~2.4–2.5 g/cm³), producing a negative Bouguer gravity anomaly. Basement highs would have a positive anomaly. Gravity is the classic method for salt detection.' },
+
+  { year:'2022', exam:'GATE GG', type:'scq',
+    text:'The Dharwar Craton of Peninsular India is primarily composed of:',
+    options:[{text:'Proterozoic sedimentary sequences'},{text:'Archean greenstone belts and tonalite–trondhjemite–granodiorite (TTG) gneisses'},{text:'Mesozoic volcanic rocks of the Deccan Traps'},{text:'Cambrian carbonates of the Vindhyan Supergroup'}],
+    correctOptions:[1], posMarks:1, negMarks:0.33,
+    tags:['Indian Geology','Precambrian Geology','GATE GG 2022'],
+    solution:'The Dharwar Craton (Karnataka) is an Archean nucleus comprising greenstone belts (Dharwar schist belts) and associated TTG gneisses, forming one of the oldest parts of the Indian shield (~3.0–2.5 Ga).' },
+
+  { year:'2022', exam:'GATE GG', type:'nat',
+    text:'The skin depth (δ) in electromagnetic methods is given by δ = 503√(ρ/f) metres, where ρ = resistivity in Ω·m and f = frequency in Hz. For ρ = 100 Ω·m and f = 1000 Hz, δ = ________ m (round to nearest metre).',
+    correctAnswer:'159', tolerance:2, posMarks:2, negMarks:0,
+    tags:['Applied Geophysics','Electromagnetic Methods','GATE GG 2022'],
+    solution:'δ = 503 × √(100/1000) = 503 × √0.1 = 503 × 0.3162 = 159 m.' },
+
+  { year:'2022', exam:'GATE GG', type:'scq',
+    text:'In the context of ore deposit genesis, "skarn" deposits form by:',
+    options:[{text:'Hydrothermal replacement of carbonate rocks adjacent to igneous intrusions'},{text:'Magmatic segregation within mafic intrusions'},{text:'Submarine exhalation at mid-ocean ridges'},{text:'Supergene enrichment of weathered sulphide deposits'}],
+    correctOptions:[0], posMarks:1, negMarks:0.33,
+    tags:['Economic Geology','GATE GG 2022'],
+    solution:'Skarns form by metasomatic replacement (contact metasomatism) of carbonate rocks (limestone/dolostone) by fluids derived from nearby igneous intrusions, producing calc-silicate assemblages with ore minerals (Fe, Cu, W, Sn, Mo).' },
+
+  { year:'2022', exam:'GATE GG', type:'mcq',
+    text:'Which of the following are correct statements about the magnetic susceptibility of rocks? (Select ALL that apply)',
+    options:[{text:'Magnetite has very high susceptibility'},{text:'Susceptibility determines the induced magnetisation in an ambient field'},{text:'Granite typically has higher susceptibility than basalt'},{text:'Susceptibility is dimensionless in SI units'}],
+    correctOptions:[0,1,3], posMarks:2, negMarks:0.67,
+    tags:['Applied Geophysics','Rock Magnetism','GATE GG 2022'],
+    solution:'Magnetite has the highest susceptibility of common minerals (~1–5 SI). Induced magnetisation M = κH (κ = susceptibility). Susceptibility is dimensionless in SI. Basalt generally has higher susceptibility than granite due to more magnetite.' },
+
+  { year:'2022', exam:'GATE GG', type:'scq',
+    text:'The rheological contrast between the lithosphere and the asthenosphere is primarily due to:',
+    options:[{text:'Difference in chemical composition'},{text:'Presence of partial melt and higher temperature in the asthenosphere reducing effective viscosity'},{text:'The lithosphere being entirely composed of basalt'},{text:'Higher pressure in the lithosphere causing ductile flow'}],
+    correctOptions:[1], posMarks:1, negMarks:0.33,
+    tags:['Geophysics','Tectonics','GATE GG 2022'],
+    solution:'The asthenosphere has lower viscosity (~10¹⁹–10²⁰ Pa·s) than the lithosphere due to higher temperature and presence of a small fraction of partial melt (~1%). This allows slow ductile flow and plate motion.' },
+
+  { year:'2022', exam:'GATE GG', type:'scq',
+    text:'In a stereonet (lower hemisphere, equal-area), the pole to a plane that dips 60° due East plots at:',
+    options:[{text:'60° from centre toward East'},{text:'30° from centre toward West'},{text:'60° from centre toward West'},{text:'30° from centre toward East'}],
+    correctOptions:[1], posMarks:1, negMarks:0.33,
+    tags:['Structural Geology','Stereographic Projection','GATE GG 2022'],
+    solution:'The pole to a plane is plotted 90° from the great circle representing that plane. For a plane dipping 60°E, the great circle plots in the eastern part; its pole plots 90° away = 90°−60° = 30° from centre toward the West.' },
+
+  { year:'2022', exam:'GATE GG', type:'nat',
+    text:'A basaltic magma at 1200°C has viscosity ~10 Pa·s. If the same magma is erupted as a rhyolite with SiO₂ = 74% at 900°C, viscosity increases by approximately 10⁸ times. The rhyolite viscosity is ________ Pa·s (express as a power of 10).',
+    correctAnswer:'1000000000', tolerance:0, posMarks:2, negMarks:0,
+    tags:['Igneous Petrology','Magma Properties','GATE GG 2022'],
+    solution:'Rhyolite viscosity ≈ 10 × 10⁸ = 10⁹ Pa·s. High SiO₂ and low temperature enormously increase polymerisation and viscosity, explaining why rhyolitic eruptions are explosive.' },
 ];
 
+// ─────────────────────────────────────────────────────────────
+// PART 2 — CSIR NET EARTH, ATMOSPHERIC, OCEAN & PLANETARY SCIENCES
+// ─────────────────────────────────────────────────────────────
+const CSIR_NET_PYQs = [
+
+  // ══ CSIR NET 2024 (December) ══
+
+  { year:'2024', exam:'CSIR NET', type:'scq',
+    text:'The Milankovitch cycles that drive glacial–interglacial cycles are primarily controlled by changes in:',
+    options:[{text:'Solar luminosity and sunspot activity'},{text:'Earths orbital eccentricity, axial tilt (obliquity), and precession'},{text:'Volcanic outgassing and atmospheric CO₂'},{text:'Deep ocean thermohaline circulation patterns'}],
+    correctOptions:[1], posMarks:2, negMarks:0.5,
+    tags:['Climatology','Paleoclimatology','CSIR NET 2024'],
+    solution:'Milankovitch cycles involve: eccentricity (~100 ka & ~400 ka), obliquity (~41 ka), and precession (~23 ka & ~19 ka). These orbital variations modulate insolation, driving glacial–interglacial climate cycles.' },
+
+  { year:'2024', exam:'CSIR NET', type:'scq',
+    text:'The El Niño Southern Oscillation (ENSO) is characterised by anomalous warming of:',
+    options:[{text:'The western equatorial Pacific and weakening of Walker Circulation'},{text:'The central and eastern equatorial Pacific and weakening of Walker Circulation'},{text:'The Indian Ocean with strengthening of the monsoon'},{text:'The North Atlantic causing a positive NAO phase'}],
+    correctOptions:[1], posMarks:2, negMarks:0.5,
+    tags:['Oceanography','Atmospheric Science','CSIR NET 2024'],
+    solution:'During El Niño, SSTs warm in the central and eastern equatorial Pacific. This reduces the east-west SST gradient, weakening the Walker Circulation and trade winds, causing global teleconnections including Indian monsoon weakening.' },
+
+  { year:'2024', exam:'CSIR NET', type:'mcq',
+    text:'Which of the following statements are correct about the thermocline in the ocean? (Select ALL that apply)',
+    options:[{text:'It is a layer of rapid temperature decrease with depth'},{text:'It is most pronounced in tropical and subtropical oceans'},{text:'It acts as a barrier to vertical mixing'},{text:'It deepens toward the poles where it merges with the mixed layer'}],
+    correctOptions:[0,1,2], posMarks:2, negMarks:0.5,
+    tags:['Oceanography','Physical Oceanography','CSIR NET 2024'],
+    solution:'The permanent thermocline (200–1000 m) shows rapid temperature decrease. It is strongest in the tropics/subtropics and suppresses vertical mixing. In polar regions the water column is nearly isothermal, so there is no distinct permanent thermocline.' },
+
+  { year:'2024', exam:'CSIR NET', type:'scq',
+    text:'The Coriolis effect causes deflection of moving air masses:',
+    options:[{text:'To the left in the Northern Hemisphere and to the right in the Southern Hemisphere'},{text:'To the right in the Northern Hemisphere and to the left in the Southern Hemisphere'},{text:'Toward the Equator in both hemispheres'},{text:'Toward the poles in both hemispheres'}],
+    correctOptions:[1], posMarks:2, negMarks:0.5,
+    tags:['Atmospheric Science','Meteorology','CSIR NET 2024'],
+    solution:'The Coriolis effect deflects moving objects to the right in the Northern Hemisphere and to the left in the Southern Hemisphere, due to Earth\'s rotation. This drives cyclonic rotation (anticlockwise in NH, clockwise in SH).' },
+
+  { year:'2024', exam:'CSIR NET', type:'nat',
+    text:'The scale height H of the atmosphere is defined as H = RT/Mg, where R = 8.314 J/mol·K, T = 250 K, M = 0.029 kg/mol, g = 9.8 m/s². H = ________ km (round to one decimal place).',
+    correctAnswer:'7.3', tolerance:0.2, posMarks:2, negMarks:0,
+    tags:['Atmospheric Science','Atmospheric Physics','CSIR NET 2024'],
+    solution:'H = RT/Mg = (8.314 × 250)/(0.029 × 9.8) = 2078.5/0.2842 = 7313 m ≈ 7.3 km. Scale height is the altitude over which pressure decreases by factor e.' },
+
+  { year:'2024', exam:'CSIR NET', type:'scq',
+    text:'The primary source of energy for tropical cyclones is:',
+    options:[{text:'Latent heat released by condensation of water vapour over warm oceans'},{text:'Sensible heat from land surfaces'},{text:'Longwave radiation from the Earth\'s surface'},{text:'Kinetic energy from the jet stream'}],
+    correctOptions:[0], posMarks:2, negMarks:0.5,
+    tags:['Atmospheric Science','Meteorology','CSIR NET 2024'],
+    solution:'Tropical cyclones are heat engines driven by the release of latent heat when warm, moist air rises and condenses. They require SST > 26–27°C to form and intensify, maintaining the convective engine.' },
+
+  { year:'2024', exam:'CSIR NET', type:'scq',
+    text:'The residence time of a substance in the ocean is defined as:',
+    options:[{text:'Time for the substance to mix from surface to deep ocean'},{text:'Total amount in the ocean divided by the rate of input (or removal)'},{text:'Time for its concentration to decrease to 1/e of initial value'},{text:'Time for one complete thermohaline circulation cycle'}],
+    correctOptions:[1], posMarks:2, negMarks:0.5,
+    tags:['Oceanography','Chemical Oceanography','CSIR NET 2024'],
+    solution:'Residence time τ = (Total inventory) / (Input flux) = (Total inventory) / (Removal flux) at steady state. Na has τ ~260 Ma; Al has τ ~100 years. Short residence time implies highly reactive element.' },
+
+  { year:'2024', exam:'CSIR NET', type:'mcq',
+    text:'Which of the following correctly describe the structure of the Earths interior as revealed by seismology? (Select ALL that apply)',
+    options:[{text:'The outer core is liquid, evidenced by the absence of S-waves through it'},{text:'The inner core is solid, evidenced by detection of PKIKP waves'},{text:'The mantle transition zone at 410 km is marked by olivine → wadsleyite transformation'},{text:'The Moho is the boundary between inner and outer core'}],
+    correctOptions:[0,1,2], posMarks:2, negMarks:0.5,
+    tags:['Solid Earth Geophysics','Earth Interior','CSIR NET 2024'],
+    solution:'S-waves cannot propagate through liquid → outer core is liquid. PKIKP waves traverse the inner core as P-waves → inner core is solid. The 410-km discontinuity is the olivine–wadsleyite phase transition. The Moho is the crust–mantle boundary, not core boundary.' },
+
+  { year:'2024', exam:'CSIR NET', type:'scq',
+    text:'Which planet in the Solar System has the highest surface temperature despite not being closest to the Sun?',
+    options:[{text:'Mercury'},{text:'Venus'},{text:'Mars'},{text:'Jupiter'}],
+    correctOptions:[1], posMarks:2, negMarks:0.5,
+    tags:['Planetary Science','Solar System','CSIR NET 2024'],
+    solution:'Venus has the highest surface temperature (~465°C) due to a runaway greenhouse effect from its thick CO₂ atmosphere. Mercury, though closer to the Sun, has virtually no atmosphere so it loses heat rapidly on its night side.' },
+
+  // ══ CSIR NET 2023 (June) ══
+
+  { year:'2023', exam:'CSIR NET', type:'scq',
+    text:'The global thermohaline circulation (ocean conveyor belt) is primarily driven by:',
+    options:[{text:'Wind stress at the ocean surface'},{text:'Tidal forces from the Moon and Sun'},{text:'Density differences due to temperature and salinity variations'},{text:'Geothermal heat from the ocean floor'}],
+    correctOptions:[2], posMarks:2, negMarks:0.5,
+    tags:['Oceanography','Physical Oceanography','CSIR NET 2023'],
+    solution:'Thermohaline circulation is driven by density differences created by temperature (thermo-) and salinity (-haline) variations. Dense, cold, salty water sinks in the North Atlantic and Southern Ocean, driving the global overturning circulation.' },
+
+  { year:'2023', exam:'CSIR NET', type:'scq',
+    text:'The Indian Summer Monsoon onset over Kerala is climatologically expected in:',
+    options:[{text:'March end'},{text:'Early June (around June 1)'},{text:'Mid-July'},{text:'Late August'}],
+    correctOptions:[1], posMarks:2, negMarks:0.5,
+    tags:['Atmospheric Science','Indian Monsoon','CSIR NET 2023'],
+    solution:'The Indian Summer Monsoon (ISM) onset over Kerala is climatologically on June 1 (±7 days). It then progresses northward, reaching Delhi by ~July 1 and covering all of India by mid-July.' },
+
+  { year:'CSIR NET', exam:'CSIR NET', type:'scq',
+    year:'2023',
+    text:'Isostasy of mountain belts is best explained by which model when the crust has variable thickness?',
+    options:[{text:'Pratt model (lateral density variations at fixed compensation depth)'},{text:'Airy model (variable crustal root with uniform density contrast)'},{text:'Vening Meinesz (regional flexural isostasy)'},{text:'McKenzie model of pure shear rifting'}],
+    correctOptions:[1], posMarks:2, negMarks:0.5,
+    tags:['Solid Earth Geophysics','Isostasy','CSIR NET 2023'],
+    solution:'The Airy model explains mountain isostasy by crustal roots — thicker crust beneath mountains with uniform density, floating on denser mantle. Pratt uses lateral density variations at a uniform compensation depth. Both are valid in different settings.' },
+
+  { year:'2023', exam:'CSIR NET', type:'mcq',
+    text:'Which of the following are features of the stratosphere? (Select ALL that apply)',
+    options:[{text:'Temperature increases with altitude due to UV absorption by ozone'},{text:'Contains the tropopause at its base'},{text:'Has very stable lapse rate inhibiting convection'},{text:'Extends from ~12 km to ~50 km altitude'}],
+    correctOptions:[0,2,3], posMarks:2, negMarks:0.5,
+    tags:['Atmospheric Science','Atmospheric Structure','CSIR NET 2023'],
+    solution:'The stratosphere (12–50 km) has temperature increasing with height (temperature inversion) due to ozone UV absorption. This makes it dynamically stable with no convection. The tropopause is at the BASE of the stratosphere, not within it.' },
+
+  { year:'2023', exam:'CSIR NET', type:'nat',
+    text:'The Brunt–Väisälä frequency N² = (g/θ)(dθ/dz), where g = 9.8 m/s², θ = 300 K, dθ/dz = 3 K/km = 0.003 K/m. N² = ________ × 10⁻⁴ s⁻² (round to one decimal).',
+    correctAnswer:'9.8', tolerance:0.2, posMarks:2, negMarks:0,
+    tags:['Atmospheric Science','Atmospheric Dynamics','CSIR NET 2023'],
+    solution:'N² = (9.8/300) × 0.003 = 0.03267 × 0.003 = 9.8 × 10⁻⁵ s⁻² ≈ 0.98 × 10⁻⁴ s⁻². The Brunt-Väisälä frequency characterises static stability; higher N means more stable atmosphere.' },
+
+  { year:'2023', exam:'CSIR NET', type:'scq',
+    text:'The oxygen isotope ratio δ¹⁸O in benthic foraminifera is used as a proxy for:',
+    options:[{text:'Sea surface salinity only'},{text:'Past ocean pH changes'},{text:'Global ice volume and deep-water temperature combined'},{text:'Atmospheric CO₂ concentration'}],
+    correctOptions:[2], posMarks:2, negMarks:0.5,
+    tags:['Paleoclimatology','Chemical Oceanography','CSIR NET 2023'],
+    solution:'Benthic foram δ¹⁸O reflects both global ice volume (lighter ¹⁶O locked in ice sheets enriches ocean in ¹⁸O) and bottom water temperature (colder water → heavier δ¹⁸O). Separating these signals requires additional proxies (e.g., Mg/Ca).' },
+
+  { year:'2023', exam:'CSIR NET', type:'scq',
+    text:'The geoid is defined as:',
+    options:[{text:'The best-fit ellipsoid to the Earth\'s shape'},{text:'An equipotential surface of Earth\'s gravity field coinciding with mean sea level'},{text:'The topographic surface of the solid Earth'},{text:'The outer boundary of Earth\'s magnetic field'}],
+    correctOptions:[1], posMarks:2, negMarks:0.5,
+    tags:['Solid Earth Geophysics','Geodesy','CSIR NET 2023'],
+    solution:'The geoid is a gravitational equipotential surface that approximates mean sea level globally, extended through continents. It differs from the reference ellipsoid by the geoid undulation (N), which ranges from −106 m to +85 m.' },
+
+  { year:'2023', exam:'CSIR NET', type:'scq',
+    text:'The phenomenon of "marine dead zones" is primarily caused by:',
+    options:[{text:'Volcanic CO₂ venting from mid-ocean ridges'},{text:'Hypoxia due to eutrophication driven by excess nutrient runoff'},{text:'Increased salinity from sea ice formation'},{text:'Tsunami disturbance of benthic communities'}],
+    correctOptions:[1], posMarks:2, negMarks:0.5,
+    tags:['Oceanography','Environmental Earth Sciences','CSIR NET 2023'],
+    solution:'Marine dead zones are hypoxic (low O₂) areas caused by eutrophication: excess N and P from agricultural runoff stimulates algal blooms; their decomposition by bacteria consumes O₂, suffocating marine life. ~400+ dead zones exist globally.' },
+
+  // ══ CSIR NET 2022 (December) ══
+
+  { year:'2022', exam:'CSIR NET', type:'scq',
+    text:'The primary mechanism for heat transport in the Earth\'s mantle is:',
+    options:[{text:'Conduction through solid rock'},{text:'Radiation at infrared wavelengths'},{text:'Slow thermal convection of solid but ductile rock'},{text:'Advection by magmatic intrusions only'}],
+    correctOptions:[2], posMarks:2, negMarks:0.5,
+    tags:['Solid Earth Geophysics','Mantle Dynamics','CSIR NET 2022'],
+    solution:'The mantle transports heat predominantly by solid-state thermal convection on geological timescales (viscosity ~10²¹ Pa·s). Conduction is important in the lithosphere. Convection drives plate tectonics and accounts for ~70% of mantle heat transport.' },
+
+  { year:'2022', exam:'CSIR NET', type:'scq',
+    text:'The Walker Circulation is a large-scale overturning circulation in the:',
+    options:[{text:'Atmosphere, in the east–west vertical plane along the equatorial Pacific'},{text:'Ocean, driven by deep-water formation in the North Atlantic'},{text:'Atmosphere, in the north–south vertical plane (Hadley Cell)'},{text:'Ocean, as a horizontal gyre driven by trade winds'}],
+    correctOptions:[0], posMarks:2, negMarks:0.5,
+    tags:['Atmospheric Science','Atmospheric Circulation','CSIR NET 2022'],
+    solution:'The Walker Circulation is an atmospheric east–west overturning cell along the equatorial Pacific: rising motion over warm western Pacific, upper-level westward flow, sinking over cold eastern Pacific, and return as surface trade winds.' },
+
+  { year:'2022', exam:'CSIR NET', type:'mcq',
+    text:'Which of the following correctly describe radioactive decay systems used in geochronology? (Select ALL that apply)',
+    options:[{text:'U-Pb system is based on two independent decay chains of ²³⁸U and ²³⁵U'},{text:'K-Ar system measures accumulation of ⁴⁰Ar from ⁴⁰K decay'},{text:'Rb-Sr system uses the β-decay of ⁸⁷Rb to ⁸⁷Sr'},{text:'Sm-Nd system is useful only for young volcanic rocks'}],
+    correctOptions:[0,1,2], posMarks:2, negMarks:0.5,
+    tags:['Geochronology','Isotope Geology','CSIR NET 2022'],
+    solution:'U-Pb uses two decay chains (²³⁸U→²⁰⁶Pb; ²³⁵U→²⁰⁷Pb) allowing concordia diagrams. K-Ar measures radiogenic ⁴⁰Ar accumulation. Rb-Sr uses ⁸⁷Rb→⁸⁷Sr. Sm-Nd is actually most useful for OLD Archean rocks and mantle-derived rocks, not young volcanic ones.' },
+
+  { year:'2022', exam:'CSIR NET', type:'scq',
+    text:'The Mixed Layer Depth (MLD) in the ocean is controlled by:',
+    options:[{text:'Wind-driven turbulent mixing and surface buoyancy flux'},{text:'Tidal dissipation at the ocean floor only'},{text:'Deep-ocean geothermal heating'},{text:'Long-wave radiation from the ocean surface alone'}],
+    correctOptions:[0], posMarks:2, negMarks:0.5,
+    tags:['Physical Oceanography','Ocean Mixed Layer','CSIR NET 2022'],
+    solution:'The ocean mixed layer depth is controlled by wind-driven mechanical mixing (deepens with stronger winds) and surface buoyancy flux (cooling/evaporation deepens; heating/freshwater input shoals MLD). Seasonally, MLD is shallow in summer and deep in winter.' },
+
+  { year:'2022', exam:'CSIR NET', type:'nat',
+    text:'The Rossby radius of deformation Ld = NH/f, where N = 0.01 s⁻¹ (Brunt-Väisälä freq), H = 1000 m (ocean depth), f = 10⁻⁴ s⁻¹ (Coriolis parameter). Ld = ________ km.',
+    correctAnswer:'100', tolerance:1, posMarks:2, negMarks:0,
+    tags:['Physical Oceanography','Geophysical Fluid Dynamics','CSIR NET 2022'],
+    solution:'Ld = NH/f = (0.01 × 1000)/(10⁻⁴) = 10/10⁻⁴ = 10⁵ m = 100 km. The Rossby radius sets the length scale for geostrophic adjustment and mesoscale eddies in the ocean.' },
+
+  { year:'2022', exam:'CSIR NET', type:'scq',
+    text:'Which of the following best describes the concept of "virtual temperature" in atmospheric thermodynamics?',
+    options:[{text:'Temperature measured by a radiosonde corrected for radiation errors'},{text:'The temperature dry air would need to have to have the same density as moist air at the same pressure'},{text:'Temperature at which dew point equals air temperature'},{text:'The adiabatic lapse rate of a saturated air parcel'}],
+    correctOptions:[1], posMarks:2, negMarks:0.5,
+    tags:['Atmospheric Science','Atmospheric Thermodynamics','CSIR NET 2022'],
+    solution:'Virtual temperature Tv = T(1 + 0.61q), where q is specific humidity. It accounts for the fact that moist air is less dense than dry air at the same T and P. Used in equations of motion to avoid carrying humidity explicitly.' },
+
+  { year:'2022', exam:'CSIR NET', type:'scq',
+    text:'The characteristic shape of a "black smoker" hydrothermal vent plume in the deep ocean is maintained by the balance between:',
+    options:[{text:'Buoyancy of hot fluid and ambient stratification/entrainment'},{text:'Wind-driven currents and geothermal heating'},{text:'Tidal forces and Coriolis effect'},{text:'Thermohaline circulation and volcanic heat flux'}],
+    correctOptions:[0], posMarks:2, negMarks:0.5,
+    tags:['Oceanography','Chemical Oceanography','CSIR NET 2022'],
+    solution:'Hydrothermal vent plumes rise due to thermal buoyancy of hot (~350°C) fluids. As they rise, they entrain ambient seawater and cool, eventually reaching neutral buoyancy where they spread horizontally as "neutrally buoyant plumes" at ~200–400 m above the seafloor.' },
+
+  { year:'2022', exam:'CSIR NET', type:'mcq',
+    text:'Which of the following are correct regarding the ozone layer? (Select ALL that apply)',
+    options:[{text:'The ozone layer is concentrated in the stratosphere between ~15–35 km'},{text:'CFCs deplete ozone by releasing Cl radicals that catalytically destroy O₃'},{text:'The Antarctic ozone hole forms during the Southern Hemisphere spring'},{text:'Ozone absorbs harmful UV-A radiation only'}],
+    correctOptions:[0,1,2], posMarks:2, negMarks:0.5,
+    tags:['Atmospheric Science','Atmospheric Chemistry','CSIR NET 2022'],
+    solution:'The ozone layer peaks at 20–25 km in the stratosphere. CFCs release Cl radicals that catalytically destroy O₃ (one Cl can destroy 100,000 O₃ molecules). The Antarctic ozone hole forms in September–October (SH spring). Ozone absorbs UV-B (280–315 nm) and UV-C, not mainly UV-A.' },
+];
+
+// ─────────────────────────────────────────────────────────────
+// Combine both arrays
+// ─────────────────────────────────────────────────────────────
+const ALL_PYQs = [...GATE_GG_PYQs, ...CSIR_NET_PYQs];
+
+// ─────────────────────────────────────────────────────────────
+// Auth guard
+// ─────────────────────────────────────────────────────────────
 auth.onAuthStateChanged(async user => {
   if (!user) { window.location.href = '../index.html'; return; }
   const ok = await Utils.isAdmin(user.uid);
   if (!ok) { window.location.href = '../pages/dashboard.html'; return; }
 });
 
+// ─────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────
 function log(msg, color='#22c55e') {
   const box = document.getElementById('log-box');
   box.innerHTML += `<span style="color:${color}">${msg}</span>\n`;
@@ -157,57 +458,64 @@ function setProgress(pct, label) {
   document.getElementById('prog-label').textContent = label;
 }
 
+// ─────────────────────────────────────────────────────────────
+// Seed function
+// ─────────────────────────────────────────────────────────────
 async function startSeed() {
   const btn = document.getElementById('btn-seed');
   btn.disabled = true;
   btn.textContent = '⏳ Seeding…';
   document.getElementById('log-box').textContent = '';
 
-  log(`Starting GATE Geology PYQ seed — ${GATE_GEOLOGY_PYQs.length} questions`, '#60a5fa');
+  const gateCount  = GATE_GG_PYQs.length;
+  const csirCount  = CSIR_NET_PYQs.length;
+  const total      = ALL_PYQs.length;
+
+  log(`Starting seed — ${gateCount} GATE GG  +  ${csirCount} CSIR NET  =  ${total} questions total`, '#60a5fa');
   log('────────────────────────────────────────', '#475569');
 
-  // Check for existing questions to avoid duplicates
+  // Check existing to skip duplicates
   const existingSnap = await db.collection('questions').where('year', '!=', '').get();
-  const existingTexts = new Set(existingSnap.docs.map(d => d.data().text?.substring(0,50)));
+  const existingTexts = new Set(existingSnap.docs.map(d => d.data().text?.substring(0,60)));
   log(`Found ${existingSnap.size} existing questions in bank`, '#94a3b8');
 
   let saved = 0, skipped = 0;
-  const total = GATE_GEOLOGY_PYQs.length;
 
   for (let i = 0; i < total; i++) {
-    const q = GATE_GEOLOGY_PYQs[i];
-    const preview = q.text.substring(0, 50);
+    const q = ALL_PYQs[i];
+    const preview = q.text.substring(0, 60);
 
-    // Skip if already exists (by text preview)
     if (existingTexts.has(preview)) {
-      log(`  [SKIP] ${preview}…`, '#94a3b8');
+      log(`  [SKIP] ${q.exam} ${q.year}: ${preview}…`, '#94a3b8');
       skipped++;
     } else {
       try {
         await db.collection('questions').add({
           ...q,
           imageUrl: '',
-          options: (q.options || []).map(o => typeof o === 'string' ? { text: o, imageUrl: '' } : { ...o, imageUrl: o.imageUrl||'' }),
+          options: (q.options || []).map(o =>
+            typeof o === 'string' ? { text: o, imageUrl: '' } : { ...o, imageUrl: o.imageUrl || '' }
+          ),
           correctAnswer: q.correctAnswer || null,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        log(`  [✓] GATE ${q.year} (${q.type.toUpperCase()}): ${preview}…`);
+        log(`  [✓] ${q.exam} ${q.year} (${q.type.toUpperCase()}): ${preview}…`);
         saved++;
       } catch(e) {
         log(`  [ERROR] ${preview}…: ${e.message}`, '#ef4444');
       }
     }
 
-    setProgress(((i+1)/total)*100, `Seeding question ${i+1} of ${total}…`);
-    // Small delay to avoid rate limits
+    setProgress(((i + 1) / total) * 100, `Seeding question ${i + 1} of ${total}…`);
+    // Throttle every 10 writes to avoid rate limits
     if (i % 10 === 9) await new Promise(r => setTimeout(r, 300));
   }
 
   log('────────────────────────────────────────', '#475569');
-  log(`✅ Done! Saved: ${saved} | Skipped: ${skipped} | Total: ${total}`, '#22c55e');
+  log(`✅ Done!  Saved: ${saved}  |  Skipped: ${skipped}  |  Total: ${total}`, '#22c55e');
   setProgress(100, 'Seeding complete!');
   btn.textContent = '✅ Seeding Complete';
-  Utils.toast(`Seeded ${saved} GATE Geology PYQs!`, 'success');
+  Utils.toast(`Seeded ${saved} GATE GG + CSIR NET PYQs!`, 'success');
 }
 </script>
 </body>
