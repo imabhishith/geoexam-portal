@@ -979,6 +979,8 @@ function renderFlaggedTable() {
     if (examFilter && a.examTitle !== examFilter) return false;
     if (typeFilter === 'tab')        return (a.tabSwitchCount || 0) > 0;
     if (typeFilter === 'fullscreen') return (a.fullscreenExitCount || 0) > 0;
+    if (typeFilter === 'blur')       return (a.windowBlurCount || 0) > 0;
+    if (typeFilter === 'resize')     return (a.windowResizeCount || 0) > 0;
     if (typeFilter === 'idle')       return !!a.idleFlagged;
     return true;
   });
@@ -1004,6 +1006,8 @@ function renderFlaggedTable() {
     const score = `${(a.totalScore||0).toFixed(2)} / ${a.maxScore||'?'}`;
     const tabs  = a.tabSwitchCount || 0;
     const fsEx  = a.fullscreenExitCount || 0;
+    const winBlur   = a.windowBlurCount || 0;
+    const winResize = a.windowResizeCount || 0;
     const tabLog       = a.tabSwitchLog || [];
     const integrityLog = a.integrityLog || [];
     const detailRowId  = `flag-detail-${idx}`;
@@ -1011,6 +1015,8 @@ function renderFlaggedTable() {
     let chips = '';
     if (tabs > 0)      chips += `<span class="flag-reason-chip flag-tab"><i class="fas fa-exchange-alt"></i> ${tabs} Tabs</span>`;
     if (fsEx > 0)      chips += `<span class="flag-reason-chip flag-fs"><i class="fas fa-compress-arrows-alt"></i> ${fsEx} FS</span>`;
+    if (winBlur > 0)   chips += `<span class="flag-reason-chip" style="background:#fff;color:#7c3aed;border:2px solid #7c3aed;"><i class="fas fa-window-maximize"></i> ${winBlur} Blur</span>`;
+    if (winResize > 0) chips += `<span class="flag-reason-chip" style="background:#fff;color:#0369a1;border:2px solid #0369a1;"><i class="fas fa-expand-alt"></i> ${winResize} Resize</span>`;
     if (a.idleFlagged) chips += `<span class="flag-reason-chip flag-idle"><i class="fas fa-moon"></i> Idle</span>`;
     if (!chips)        chips = '<span style="color:var(--text3);font-size:12px;">—</span>';
 
@@ -1050,6 +1056,8 @@ function renderFlaggedTable() {
               <div style="font-size:13px;line-height:2;">
                 <div>Tab Switches: <strong style="color:#ef4444">${tabs}</strong></div>
                 <div>FS Exits: <strong style="color:#f59e0b">${fsEx}</strong></div>
+                <div>Window Blur: <strong style="color:#7c3aed">${winBlur}</strong></div>
+                <div>Window Resize: <strong style="color:#0369a1">${winResize}</strong></div>
                 <div>Idle Flag: <strong style="color:#8b5cf6">${a.idleFlagged ? 'Yes ⚠️' : 'No ✅'}</strong></div>
                 <div>Status: <strong>${a.status||'—'}</strong></div>
               </div>
