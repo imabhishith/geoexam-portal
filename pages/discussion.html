@@ -586,7 +586,7 @@
         <div class="msg-input-wrap">
           <textarea id="msg-input" rows="1" placeholder="Message #general…"
             oninput="autoGrow(this)" onkeydown="handleKey(event)"></textarea>
-          <button class="btn btn-ghost btn-sm" onclick="pickEmoji()" title="Emoji" style="padding:4px 6px;color:var(--text3);">
+          <button id="emoji-btn" class="btn btn-ghost btn-sm" onclick="pickEmoji()" title="Emoji" style="padding:4px 6px;color:var(--text3);">
             <i class="far fa-smile"></i>
           </button>
         </div>
@@ -946,7 +946,60 @@ function scrollToPinned() {
   if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
 }
 
-function togglePinnedPanel() {}
+function togglePinnedPanel() {
+  // Show a small dropdown listing all pinned messages in current channel
+  const existing = document.getElementById('pinned-panel');
+  if (existing) { existing.remove(); return; }
+
+  const pinned = allMessages.filter(m => m.pinned);
+  if (!pinned.length) { showToast('No pinned messages in this channel.', 'info'); return; }
+
+  const panel = document.createElement('div');
+  panel.id = 'pinned-panel';
+  panel.style.cssText = [
+    'position:absolute',
+    'top:70px',
+    'right:60px',
+    'width:320px',
+    'background:var(--surface)',
+    'border:1px solid var(--border)',
+    'border-radius:12px',
+    'box-shadow:var(--shadow-lg)',
+    'z-index:100',
+    'overflow:hidden'
+  ].join(';') + ';';
+
+  panel.innerHTML = `
+    <div style="padding:10px 14px;font-weight:700;font-size:13px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;">
+      <span><i class="fas fa-thumbtack" style="color:#ca8a04;margin-right:6px;"></i>Pinned Messages (${pinned.length})</span>
+      <span onclick="document.getElementById('pinned-panel').remove()" style="cursor:pointer;color:var(--text3);font-size:16px;">&times;</span>
+    </div>
+    <div style="max-height:260px;overflow-y:auto;">
+      ${pinned.map(m => {
+        const ts = m.createdAt?.toDate?.()?.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) || '';
+        return `<div onclick="scrollToMsg('${m.id}');document.getElementById('pinned-panel')?.remove();" style="padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;" onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background=''">
+          <div style="font-weight:700;font-size:12px;margin-bottom:3px;">${escHtml(m.senderName||'Student')} <span style="font-weight:400;color:var(--text3);">${ts}</span></div>
+          <div style="font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(m.text?.substring(0,80) || '')}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  // Append inside .chat-area so positioning is relative to it
+  const chatArea = document.querySelector('.chat-area');
+  chatArea.style.position = 'relative';
+  chatArea.appendChild(panel);
+
+  setTimeout(() => {
+    document.addEventListener('click', function handler(ev) {
+      const p = document.getElementById('pinned-panel');
+      if (p && !p.contains(ev.target) && ev.target.id !== 'pin-toggle-btn' && !ev.target.closest('#pin-toggle-btn')) {
+        p.remove();
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 0);
+}
 
 // ── Search ──
 function toggleSearch() {
@@ -980,31 +1033,69 @@ function scrollToMsg(id) {
   }
 }
 
-// ── Emoji picker (simple) ──
-const EMOJIS = ['😀','😂','🤔','👍','👎','🔥','✅','❌','❓','💡','📖','🎯','🏆','😅','🙏'];
+// ── Emoji picker ──
+const EMOJIS = ['😀','😂','😅','🤔','😎','🥳','👍','👎','👏','🙏','🔥','✅','❌','❓','💡','📖','🎯','🏆','⭐','💯','📝','🧠','⚡','🌟','🤝'];
 let emojiOpen = false;
 function pickEmoji() {
-  if (emojiOpen) { const ep = document.getElementById('emoji-picker'); if (ep) ep.remove(); emojiOpen=false; return; }
+  const existing = document.getElementById('emoji-picker');
+  if (existing) { existing.remove(); emojiOpen = false; return; }
   emojiOpen = true;
-  const btn = document.querySelector('.fa-smile').parentElement;
-  const ep = document.createElement('div');
+
+  const btn = document.getElementById('emoji-btn');
+  const ep  = document.createElement('div');
   ep.id = 'emoji-picker';
-  ep.style.cssText = 'position:absolute;bottom:130px;right:80px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:var(--shadow-lg);display:flex;flex-wrap:wrap;gap:4px;width:200px;z-index:100;';
-  EMOJIS.forEach(e => {
+
+  const rect = btn.getBoundingClientRect();
+  ep.style.cssText = [
+    'position:fixed',
+    'bottom:' + (window.innerHeight - rect.top + 6) + 'px',
+    'left:' + rect.left + 'px',
+    'background:var(--surface)',
+    'border:1px solid var(--border)',
+    'border-radius:12px',
+    'padding:10px',
+    'box-shadow:var(--shadow-lg)',
+    'display:flex',
+    'flex-wrap:wrap',
+    'gap:4px',
+    'width:220px',
+    'z-index:200'
+  ].join(';') + ';';
+
+  EMOJIS.forEach(em => {
     const s = document.createElement('span');
-    s.textContent = e;
-    s.style.cssText = 'font-size:20px;cursor:pointer;padding:4px;border-radius:6px;';
+    s.textContent = em;
+    s.title = em;
+    s.style.cssText = 'font-size:22px;cursor:pointer;padding:5px;border-radius:6px;line-height:1;display:inline-block;';
     s.onmouseenter = () => s.style.background = 'var(--bg2)';
     s.onmouseleave = () => s.style.background = '';
-    s.onclick = () => {
+    s.onclick = (ev) => {
+      ev.stopPropagation();
       const inp = document.getElementById('msg-input');
-      inp.value += e; inp.focus();
-      ep.remove(); emojiOpen = false;
+      const start = inp.selectionStart ?? inp.value.length;
+      const end   = inp.selectionEnd   ?? inp.value.length;
+      inp.value = inp.value.substring(0, start) + em + inp.value.substring(end);
+      inp.selectionStart = inp.selectionEnd = start + em.length;
+      inp.focus();
+      autoGrow(inp);
+      ep.remove();
+      emojiOpen = false;
     };
     ep.appendChild(s);
   });
+
   document.body.appendChild(ep);
-  document.addEventListener('click', e => { if (!ep.contains(e.target)) { ep.remove(); emojiOpen=false; } }, { once:true });
+
+  setTimeout(() => {
+    function outsideClick(ev) {
+      if (!ep.contains(ev.target) && ev.target.id !== 'emoji-btn') {
+        ep.remove();
+        emojiOpen = false;
+        document.removeEventListener('click', outsideClick);
+      }
+    }
+    document.addEventListener('click', outsideClick);
+  }, 0);
 }
 
 // ── Helpers ──
