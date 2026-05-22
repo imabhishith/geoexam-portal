@@ -1,9 +1,6 @@
 <!-- ============================================================
-  ADMIN DISCUSSION PANEL — FIXED VERSION
-  Bug Fixes:
-  1. Added proper error handling for Firestore permissions
-  2. Fixed emoji picker functionality  
-  3. Improved listener management
+  ADMIN DISCUSSION PANEL
+  Add this inside the admin HTML's sidebar nav + panel area.
   ============================================================ -->
 
 <!-- 1. Add this nav link inside .admin-nav (in your admin HTML sidebar) -->
@@ -76,13 +73,10 @@
             <option value="doubts">doubts</option>
           </select>
         </div>
-        <div style="display:flex;align-items:flex-end;gap:8px;">
+        <div style="display:flex;align-items:flex-end;">
           <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
             <input type="checkbox" id="ann-pin"> <span>📌 Pin this message</span>
           </label>
-          <button class="btn btn-ghost btn-sm" id="admin-emoji-btn" type="button" title="Add emoji">
-            <i class="fas fa-smile"></i>
-          </button>
         </div>
       </div>
       <label class="form-label">Message</label>
@@ -112,7 +106,7 @@
 </div>
 
 <!-- ============================================================
-  ADMIN DISCUSSION JAVASCRIPT — FIXED VERSION
+  ADMIN DISCUSSION JAVASCRIPT
   Add this to the bottom of admin.js
   ============================================================ -->
 <script>
@@ -120,73 +114,42 @@
 
 let adminDiscMessages = [];
 let adminDiscUnsubscribe = null;
-let adminEmojiOpen = false;
-const ADMIN_EMOJIS = ['😀','😂','🤔','👍','👎','🔥','✅','❌','❓','💡','📖','🎯','🏆','😅','🙏'];
 
-// ── FIXED: Called when Discussion panel is shown ──
+// Called when Discussion panel is shown
 function adminLoadDiscussion() {
-  try {
-    const chFilter = document.getElementById('admin-ch-filter')?.value || '';
-    
-    // Unsubscribe previous listener if exists
-    if (adminDiscUnsubscribe) {
-      adminDiscUnsubscribe();
-      adminDiscUnsubscribe = null;
-    }
+  const chFilter = document.getElementById('admin-ch-filter').value;
+  if (adminDiscUnsubscribe) adminDiscUnsubscribe();
 
-    let query = db.collection('discussion_messages').orderBy('createdAt', 'desc').limit(200);
-    
-    if (chFilter) {
-      query = query.where('channel', '==', chFilter);
-    }
+  // FIX: .where() must come before .orderBy() to avoid Firestore index/ordering errors
+  let query = db.collection('discussion_messages');
+  if (chFilter) query = query.where('channel', '==', chFilter);
+  query = query.orderBy('createdAt', 'desc').limit(200);
 
-    // Listen with proper error handling
-    adminDiscUnsubscribe = query.onSnapshot(
-      snap => {
-        try {
-          adminDiscMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-          adminUpdateStats();
-          adminRenderMessages(adminDiscMessages);
-        } catch(error) {
-          console.error('Error processing messages:', error);
-          Utils.toast('Error loading messages: ' + error.message, 'error');
-        }
-      },
-      error => {
-        console.error('Firestore listener error:', error);
-        if (error.code === 'permission-denied') {
-          Utils.toast('Permission denied. Check Firestore security rules.', 'error');
-        } else {
-          Utils.toast('Error loading messages: ' + error.message, 'error');
-        }
-      }
-    );
+  adminDiscUnsubscribe = query.onSnapshot(snap => {
+    adminDiscMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    adminUpdateStats();
+    adminRenderMessages(adminDiscMessages);
+  }, err => {
+    // FIX: surface Firestore permission / index errors visibly instead of silent fail
+    const list = document.getElementById('disc-msg-list');
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--danger);">
+      <i class="fas fa-exclamation-triangle" style="font-size:32px;margin-bottom:12px;"></i>
+      <p style="font-weight:700;">Error loading messages</p>
+      <p style="font-size:12px;opacity:.7;">${err.message}</p>
+      ${err.message.includes('index') ? '<p style="font-size:12px;margin-top:8px;">👉 You may need to create a Firestore composite index for <strong>channel + createdAt</strong>.</p>' : ''}
+    </div>`;
+    Utils.toast('Discussion load error: ' + err.message, 'error');
+  });
 
-    // Load online count with error handling
-    setTimeout(() => {
-      db.collection('presence')
-        .where('online', '==', true)
-        .get()
-        .then(s => {
-          const onlineEl = document.getElementById('disc-stat-online');
-          if (onlineEl) onlineEl.textContent = s.size;
-        })
-        .catch(err => {
-          console.error('Error loading online count:', err);
-          document.getElementById('disc-stat-online').textContent = '0';
-        });
-    }, 500);
-
-  } catch(error) {
-    console.error('Error in adminLoadDiscussion:', error);
-    Utils.toast('Error: ' + error.message, 'error');
-  }
+  // Online count
+  db.collection('presence').where('online','==',true).get().then(s => {
+    document.getElementById('disc-stat-online').textContent = s.size;
+  });
 }
 
 function adminUpdateStats() {
   document.getElementById('disc-stat-total').textContent = adminDiscMessages.length;
-  const today = new Date(); 
-  today.setHours(0,0,0,0);
+  const today = new Date(); today.setHours(0,0,0,0);
   const todayCount = adminDiscMessages.filter(m => {
     const ts = m.createdAt?.toDate?.();
     return ts && ts >= today;
@@ -220,7 +183,7 @@ function adminRenderMessages(msgs) {
     const ts = msg.createdAt?.toDate?.()?.toLocaleString('en-IN', { day:'numeric',month:'short',hour:'2-digit',minute:'2-digit' }) || '—';
     const chColor = CH_COLORS[msg.channel] || '#f1f5f9';
     const flagBg  = msg.flagged ? 'background:#fff7ed;border-left:3px solid #f97316;' : '';
-    return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);${flagBg}transition:background .15s;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
+    return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);${flagBg}transition:background .15s;" onmouseenter="this._origBg=this.style.background;this.style.background='#f8fafc'" onmouseleave="this.style.background=this._origBg||''">
       <div style="width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">
         ${(msg.senderName||'S')[0].toUpperCase()}
       </div>
@@ -233,7 +196,7 @@ function adminRenderMessages(msgs) {
           ${msg.flagged ? '<span class="badge badge-danger" style="font-size:10px;">🚩 Flagged</span>' : ''}
           <span style="font-size:11px;color:var(--text3);margin-left:auto;">${ts}</span>
         </div>
-        <div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;">${msg.text||''}</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;">${adminEscHtml(msg.text||'')}</div>
       </div>
       <div style="display:flex;gap:4px;flex-shrink:0;">
         <button class="btn btn-ghost btn-sm" onclick="adminPinMsg('${msg.id}',${!msg.pinned})" title="${msg.pinned?'Unpin':'Pin'}">
@@ -251,38 +214,27 @@ function adminRenderMessages(msgs) {
 }
 
 async function adminPinMsg(id, pinned) {
-  try {
-    if (pinned) {
-      const msg = adminDiscMessages.find(m => m.id === id);
-      if (msg) {
-        const others = adminDiscMessages.filter(m => m.channel === msg.channel && m.pinned && m.id !== id);
-        await Promise.all(others.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
-      }
+  // Unpin all others in channel first if pinning
+  if (pinned) {
+    const msg = adminDiscMessages.find(m => m.id === id);
+    if (msg) {
+      const others = adminDiscMessages.filter(m => m.channel === msg.channel && m.pinned && m.id !== id);
+      await Promise.all(others.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
     }
-    await db.collection('discussion_messages').doc(id).update({ pinned });
-    Utils.toast(pinned ? 'Message pinned.' : 'Message unpinned.', 'success');
-  } catch(e) {
-    Utils.toast('Error: ' + e.message, 'error');
   }
+  await db.collection('discussion_messages').doc(id).update({ pinned });
+  Utils.toast(pinned ? 'Message pinned.' : 'Message unpinned.', 'success');
 }
 
 async function adminFlagMsg(id, flagged) {
-  try {
-    await db.collection('discussion_messages').doc(id).update({ flagged });
-    Utils.toast(flagged ? 'Message flagged.' : 'Message unflagged.', flagged ? 'error' : 'success');
-  } catch(e) {
-    Utils.toast('Error: ' + e.message, 'error');
-  }
+  await db.collection('discussion_messages').doc(id).update({ flagged });
+  Utils.toast(flagged ? 'Message flagged.' : 'Message unflagged.', flagged ? 'error' : 'success');
 }
 
 async function adminDeleteMsg(id) {
   if (!confirm('Delete this message permanently?')) return;
-  try {
-    await db.collection('discussion_messages').doc(id).delete();
-    Utils.toast('Message deleted.', 'success');
-  } catch(e) {
-    Utils.toast('Error: ' + e.message, 'error');
-  }
+  await db.collection('discussion_messages').doc(id).delete();
+  Utils.toast('Message deleted.', 'success');
 }
 
 function adminOpenAnnouncement() {
@@ -292,10 +244,6 @@ function adminOpenAnnouncement() {
 
 function adminCloseAnnouncement() {
   document.getElementById('announce-composer').style.display = 'none';
-  // Close emoji picker if open
-  const ep = document.getElementById('admin-emoji-picker');
-  if (ep) ep.remove();
-  adminEmojiOpen = false;
 }
 
 async function adminPostAnnouncement() {
@@ -303,144 +251,51 @@ async function adminPostAnnouncement() {
   const channel = document.getElementById('ann-channel').value;
   const pin = document.getElementById('ann-pin').checked;
 
-  if (!text) { 
-    Utils.toast('Please enter a message.', 'error'); 
-    return; 
+  if (!text) { Utils.toast('Please enter a message.', 'error'); return; }
+
+  const adminUser = auth.currentUser;
+  if (!adminUser) { Utils.toast('Not authenticated.', 'error'); return; }
+  // FIX: guard against missing user doc
+  const udSnap = await db.collection('users').doc(adminUser.uid).get();
+  const ud = udSnap.exists ? udSnap.data() : {};
+
+  if (pin) {
+    // Unpin existing in channel
+    const existing = adminDiscMessages.filter(m => m.channel === channel && m.pinned);
+    await Promise.all(existing.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
   }
 
-  try {
-    const adminUser = auth.currentUser;
-    const userDoc = await db.collection('users').doc(adminUser.uid).get();
-    const ud = userDoc.data();
-
-    if (pin) {
-      const existing = adminDiscMessages.filter(m => m.channel === channel && m.pinned);
-      await Promise.all(existing.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
-    }
-
-    await db.collection('discussion_messages').add({
-      channel,
-      userId: adminUser.uid,
-      senderName: `${ud?.firstName||'Admin'} ${ud?.lastName||''}`.trim(),
-      senderRole: 'admin',
-      text,
-      pinned: pin,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      reactions: {},
-    });
-
-    document.getElementById('ann-text').value = '';
-    document.getElementById('ann-pin').checked = false;
-    adminCloseAnnouncement();
-    Utils.toast('Announcement posted!', 'success');
-  } catch(e) {
-    console.error('Error posting announcement:', e);
-    Utils.toast('Error: ' + e.message, 'error');
-  }
-}
-
-// ── FIXED: Emoji Picker for Admin Panel ──
-function initAdminEmojiPicker() {
-  const emojiBtn = document.getElementById('admin-emoji-btn');
-  if (!emojiBtn) return;
-  
-  emojiBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    adminPickEmoji(this);
-  });
-}
-
-function adminPickEmoji(btn) {
-  // Close existing picker
-  const existing = document.getElementById('admin-emoji-picker');
-  if (existing) {
-    existing.remove();
-    adminEmojiOpen = false;
-    return;
-  }
-
-  adminEmojiOpen = true;
-  const ep = document.createElement('div');
-  ep.id = 'admin-emoji-picker';
-  ep.style.cssText = `
-    position: fixed;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    width: 200px;
-    z-index: 9999;
-  `;
-
-  // Position below button
-  const rect = btn.getBoundingClientRect();
-  ep.style.left = rect.left + 'px';
-  ep.style.top = (rect.bottom + 8) + 'px';
-
-  ADMIN_EMOJIS.forEach(emoji => {
-    const span = document.createElement('span');
-    span.textContent = emoji;
-    span.style.cssText = 'font-size:18px;cursor:pointer;padding:4px;border-radius:6px;transition:background .1s;user-select:none;';
-    span.onmouseenter = () => span.style.background = 'var(--bg2)';
-    span.onmouseleave = () => span.style.background = '';
-    span.onclick = (e) => {
-      e.stopPropagation();
-      const textarea = document.getElementById('ann-text');
-      if (textarea) {
-        textarea.value += emoji;
-        textarea.focus();
-      }
-      ep.remove();
-      adminEmojiOpen = false;
-    };
-    ep.appendChild(span);
+  await db.collection('discussion_messages').add({
+    channel,
+    userId: adminUser.uid,
+    senderName: `${ud?.firstName||'Admin'} ${ud?.lastName||''}`.trim(),
+    senderRole: 'admin',
+    text,
+    pinned: pin,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    reactions: {},
   });
 
-  document.body.appendChild(ep);
-  
-  // Close on outside click
-  setTimeout(() => {
-    document.addEventListener('click', function closeEmojiPicker(e) {
-      if (ep && !ep.contains(e.target) && e.target !== btn) {
-        ep.remove();
-        adminEmojiOpen = false;
-        document.removeEventListener('click', closeEmojiPicker);
-      }
-    });
-  }, 100);
+  document.getElementById('ann-text').value = '';
+  document.getElementById('ann-pin').checked = false;
+  adminCloseAnnouncement();
+  Utils.toast('Announcement posted!', 'success');
 }
 
-// Initialize emoji picker when the composer panel becomes visible
-function monitorAnnounceComposer() {
-  const observer = new MutationObserver(() => {
-    const composer = document.getElementById('announce-composer');
-    if (composer && composer.style.display !== 'none') {
-      initAdminEmojiPicker();
-    }
-  });
-  
-  const composer = document.getElementById('announce-composer');
-  if (composer) {
-    observer.observe(composer, { attributes: true });
-  }
-}
+// ── INTEGRATION CHECKLIST ──
+// 1. In admin.js showPanel(), add 'discussion' to the titles map:
+//      discussion: 'Discussion'
+// 2. Uncomment the nav link at the top of this file and paste it into your admin sidebar.
+// 3. Paste the panel <div> into your admin-content area.
+// 4. Paste all JS below into admin.js (remove the <script> tags).
+// 5. Call adminLoadDiscussion() inside showPanel() when name === 'discussion':
+//      if (name === 'discussion') adminLoadDiscussion();
+// 6. Make sure firestore.indexes.json includes: channel ASC + createdAt DESC for discussion_messages.
 
-// Call init after DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    initAdminEmojiPicker();
-    monitorAnnounceComposer();
-  });
-} else {
-  initAdminEmojiPicker();
-  monitorAnnounceComposer();
+// ── Helper: HTML-escape to prevent XSS in rendered message text ──
+function adminEscHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/
+/g,'<br>');
 }
-
-// Add 'discussion' to showPanel titles map in your existing showPanel function:
-// if (name === 'discussion') adminLoadDiscussion();
 </script>
