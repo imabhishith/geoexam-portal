@@ -1,18 +1,31 @@
 <!-- ============================================================
-  ADMIN DISCUSSION PANEL
-  Add this inside the admin HTML's sidebar nav + panel area.
+  ADMIN DISCUSSION PANEL  — v2 SAFE (no duplicate JS)
+  ============================================================
+  HOW TO USE:
+  
+  STEP 1 — HTML only:
+    Paste the <div id="panel-discussion"> block below
+    into your index.html inside .admin-content,
+    replacing any existing panel-discussion div.
+  
+  STEP 2 — Nav link (if not already there):
+    Make sure this exists in your sidebar .admin-nav:
+    
+    <button class="admin-nav-link" data-panel="discussion"
+      onclick="showPanel('discussion')">
+      <i class="fas fa-comments"></i> Discussion
+      <span id="nav-discussion-badge" class="badge badge-danger"
+        style="display:none;margin-left:auto;font-size:10px;">0</span>
+    </button>
+  
+  STEP 3 — DO NOT paste any <script> block from this file.
+    All the JS (adminLoadDiscussion, adminRenderMessages, etc.)
+    is already in your index.html inline script.
   ============================================================ -->
 
-<!-- 1. Add this nav link inside .admin-nav (in your admin HTML sidebar) -->
-<!--
-<a class="admin-nav-link" data-panel="discussion" onclick="showPanel('discussion')">
-  <i class="fas fa-comments"></i> Discussion
-  <span id="nav-discussion-badge" class="badge badge-danger" style="display:none;margin-left:auto;">0</span>
-</a>
--->
-
-<!-- 2. Add this panel div inside .admin-content -->
 <div class="admin-panel" id="panel-discussion">
+
+  <!-- Header row -->
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
     <div>
       <h2 style="font-size:20px;font-weight:800;color:var(--primary);margin-bottom:4px;">
@@ -36,7 +49,7 @@
   </div>
 
   <!-- Stats row -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;" id="disc-stats">
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
     <div class="card" style="padding:16px;text-align:center;">
       <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--primary);" id="disc-stat-total">—</div>
       <div style="font-size:12px;color:var(--text2);font-weight:600;">Total Messages</div>
@@ -59,7 +72,9 @@
   <div class="card" id="announce-composer" style="display:none;margin-bottom:20px;border:2px solid var(--primary);">
     <div class="card-header" style="background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);color:#fff;">
       <h3 style="font-size:15px;color:#fff;"><i class="fas fa-bullhorn"></i> Post Announcement</h3>
-      <button class="btn btn-ghost btn-sm" onclick="adminCloseAnnouncement()" style="color:rgba(255,255,255,.8)"><i class="fas fa-times"></i></button>
+      <button class="btn btn-ghost btn-sm" onclick="adminCloseAnnouncement()" style="color:rgba(255,255,255,.8)">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
     <div class="card-body" style="padding:16px;">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
@@ -80,10 +95,13 @@
         </div>
       </div>
       <label class="form-label">Message</label>
-      <textarea class="form-control" id="ann-text" rows="4" placeholder="Write your announcement here…" style="resize:vertical;"></textarea>
+      <textarea class="form-control" id="ann-text" rows="4"
+        placeholder="Write your announcement here…" style="resize:vertical;"></textarea>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
         <button class="btn btn-ghost btn-sm" onclick="adminCloseAnnouncement()">Cancel</button>
-        <button class="btn btn-primary" onclick="adminPostAnnouncement()"><i class="fas fa-paper-plane"></i> Post</button>
+        <button class="btn btn-primary" onclick="adminPostAnnouncement()">
+          <i class="fas fa-paper-plane"></i> Post
+        </button>
       </div>
     </div>
   </div>
@@ -93,209 +111,22 @@
     <div class="card-header">
       <h3 style="font-size:15px;">Recent Messages</h3>
       <div style="display:flex;gap:8px;">
-        <input type="text" class="form-control" id="disc-search" placeholder="Search…" style="width:200px;" oninput="adminFilterDiscussion()">
-        <button class="btn btn-ghost btn-sm" onclick="adminLoadDiscussion()"><i class="fas fa-sync-alt"></i></button>
+        <input type="text" class="form-control" id="disc-search"
+          placeholder="Search…" style="width:200px;" oninput="adminFilterDiscussion()">
+        <button class="btn btn-ghost btn-sm" onclick="adminLoadDiscussion()" title="Refresh">
+          <i class="fas fa-sync-alt"></i>
+        </button>
       </div>
     </div>
     <div class="card-body" style="padding:0;">
       <div id="disc-msg-list" style="max-height:580px;overflow-y:auto;">
-        <div class="loading-screen" style="min-height:200px;"><div class="spinner"></div><p>Loading…</p></div>
+        <div style="text-align:center;padding:48px;color:var(--text3);">
+          <i class="fas fa-comments" style="font-size:36px;opacity:.3;margin-bottom:12px;display:block;"></i>
+          Click the Discussion nav item to load messages.
+        </div>
       </div>
     </div>
   </div>
+
 </div>
-
-<!-- ============================================================
-  ADMIN DISCUSSION JAVASCRIPT
-  Add this to the bottom of admin.js
-  ============================================================ -->
-<script>
-// NOTE: In your actual admin.js, remove the <script> tags and paste only the JS.
-
-let adminDiscMessages = [];
-let adminDiscUnsubscribe = null;
-
-// Called when Discussion panel is shown
-function adminLoadDiscussion() {
-  const chFilter = document.getElementById('admin-ch-filter').value;
-  if (adminDiscUnsubscribe) adminDiscUnsubscribe();
-
-  // FIX: .where() must come before .orderBy() to avoid Firestore index/ordering errors
-  let query = db.collection('discussion_messages');
-  if (chFilter) query = query.where('channel', '==', chFilter);
-  query = query.orderBy('createdAt', 'desc').limit(200);
-
-  adminDiscUnsubscribe = query.onSnapshot(snap => {
-    adminDiscMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    adminUpdateStats();
-    adminRenderMessages(adminDiscMessages);
-  }, err => {
-    // FIX: surface Firestore permission / index errors visibly instead of silent fail
-    const list = document.getElementById('disc-msg-list');
-    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--danger);">
-      <i class="fas fa-exclamation-triangle" style="font-size:32px;margin-bottom:12px;"></i>
-      <p style="font-weight:700;">Error loading messages</p>
-      <p style="font-size:12px;opacity:.7;">${err.message}</p>
-      ${err.message.includes('index') ? '<p style="font-size:12px;margin-top:8px;">👉 You may need to create a Firestore composite index for <strong>channel + createdAt</strong>.</p>' : ''}
-    </div>`;
-    Utils.toast('Discussion load error: ' + err.message, 'error');
-  });
-
-  // Online count
-  db.collection('presence').where('online','==',true).get().then(s => {
-    document.getElementById('disc-stat-online').textContent = s.size;
-  });
-}
-
-function adminUpdateStats() {
-  document.getElementById('disc-stat-total').textContent = adminDiscMessages.length;
-  const today = new Date(); today.setHours(0,0,0,0);
-  const todayCount = adminDiscMessages.filter(m => {
-    const ts = m.createdAt?.toDate?.();
-    return ts && ts >= today;
-  }).length;
-  document.getElementById('disc-stat-today').textContent = todayCount;
-  const flagged = adminDiscMessages.filter(m => m.flagged).length;
-  document.getElementById('disc-stat-flagged').textContent = flagged;
-}
-
-function adminFilterDiscussion() {
-  const q = document.getElementById('disc-search').value.toLowerCase();
-  const filtered = q
-    ? adminDiscMessages.filter(m => m.text?.toLowerCase().includes(q) || m.senderName?.toLowerCase().includes(q))
-    : adminDiscMessages;
-  adminRenderMessages(filtered);
-}
-
-function adminRenderMessages(msgs) {
-  const list = document.getElementById('disc-msg-list');
-  if (!msgs.length) {
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);">No messages found.</div>';
-    return;
-  }
-
-  const CH_COLORS = {
-    general:'#dbeafe', 'gate-geology':'#dcfce7', 'csir-net':'#fef9c3',
-    doubts:'#fce7f3', announcements:'#f3e8ff'
-  };
-
-  list.innerHTML = msgs.slice(0,100).map(msg => {
-    const ts = msg.createdAt?.toDate?.()?.toLocaleString('en-IN', { day:'numeric',month:'short',hour:'2-digit',minute:'2-digit' }) || '—';
-    const chColor = CH_COLORS[msg.channel] || '#f1f5f9';
-    const flagBg  = msg.flagged ? 'background:#fff7ed;border-left:3px solid #f97316;' : '';
-    return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);${flagBg}transition:background .15s;" onmouseenter="this._origBg=this.style.background;this.style.background='#f8fafc'" onmouseleave="this.style.background=this._origBg||''">
-      <div style="width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">
-        ${(msg.senderName||'S')[0].toUpperCase()}
-      </div>
-      <div style="flex:1;min-width:0;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
-          <strong style="font-size:14px;">${msg.senderName||'Student'}</strong>
-          ${msg.senderRole==='admin' ? '<span class="badge" style="background:#7c3aed;color:#fff;font-size:10px;">ADMIN</span>' : ''}
-          <span style="background:${chColor};color:var(--text);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;">#${msg.channel}</span>
-          ${msg.pinned ? '<span class="badge badge-warning" style="font-size:10px;">📌 Pinned</span>' : ''}
-          ${msg.flagged ? '<span class="badge badge-danger" style="font-size:10px;">🚩 Flagged</span>' : ''}
-          <span style="font-size:11px;color:var(--text3);margin-left:auto;">${ts}</span>
-        </div>
-        <div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;">${adminEscHtml(msg.text||'')}</div>
-      </div>
-      <div style="display:flex;gap:4px;flex-shrink:0;">
-        <button class="btn btn-ghost btn-sm" onclick="adminPinMsg('${msg.id}',${!msg.pinned})" title="${msg.pinned?'Unpin':'Pin'}">
-          <i class="fas fa-thumbtack" style="color:${msg.pinned?'var(--warning)':'var(--text3)'}"></i>
-        </button>
-        <button class="btn btn-ghost btn-sm" onclick="adminFlagMsg('${msg.id}',${!msg.flagged})" title="${msg.flagged?'Unflag':'Flag'}">
-          <i class="fas fa-flag" style="color:${msg.flagged?'var(--danger)':'var(--text3)'}"></i>
-        </button>
-        <button class="btn btn-ghost btn-sm" onclick="adminDeleteMsg('${msg.id}')" title="Delete">
-          <i class="fas fa-trash" style="color:var(--danger)"></i>
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function adminPinMsg(id, pinned) {
-  // Unpin all others in channel first if pinning
-  if (pinned) {
-    const msg = adminDiscMessages.find(m => m.id === id);
-    if (msg) {
-      const others = adminDiscMessages.filter(m => m.channel === msg.channel && m.pinned && m.id !== id);
-      await Promise.all(others.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
-    }
-  }
-  await db.collection('discussion_messages').doc(id).update({ pinned });
-  Utils.toast(pinned ? 'Message pinned.' : 'Message unpinned.', 'success');
-}
-
-async function adminFlagMsg(id, flagged) {
-  await db.collection('discussion_messages').doc(id).update({ flagged });
-  Utils.toast(flagged ? 'Message flagged.' : 'Message unflagged.', flagged ? 'error' : 'success');
-}
-
-async function adminDeleteMsg(id) {
-  if (!confirm('Delete this message permanently?')) return;
-  await db.collection('discussion_messages').doc(id).delete();
-  Utils.toast('Message deleted.', 'success');
-}
-
-function adminOpenAnnouncement() {
-  document.getElementById('announce-composer').style.display = 'block';
-  document.getElementById('ann-text').focus();
-}
-
-function adminCloseAnnouncement() {
-  document.getElementById('announce-composer').style.display = 'none';
-}
-
-async function adminPostAnnouncement() {
-  const text = document.getElementById('ann-text').value.trim();
-  const channel = document.getElementById('ann-channel').value;
-  const pin = document.getElementById('ann-pin').checked;
-
-  if (!text) { Utils.toast('Please enter a message.', 'error'); return; }
-
-  const adminUser = auth.currentUser;
-  if (!adminUser) { Utils.toast('Not authenticated.', 'error'); return; }
-  // FIX: guard against missing user doc
-  const udSnap = await db.collection('users').doc(adminUser.uid).get();
-  const ud = udSnap.exists ? udSnap.data() : {};
-
-  if (pin) {
-    // Unpin existing in channel
-    const existing = adminDiscMessages.filter(m => m.channel === channel && m.pinned);
-    await Promise.all(existing.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
-  }
-
-  await db.collection('discussion_messages').add({
-    channel,
-    userId: adminUser.uid,
-    senderName: `${ud?.firstName||'Admin'} ${ud?.lastName||''}`.trim(),
-    senderRole: 'admin',
-    text,
-    pinned: pin,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    reactions: {},
-  });
-
-  document.getElementById('ann-text').value = '';
-  document.getElementById('ann-pin').checked = false;
-  adminCloseAnnouncement();
-  Utils.toast('Announcement posted!', 'success');
-}
-
-// ── INTEGRATION CHECKLIST ──
-// 1. In admin.js showPanel(), add 'discussion' to the titles map:
-//      discussion: 'Discussion'
-// 2. Uncomment the nav link at the top of this file and paste it into your admin sidebar.
-// 3. Paste the panel <div> into your admin-content area.
-// 4. Paste all JS below into admin.js (remove the <script> tags).
-// 5. Call adminLoadDiscussion() inside showPanel() when name === 'discussion':
-//      if (name === 'discussion') adminLoadDiscussion();
-// 6. Make sure firestore.indexes.json includes: channel ASC + createdAt DESC for discussion_messages.
-
-// ── Helper: HTML-escape to prevent XSS in rendered message text ──
-function adminEscHtml(str) {
-  if (!str) return '';
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/
-/g,'<br>');
-}
-</script>
+<!-- ── END DISCUSSION PANEL ── -->
