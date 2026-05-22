@@ -10,6 +10,12 @@ let editingQuestionId = null;
 let currentPage = 1;
 const PAGE_SIZE = 20;
 
+// ── Discussion Panel Variables ──
+let adminDiscMessages = [];
+let adminDiscUnsubscribe = null;
+let adminEmojiOpen = false;
+const ADMIN_EMOJIS = ['😀','😂','🤔','👍','👎','🔥','✅','❌','❓','💡','📖','🎯','🏆','😅','🙏'];
+
 // ── Auth Guard ──
 auth.onAuthStateChanged(async user => {
   if (!user) { window.location.href = '../index.html'; return; }
@@ -39,9 +45,19 @@ function showPanel(name) {
   const titles = {
     dashboard:'Dashboard', qbank:'Question Bank', 'add-single':'Add Question',
     'add-bulk':'Bulk Upload PDF', exams:'Manage Exams', 'create-exam':'Create / Edit Exam',
-    attempts:'All Attempts', flagged:'Flagged Attempts', users:'Users', revaluation:'Revaluation Centre'
+    attempts:'All Attempts', flagged:'Flagged Attempts', users:'Users', revaluation:'Revaluation Centre',
+    discussion: 'Discussion'
   };
   document.getElementById('panel-title').textContent = titles[name] || name;
+  
+  // Load data for specific panels
+  if (name === 'discussion') {
+    setTimeout(() => {
+      adminLoadDiscussion();
+    }, 100);
+  } else if (name === 'dashboard') {
+    loadDashboard();
+  }
 }
 
 // ── Dashboard ──
@@ -1478,4 +1494,348 @@ function clearRevalLog() {
   revalLog = [];
   document.getElementById('reval-log-section').style.display = 'none';
   document.getElementById('reval-progress').style.display = 'none';
+}
+
+// ============================================================
+// DISCUSSION PANEL FUNCTIONS — ADMIN MODERATION
+// ============================================================
+
+// Called when Discussion panel is shown
+function adminLoadDiscussion() {
+  try {
+    const chFilter = document.getElementById('admin-ch-filter')?.value || '';
+    
+    // Unsubscribe previous listener if exists
+    if (adminDiscUnsubscribe) {
+      adminDiscUnsubscribe();
+      adminDiscUnsubscribe = null;
+    }
+
+    let query = db.collection('discussion_messages').orderBy('createdAt', 'desc').limit(200);
+    
+    if (chFilter) {
+      query = query.where('channel', '==', chFilter);
+    }
+
+    // Listen with proper error handling
+    adminDiscUnsubscribe = query.onSnapshot(
+      snap => {
+        try {
+          adminDiscMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          adminUpdateStats();
+          adminRenderMessages(adminDiscMessages);
+        } catch(error) {
+          console.error('Error processing messages:', error);
+          Utils.toast('Error loading messages: ' + error.message, 'error');
+        }
+      },
+      error => {
+        console.error('Firestore listener error:', error);
+        if (error.code === 'permission-denied') {
+          Utils.toast('Permission denied. Check Firestore security rules or your admin status.', 'error');
+        } else {
+          Utils.toast('Error loading messages: ' + error.message, 'error');
+        }
+      }
+    );
+
+    // Load online count with error handling
+    setTimeout(() => {
+      db.collection('presence')
+        .where('online', '==', true)
+        .get()
+        .then(s => {
+          const onlineEl = document.getElementById('disc-stat-online');
+          if (onlineEl) onlineEl.textContent = s.size;
+        })
+        .catch(err => {
+          console.error('Error loading online count:', err);
+          const onlineEl = document.getElementById('disc-stat-online');
+          if (onlineEl) onlineEl.textContent = '0';
+        });
+    }, 500);
+
+  } catch(error) {
+    console.error('Error in adminLoadDiscussion:', error);
+    Utils.toast('Error: ' + error.message, 'error');
+  }
+}
+
+function adminUpdateStats() {
+  const totalEl = document.getElementById('disc-stat-total');
+  const todayEl = document.getElementById('disc-stat-today');
+  const flaggedEl = document.getElementById('disc-stat-flagged');
+  
+  if (totalEl) totalEl.textContent = adminDiscMessages.length;
+  
+  if (todayEl) {
+    const today = new Date(); 
+    today.setHours(0,0,0,0);
+    const todayCount = adminDiscMessages.filter(m => {
+      const ts = m.createdAt?.toDate?.();
+      return ts && ts >= today;
+    }).length;
+    todayEl.textContent = todayCount;
+  }
+  
+  if (flaggedEl) {
+    const flagged = adminDiscMessages.filter(m => m.flagged).length;
+    flaggedEl.textContent = flagged;
+  }
+}
+
+function adminFilterDiscussion() {
+  const q = document.getElementById('disc-search')?.value.toLowerCase() || '';
+  const filtered = q
+    ? adminDiscMessages.filter(m => 
+        m.text?.toLowerCase().includes(q) || 
+        m.senderName?.toLowerCase().includes(q)
+      )
+    : adminDiscMessages;
+  adminRenderMessages(filtered);
+}
+
+function adminRenderMessages(msgs) {
+  const list = document.getElementById('disc-msg-list');
+  if (!list) return;
+  
+  if (!msgs || !msgs.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);">No messages found.</div>';
+    return;
+  }
+
+  const CH_COLORS = {
+    general:'#dbeafe', 
+    'gate-geology':'#dcfce7', 
+    'csir-net':'#fef9c3',
+    doubts:'#fce7f3', 
+    announcements:'#f3e8ff'
+  };
+
+  list.innerHTML = msgs.slice(0,100).map(msg => {
+    const ts = msg.createdAt?.toDate?.()?.toLocaleString('en-IN', { 
+      day:'numeric',month:'short',hour:'2-digit',minute:'2-digit' 
+    }) || '—';
+    const chColor = CH_COLORS[msg.channel] || '#f1f5f9';
+    const flagBg = msg.flagged ? 'background:#fff7ed;border-left:3px solid #f97316;' : '';
+    const initials = (msg.senderName||'S')[0].toUpperCase();
+    
+    return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);${flagBg}transition:background .15s;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">
+        ${initials}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+          <strong style="font-size:14px;">${escapeHtml(msg.senderName||'Student')}</strong>
+          ${msg.senderRole==='admin' ? '<span class="badge" style="background:#7c3aed;color:#fff;font-size:10px;">ADMIN</span>' : ''}
+          <span style="background:${chColor};color:var(--text);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;">#${msg.channel}</span>
+          ${msg.pinned ? '<span class="badge badge-warning" style="font-size:10px;">📌 Pinned</span>' : ''}
+          ${msg.flagged ? '<span class="badge badge-danger" style="font-size:10px;">🚩 Flagged</span>' : ''}
+          <span style="font-size:11px;color:var(--text3);margin-left:auto;">${ts}</span>
+        </div>
+        <div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;">${escapeHtml(msg.text||'')}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        <button class="btn btn-ghost btn-sm" onclick="adminPinMsg('${msg.id}',${!msg.pinned})" title="${msg.pinned?'Unpin':'Pin'}">
+          <i class="fas fa-thumbtack" style="color:${msg.pinned?'var(--warning)':'var(--text3)'}"></i>
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="adminFlagMsg('${msg.id}',${!msg.flagged})" title="${msg.flagged?'Unflag':'Flag'}">
+          <i class="fas fa-flag" style="color:${msg.flagged?'var(--danger)':'var(--text3)'}"></i>
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="adminDeleteMsg('${msg.id}')" title="Delete">
+          <i class="fas fa-trash" style="color:var(--danger)"></i>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function adminPinMsg(id, pinned) {
+  try {
+    if (pinned) {
+      const msg = adminDiscMessages.find(m => m.id === id);
+      if (msg) {
+        const others = adminDiscMessages.filter(m => m.channel === msg.channel && m.pinned && m.id !== id);
+        await Promise.all(others.map(m => 
+          db.collection('discussion_messages').doc(m.id).update({ pinned: false })
+        ));
+      }
+    }
+    await db.collection('discussion_messages').doc(id).update({ pinned });
+    Utils.toast(pinned ? 'Message pinned.' : 'Message unpinned.', 'success');
+  } catch(e) {
+    console.error('Error pinning message:', e);
+    Utils.toast('Error: ' + e.message, 'error');
+  }
+}
+
+async function adminFlagMsg(id, flagged) {
+  try {
+    await db.collection('discussion_messages').doc(id).update({ flagged });
+    Utils.toast(flagged ? 'Message flagged.' : 'Message unflagged.', flagged ? 'error' : 'success');
+  } catch(e) {
+    console.error('Error flagging message:', e);
+    Utils.toast('Error: ' + e.message, 'error');
+  }
+}
+
+async function adminDeleteMsg(id) {
+  if (!confirm('Delete this message permanently?')) return;
+  try {
+    await db.collection('discussion_messages').doc(id).delete();
+    Utils.toast('Message deleted.', 'success');
+  } catch(e) {
+    console.error('Error deleting message:', e);
+    Utils.toast('Error: ' + e.message, 'error');
+  }
+}
+
+function adminOpenAnnouncement() {
+  const composer = document.getElementById('announce-composer');
+  if (composer) {
+    composer.style.display = 'block';
+    const textarea = document.getElementById('ann-text');
+    if (textarea) textarea.focus();
+  }
+}
+
+function adminCloseAnnouncement() {
+  const composer = document.getElementById('announce-composer');
+  if (composer) composer.style.display = 'none';
+  
+  // Close emoji picker if open
+  const ep = document.getElementById('admin-emoji-picker');
+  if (ep) ep.remove();
+  adminEmojiOpen = false;
+}
+
+async function adminPostAnnouncement() {
+  const text = document.getElementById('ann-text')?.value.trim() || '';
+  const channel = document.getElementById('ann-channel')?.value || 'announcements';
+  const pin = document.getElementById('ann-pin')?.checked || false;
+
+  if (!text) { 
+    Utils.toast('Please enter a message.', 'error');
+    return; 
+  }
+
+  try {
+    const adminUser = auth.currentUser;
+    const userDoc = await db.collection('users').doc(adminUser.uid).get();
+    const ud = userDoc.data();
+
+    if (pin) {
+      const existing = adminDiscMessages.filter(m => m.channel === channel && m.pinned);
+      await Promise.all(existing.map(m => 
+        db.collection('discussion_messages').doc(m.id).update({ pinned: false })
+      ));
+    }
+
+    await db.collection('discussion_messages').add({
+      channel,
+      userId: adminUser.uid,
+      senderName: `${ud?.firstName||'Admin'} ${ud?.lastName||''}`.trim(),
+      senderRole: 'admin',
+      text,
+      pinned: pin,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      reactions: {},
+    });
+
+    document.getElementById('ann-text').value = '';
+    document.getElementById('ann-pin').checked = false;
+    adminCloseAnnouncement();
+    Utils.toast('Announcement posted!', 'success');
+  } catch(e) {
+    console.error('Error posting announcement:', e);
+    Utils.toast('Error: ' + e.message, 'error');
+  }
+}
+
+// ── Emoji Picker for Admin Panel ──
+function initAdminEmojiPicker() {
+  const emojiBtn = document.getElementById('admin-emoji-btn');
+  if (!emojiBtn) return;
+  
+  emojiBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    adminPickEmoji(this);
+  });
+}
+
+function adminPickEmoji(btn) {
+  // Close existing picker
+  const existing = document.getElementById('admin-emoji-picker');
+  if (existing) {
+    existing.remove();
+    adminEmojiOpen = false;
+    return;
+  }
+
+  adminEmojiOpen = true;
+  const ep = document.createElement('div');
+  ep.id = 'admin-emoji-picker';
+  ep.style.cssText = `
+    position: fixed;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 200px;
+    z-index: 9999;
+  `;
+
+  const rect = btn.getBoundingClientRect();
+  ep.style.left = rect.left + 'px';
+  ep.style.top = (rect.bottom + 8) + 'px';
+
+  ADMIN_EMOJIS.forEach(emoji => {
+    const span = document.createElement('span');
+    span.textContent = emoji;
+    span.style.cssText = 'font-size:18px;cursor:pointer;padding:4px;border-radius:6px;transition:background .1s;user-select:none;';
+    span.onmouseenter = () => span.style.background = 'var(--bg2)';
+    span.onmouseleave = () => span.style.background = '';
+    span.onclick = (e) => {
+      e.stopPropagation();
+      const textarea = document.getElementById('ann-text');
+      if (textarea) {
+        textarea.value += emoji;
+        textarea.focus();
+      }
+      ep.remove();
+      adminEmojiOpen = false;
+    };
+    ep.appendChild(span);
+  });
+
+  document.body.appendChild(ep);
+  
+  setTimeout(() => {
+    document.addEventListener('click', function closeEmojiPicker(e) {
+      if (ep && !ep.contains(e.target) && e.target !== btn) {
+        ep.remove();
+        adminEmojiOpen = false;
+        document.removeEventListener('click', closeEmojiPicker);
+      }
+    });
+  }, 100);
+}
+
+// Initialize emoji picker when page loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initAdminEmojiPicker();
+  });
+} else {
+  initAdminEmojiPicker();
 }
