@@ -2,67 +2,731 @@
 <html lang="en">
 <head>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Portal — GeoExam</title>
-<link rel="stylesheet" href="../css/global.css">
-<style>
-  body { display: flex; min-height: 100vh; }
-  /* Sidebar */
-  .admin-sidebar { width: 240px; background: var(--primary-dark); color: #fff; flex-shrink: 0; display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; }
-  .admin-logo { padding: 20px 16px 16px; border-bottom: 1px solid rgba(255,255,255,.1); }
-  .admin-logo h1 { font-size: 18px; color: #fff; }
-  .admin-logo p { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 2px; }
-  .admin-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
-  .nav-section { padding: 0 12px; margin-bottom: 4px; }
-  .nav-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.4); padding: 10px 8px 4px; font-weight: 700; }
-  .admin-nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; color: rgba(255,255,255,.75); font-size: 14px; font-weight: 500; cursor: pointer; transition: all .2s; border: none; background: none; width: 100%; text-align: left; }
-  .admin-nav-link:hover { background: rgba(255,255,255,.1); color: #fff; }
-  .admin-nav-link.active { background: rgba(255,255,255,.15); color: #fff; border-left: 3px solid var(--accent); }
-  .admin-nav-link .icon { font-size: 18px; flex-shrink: 0; }
-  .admin-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,.1); }
-  /* Main */
-  .admin-main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-  .admin-topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
-  .admin-topbar h2 { font-size: 20px; color: var(--primary); }
-  .admin-content { padding: 24px; flex: 1; }
-  /* Panels */
-  .admin-panel { display: none; }
-  .admin-panel.active { display: block; }
-  /* Stats */
-  .admin-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
-  @media (max-width: 1100px) { .admin-stats { grid-template-columns: repeat(2,1fr); } }
-  @media (max-width: 600px)  { .admin-stats { grid-template-columns: 1fr; } .admin-main { margin-left:0; } .admin-sidebar { display:none; } }
-  .admin-stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; display: flex; align-items: center; gap: 16px; transition: box-shadow .2s; }
-  .admin-stat:hover { box-shadow: var(--shadow-lg); }
-  .admin-stat .ico { font-size: 32px; width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .admin-stat:nth-child(1) .ico { background: #eff6ff; color: #2563ab; }
-  .admin-stat:nth-child(2) .ico { background: #f0fdf4; color: #16a34a; }
-  .admin-stat:nth-child(3) .ico { background: #fff7ed; color: #c2410c; }
-  .admin-stat:nth-child(4) .ico { background: #fdf4ff; color: #9333ea; }
-  .admin-stat .num { font-size: 30px; font-weight: 800; font-family: 'Rajdhani'; color: var(--primary); }
-  .admin-stat .lbl { font-size: 12px; color: var(--text2); font-weight: 600; }
-  .admin-stat .ico { font-size: 36px; }
-  .admin-stat .num { font-size: 30px; font-weight: 800; font-family: 'Rajdhani'; color: var(--primary); }
-  .admin-stat .lbl { font-size: 12px; color: var(--text2); font-weight: 600; }
-  /* Full-width panel & table improvements */
-  .admin-content { padding: 24px; flex: 1; min-width: 0; }
-  .admin-panel { display: none; width: 100%; }
-  .admin-panel.active { display: block; }
-  .table-wrap { width: 100%; overflow-x: auto; }
-  .table-wrap table { width: 100%; min-width: 600px; border-collapse: collapse; }
-  .card { overflow: hidden; }
-  .card-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Rajdhani:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal — GeoExam</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <style>
+    /* ═══════════════════════════════════════════
+       EXAM.HTML COLOR THEME — applied to admin
+    ═══════════════════════════════════════════ */
+    :root {
+      --navy:        #0a2540;
+      --navy2:       #0e3460;
+      --blue:        #1565c0;
+      --blue-light:  #1976d2;
+      --accent:      #e65100;
+      --accent2:     #f57c00;
+      --green:       #2e7d32;
+      --red:         #c62828;
+      --purple:      #6a1b9a;
+      --gray-bg:     #eceff1;
+      --gray-50:     #f8f9fa;
+      --gray-100:    #f1f3f4;
+      --gray-200:    #e8eaed;
+      --gray-300:    #dadce0;
+      --gray-600:    #80868b;
+      --gray-800:    #3c4043;
+      --text-main:   #202124;
+      --border-col:  #dadce0;
+      --font:        'Noto Sans','Segoe UI',Arial,sans-serif;
+      --mono:        'JetBrains Mono','Courier New',monospace;
+      --sidebar-w:   248px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background: var(--gray-bg);
+      font-family: var(--font);
+      color: var(--text-main);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    /* ═══════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════ */
+    .admin-sidebar {
+      width: var(--sidebar-w);
+      background: var(--navy);
+      color: #fff;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      z-index: 100;
+      border-right: 3px solid var(--accent2);
+    }
+
+    .admin-logo {
+      padding: 18px 16px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-logo-icon {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #fff; flex-shrink: 0;
+    }
+    .admin-logo h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 17px; font-weight: 700;
+      color: #fff; margin: 0; line-height: 1.2;
+    }
+    .admin-logo p {
+      font-size: 10px;
+      color: rgba(255,255,255,.45);
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .admin-nav {
+      flex: 1;
+      padding: 10px 0;
+      overflow-y: auto;
+      /* Thin orange scrollbar */
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent2) transparent;
+    }
+    .admin-nav::-webkit-scrollbar { width: 3px; }
+    .admin-nav::-webkit-scrollbar-track { background: transparent; }
+    .admin-nav::-webkit-scrollbar-thumb {
+      background: var(--accent2);
+      border-radius: 2px;
+    }
+
+    .nav-section { padding: 0 10px; margin-bottom: 2px; }
+    .nav-section-title {
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: rgba(255,255,255,.35);
+      padding: 10px 10px 4px;
+      font-weight: 700;
+    }
+    .admin-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      color: rgba(255,255,255,.7);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .18s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .admin-nav-link:hover {
+      background: rgba(255,255,255,.08);
+      color: #fff;
+    }
+    .admin-nav-link.active {
+      background: rgba(230,81,0,.18);
+      color: #fff;
+      border-left: 3px solid var(--accent2);
+      padding-left: 7px;
+    }
+    .admin-nav-link .icon {
+      font-size: 15px;
+      flex-shrink: 0;
+      width: 18px;
+      text-align: center;
+      opacity: .8;
+    }
+    .admin-nav-link.active .icon { opacity: 1; color: var(--accent2); }
+
+    .admin-footer {
+      padding: 10px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    /* ═══════════════════════════════════════════
+       TOPBAR
+    ═══════════════════════════════════════════ */
+    .admin-main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      min-width: 0;
+    }
+
+    .admin-topbar {
+      background: var(--navy);
+      border-bottom: 3px solid var(--accent2);
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: .02em;
+    }
+    .topbar-breadcrumb {
+      font-size: 10.5px;
+      color: rgba(255,255,255,.45);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .admin-badge-pill {
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    #admin-name { font-size: 13px; color: rgba(255,255,255,.75); font-weight: 500; }
+
+    /* ═══════════════════════════════════════════
+       CONTENT AREA
+    ═══════════════════════════════════════════ */
+    .admin-content {
+      padding: 22px 24px;
+      flex: 1;
+      min-width: 0;
+      /* fill exactly the remaining viewport height */
+      height: calc(100vh - 52px);
+      overflow-y: auto;
+    }
+
+    .admin-panel { display: none; width: 100%; }
+    .admin-panel.active { display: block; }
+
+    /* ═══════════════════════════════════════════
+       DASHBOARD STATS
+    ═══════════════════════════════════════════ */
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    @media (max-width: 1100px) { .admin-stats { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 600px)  {
+      .admin-stats { grid-template-columns: 1fr; }
+      .admin-main  { margin-left: 0; }
+      .admin-sidebar { display: none; }
+    }
+
+    .admin-stat {
+      background: #fff;
+      border: 1px solid var(--border-col);
+      border-radius: 10px;
+      padding: 18px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .admin-stat:hover { box-shadow: 0 4px 18px rgba(21,101,192,.12); transform: translateY(-1px); }
+    .admin-stat .ico {
+      width: 48px; height: 48px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .admin-stat:nth-child(1) .ico { background: #e3f0ff; color: var(--blue); }
+    .admin-stat:nth-child(2) .ico { background: #e8f5e9; color: var(--green); }
+    .admin-stat:nth-child(3) .ico { background: #fce4ec; color: var(--red); }
+    .admin-stat:nth-child(4) .ico { background: #f3e5f5; color: var(--purple); }
+    .admin-stat .num {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--navy);
+      line-height: 1;
+    }
+    .admin-stat .lbl { font-size: 11px; color: var(--gray-600); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; }
+
+    /* ═══════════════════════════════════════════
+       CARDS (shared)
+    ═══════════════════════════════════════════ */
+    .card {
+      background: #fff;
+      border: 1px solid var(--border-col);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 12px 18px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--border-col);
+    }
+    .card-header h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .card-body { padding: 16px 18px; }
+    .card-footer { padding: 10px 18px; background: var(--gray-50); border-top: 1px solid var(--border-col); }
+
+    /* ═══════════════════════════════════════════
+       TABLES
+    ═══════════════════════════════════════════ */
+    .table-wrap { width: 100%; overflow-x: auto; }
+    .table-wrap table { width: 100%; min-width: 600px; border-collapse: collapse; }
+    .table-wrap th {
+      background: var(--navy);
+      color: rgba(255,255,255,.85);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding: 9px 14px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .table-wrap td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--gray-200);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+    .table-wrap tr:last-child td { border-bottom: none; }
+    .table-wrap tr:hover td { background: var(--gray-50); }
+
+    /* ═══════════════════════════════════════════
+       BUTTONS
+    ═══════════════════════════════════════════ */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all .15s;
+      font-family: var(--font);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-primary   { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: var(--blue-light); }
+    .btn-accent    { background: var(--accent); color: #fff; }
+    .btn-accent:hover { background: var(--accent2); }
+    .btn-success   { background: var(--green); color: #fff; }
+    .btn-danger    { background: var(--red); color: #fff; }
+    .btn-outline   { background: #fff; color: var(--blue); border: 1.5px solid var(--blue); }
+    .btn-outline:hover { background: var(--blue); color: #fff; }
+    .btn-ghost     { background: transparent; color: var(--gray-800); border: 1px solid var(--border-col); }
+    .btn-ghost:hover { background: var(--gray-100); }
+    .btn-warning   { background: #f59e0b; color: #fff; }
+    .btn-sm        { padding: 4px 10px; font-size: 12px; }
+    .btn-lg        { padding: 9px 20px; font-size: 14px; }
+    .btn-block     { width: 100%; justify-content: center; }
+    .btn:disabled  { opacity: .5; cursor: not-allowed; }
+
+    /* ═══════════════════════════════════════════
+       FORM CONTROLS
+    ═══════════════════════════════════════════ */
+    .form-control {
+      width: 100%;
+      padding: 7px 11px;
+      border: 1.5px solid var(--border-col);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text-main);
+      background: #fff;
+      transition: border-color .15s;
+    }
+    .form-control:focus { outline: none; border-color: var(--blue); }
+    .form-group { margin-bottom: 14px; }
+    .form-group label, .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    /* ═══════════════════════════════════════════
+       BADGES
+    ═══════════════════════════════════════════ */
+    .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-primary  { background: #dbeafe; color: var(--blue); }
+    .badge-success  { background: #dcfce7; color: var(--green); }
+    .badge-danger   { background: #fee2e2; color: var(--red); }
+    .badge-warning  { background: #fef3c7; color: #b45309; }
+    .badge-muted    { background: var(--gray-200); color: var(--gray-600); }
+    .badge-info     { background: #e0f2fe; color: #0369a1; }
+
+    /* ═══════════════════════════════════════════
+       GRID HELPERS
+    ═══════════════════════════════════════════ */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    @media (max-width: 700px) { .grid-2,.grid-3 { grid-template-columns: 1fr; } }
+    .mt-2 { margin-top: 10px; }
+    .mb-2 { margin-bottom: 10px; }
+    .text-center { text-align: center; }
+    .text-muted  { color: var(--gray-600); }
+    .text-small  { font-size: 12px; }
+    .hidden      { display: none !important; }
+
+    /* ═══════════════════════════════════════════
+       ADD SINGLE QUESTION — full viewport split layout
+    ═══════════════════════════════════════════ */
+    #panel-add-single {
+      height: calc(100vh - 52px - 44px);  /* topbar + padding */
+      display: none;
+    }
+    #panel-add-single.active {
+      display: flex;
+      gap: 0;
+      overflow: hidden;
+    }
+    .add-single-left {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      border-right: 2px solid var(--border-col);
+      background: #fff;
+      border-radius: 10px 0 0 10px;
+      min-width: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent2) transparent;
+    }
+    .add-single-left::-webkit-scrollbar { width: 3px; }
+    .add-single-left::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 2px; }
+
+    .add-single-right {
+      width: 340px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px;
+      background: var(--gray-50);
+      border-radius: 0 10px 10px 0;
+      border: 1px solid var(--border-col);
+      border-left: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent2) transparent;
+    }
+    .add-single-right::-webkit-scrollbar { width: 3px; }
+    .add-single-right::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 2px; }
+
+    .add-single-panel-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border-col);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .add-single-panel-title i { color: var(--accent); }
+
+    /* ═══════════════════════════════════════════
+       BULK UPLOAD — full viewport fit
+    ═══════════════════════════════════════════ */
+    #panel-add-bulk {
+      height: calc(100vh - 52px - 44px);
+      display: none;
+    }
+    #panel-add-bulk.active {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .bulk-top {
+      flex-shrink: 0;
+      background: #fff;
+      border: 1px solid var(--border-col);
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+    .bulk-results-area {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent2) transparent;
+    }
+    .bulk-results-area::-webkit-scrollbar { width: 3px; }
+    .bulk-results-area::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 2px; }
+
+    /* PDF drop zone */
+    .pdf-drop-zone {
+      border: 2.5px dashed var(--blue-light);
+      border-radius: 10px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      background: #f0f6ff;
+    }
+    .pdf-drop-zone:hover { border-color: var(--accent); background: #fff4ee; }
+    .pdf-drop-zone .drop-icon { font-size: 40px; color: var(--blue); margin-bottom: 10px; }
+
+    /* ═══════════════════════════════════════════
+       DISCUSSION PANEL
+    ═══════════════════════════════════════════ */
+    .disc-stats-row {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .disc-stat-card {
+      background: #fff;
+      border: 1px solid var(--border-col);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+    .disc-stat-card .ds-num {
+      font-size: 26px;
+      font-weight: 700;
+      font-family: 'Rajdhani', sans-serif;
+      line-height: 1;
+    }
+    .disc-stat-card .ds-lbl {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-600);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-top: 4px;
+    }
+
+    .announce-composer {
+      background: #fff;
+      border: 2px solid var(--blue);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+    .announce-composer-header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .announce-composer-header h3 { font-size: 14px; color: #fff; font-weight: 700; }
+    .announce-composer-body { padding: 16px; }
+
+    /* Message list item */
+    .disc-msg-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--gray-200);
+      transition: background .12s;
+    }
+    .disc-msg-item:hover { background: var(--gray-50); }
+    .disc-msg-item.flagged-msg { background: #fff8f5; border-left: 3px solid var(--accent); }
+    .disc-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--navy2);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px;
+      flex-shrink: 0;
+    }
+    .disc-avatar.admin-avatar { background: var(--accent); }
+
+    /* ═══════════════════════════════════════════
+       FLAGGED PANEL
+    ═══════════════════════════════════════════ */
+    .flagged-banner {
+      background: linear-gradient(135deg, var(--navy) 0%, #7f1d1d 100%);
+      color: #fff;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-left: 4px solid var(--accent);
+    }
+    .flagged-banner .fb-num { font-size: 40px; font-weight: 700; font-family: 'Rajdhani'; }
+    .flag-reason-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 2px 8px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; margin: 2px;
+    }
+    .flag-tab  { background: #fff; color: var(--red); border: 1.5px solid var(--red); }
+    .flag-fs   { background: #fff; color: #b45309; border: 1.5px solid #f59e0b; }
+    .flag-idle { background: #fff; color: var(--purple); border: 1.5px solid var(--purple); }
+    .flag-row-expand { cursor: pointer; }
+    .flag-detail-row { display: none; background: var(--gray-50); }
+    .flag-detail-row.open { display: table-row; }
+
+    /* ═══════════════════════════════════════════
+       REVALUATION PANEL
+    ═══════════════════════════════════════════ */
+    .reval-layout { display: grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: start; }
+    .reval-exam-card {
+      padding: 11px 13px;
+      border: 2px solid var(--border-col);
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 7px;
+      transition: all .15s;
+      background: #fff;
+    }
+    .reval-exam-card:hover  { border-color: var(--blue-light); background: #f0f6ff; }
+    .reval-exam-card.selected { border-color: var(--blue); background: #dbeafe; }
+    .reval-prog-bar  { background: var(--gray-200); border-radius: 6px; overflow: hidden; height: 10px; margin-bottom: 8px; }
+    .reval-prog-fill { height: 100%; background: var(--blue); transition: width .3s; width: 0%; }
+    .reval-warn-box  {
+      background: #fffbeb; border: 1px solid #fcd34d;
+      border-radius: 8px; padding: 12px 16px;
+      font-size: 13px; color: #92400e;
+      display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px;
+    }
+    .rank-badge { display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-weight:800;font-size:11px;color:#fff; }
+    .rank-1 { background: #f59e0b; }
+    .rank-2 { background: #9ca3af; }
+    .rank-3 { background: #b45309; }
+    .rank-n { background: var(--blue); }
+
+    /* ═══════════════════════════════════════════
+       MODAL
+    ═══════════════════════════════════════════ */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(10,37,64,.55);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 720px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--navy);
+      border-radius: 12px 12px 0 0;
+    }
+    .modal-header h3 { font-size: 15px; font-weight: 700; color: #fff; }
+    .modal-close { background: none; border: none; color: rgba(255,255,255,.7); font-size: 18px; cursor: pointer; }
+    .modal-close:hover { color: #fff; }
+    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .modal-footer {
+      display: flex; gap: 8px; justify-content: flex-end;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border-col);
+    }
+
+    /* ═══════════════════════════════════════════
+       TOAST
+    ═══════════════════════════════════════════ */
+    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+    .toast {
+      background: var(--navy);
+      color: #fff;
+      padding: 11px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border-left: 4px solid var(--accent2);
+      box-shadow: 0 4px 18px rgba(0,0,0,.18);
+      animation: toastIn .25s ease;
+      max-width: 340px;
+    }
+    .toast.error   { border-left-color: var(--red); }
+    .toast.success { border-left-color: var(--green); }
+    .toast.warning { border-left-color: #f59e0b; }
+    @keyframes toastIn { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    /* ═══════════════════════════════════════════
+       SPINNER
+    ═══════════════════════════════════════════ */
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
 
-<!-- Admin Sidebar -->
+<!-- ═══════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════ -->
 <div class="admin-sidebar">
   <div class="admin-logo">
-    <h1><i class="fas fa-gem"></i> GeoExam Admin</h1>
-    <p>Portal Management System</p>
+    <div class="admin-logo-icon"><i class="fas fa-gem"></i></div>
+    <div>
+      <h1>GeoExam Admin</h1>
+      <p>Portal Management</p>
+    </div>
   </div>
+
   <div class="admin-nav">
     <div class="nav-section">
       <div class="nav-section-title">Overview</div>
@@ -76,10 +740,10 @@
         <span class="icon"><i class="fas fa-book"></i></span> Question Bank
       </button>
       <button class="admin-nav-link" onclick="showPanel('add-single')" data-panel="add-single">
-        <span class="icon"><i class="fas fa-plus"></i></span> Add Single Question
+        <span class="icon"><i class="fas fa-plus"></i></span> Add Question
       </button>
       <button class="admin-nav-link" onclick="showPanel('add-bulk')" data-panel="add-bulk">
-        <span class="icon"><i class="fas fa-file"></i></span> Bulk Upload (PDF)
+        <span class="icon"><i class="fas fa-file-pdf"></i></span> Bulk Upload
       </button>
     </div>
     <div class="nav-section">
@@ -97,8 +761,8 @@
         <span class="icon"><i class="fas fa-trophy"></i></span> All Attempts
       </button>
       <button class="admin-nav-link" onclick="showPanel('flagged')" data-panel="flagged">
-        <span class="icon"><i class="fas fa-flag"></i></span> Flagged Attempts
-        <span id="flagged-badge" style="margin-left:auto;background:#ef4444;color:#fff;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:800;display:none;">0</span>
+        <span class="icon"><i class="fas fa-flag"></i></span> Flagged
+        <span id="flagged-badge" style="margin-left:auto;background:var(--accent);color:#fff;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:800;display:none;">0</span>
       </button>
       <button class="admin-nav-link" onclick="showPanel('users')" data-panel="users">
         <span class="icon"><i class="fas fa-users"></i></span> Users
@@ -108,7 +772,7 @@
       <div class="nav-section-title">Community</div>
       <button class="admin-nav-link" onclick="showPanel('discussion')" data-panel="discussion">
         <span class="icon"><i class="fas fa-comments"></i></span> Discussion
-        <span id="nav-discussion-badge" class="badge" style="background:#ef4444;color:#fff;display:none;margin-left:auto;font-size:11px;padding:1px 8px;border-radius:20px;font-weight:800;">0</span>
+        <span id="nav-discussion-badge" style="background:var(--accent);color:#fff;display:none;margin-left:auto;font-size:10px;padding:1px 7px;border-radius:20px;font-weight:800;">0</span>
       </button>
     </div>
     <div class="nav-section">
@@ -118,27 +782,32 @@
       </button>
     </div>
   </div>
+
   <div class="admin-footer">
-    <button class="admin-nav-link" onclick="doLogout()" style="color:rgba(255,100,100,.9)">
+    <button class="admin-nav-link" onclick="doLogout()" style="color:rgba(255,120,100,.9);">
       <span class="icon"><i class="fas fa-sign-out-alt"></i></span> Logout
     </button>
   </div>
 </div>
 
-<!-- Admin Main -->
+<!-- ═══════════════════════════════════════════
+     MAIN
+════════════════════════════════════════════ -->
 <div class="admin-main">
   <div class="admin-topbar">
     <div>
-      <h2 id="panel-title" style="font-size:18px;color:var(--primary);">Dashboard</h2>
-      <div style="font-size:11px;color:var(--text3);font-weight:500;" id="panel-breadcrumb">GeoExam Admin &rsaquo; Overview</div>
+      <div class="topbar-title" id="panel-title">Dashboard</div>
+      <div class="topbar-breadcrumb" id="panel-breadcrumb">GeoExam Admin › Overview</div>
     </div>
-    <div style="display:flex;align-items:center;gap:12px;font-size:14px;color:var(--text2);">
-      <span id="admin-name">Admin</span>
-      <span class="badge badge-primary">Admin</span>
+    <div class="topbar-right">
+      <span id="admin-name"></span>
+      <span class="admin-badge-pill">Admin</span>
     </div>
   </div>
+
   <div class="admin-content">
-    <!-- DASHBOARD -->
+
+    <!-- ── DASHBOARD ── -->
     <div id="panel-dashboard" class="admin-panel active">
       <div class="admin-stats" id="admin-stats-row">
         <div class="admin-stat"><div class="ico"><i class="fas fa-question-circle"></i></div><div><div class="num" id="st-q">—</div><div class="lbl">Total Questions</div></div></div>
@@ -148,32 +817,32 @@
       </div>
       <div class="grid-2">
         <div class="card">
-          <div class="card-header"><h3 style="font-size:16px">Recent Exams</h3><button class="btn btn-outline btn-sm" onclick="showPanel('exams')">View All</button></div>
+          <div class="card-header"><h3>Recent Exams</h3><button class="btn btn-outline btn-sm" onclick="showPanel('exams')">View All</button></div>
           <div class="card-body"><div id="recent-exams">Loading…</div></div>
         </div>
         <div class="card">
-          <div class="card-header"><h3 style="font-size:16px">Quick Actions</h3></div>
+          <div class="card-header"><h3>Quick Actions</h3></div>
           <div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
             <button class="btn btn-primary btn-block" onclick="showPanel('add-single')"><i class="fas fa-plus"></i> Add Single Question</button>
-            <button class="btn btn-accent btn-block" onclick="showPanel('add-bulk')"><i class="fas fa-file"></i> Bulk Upload PDF</button>
+            <button class="btn btn-accent btn-block" onclick="showPanel('add-bulk')"><i class="fas fa-file-pdf"></i> Bulk Upload PDF</button>
             <button class="btn btn-success btn-block" onclick="showPanel('create-exam')"><i class="fas fa-plus-circle"></i> Create New Exam</button>
-            <button class="btn btn-outline btn-block" onclick="showPanel('qbank')"><i class="fas fa-book"></i> Browse Question Bank</button>
+            <button class="btn btn-ghost btn-block" onclick="showPanel('qbank')"><i class="fas fa-book"></i> Browse Question Bank</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- QUESTION BANK -->
+    <!-- ── QUESTION BANK ── -->
     <div id="panel-qbank" class="admin-panel">
-      <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-        <input type="text" id="qbank-search" class="form-control" style="max-width:300px;" placeholder="Search questions…" oninput="filterQBank()">
-        <select class="form-control" style="max-width:180px;" id="qbank-type" onchange="filterQBank()">
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <input type="text" id="qbank-search" class="form-control" style="max-width:280px;" placeholder="Search questions…" oninput="filterQBank()">
+        <select class="form-control" style="max-width:170px;" id="qbank-type" onchange="filterQBank()">
           <option value="">All Types</option>
           <option value="scq">Single Correct</option>
           <option value="mcq">Multiple Correct</option>
           <option value="nat">Numerical</option>
         </select>
-        <select class="form-control" style="max-width:200px;" id="qbank-year" onchange="filterQBank()">
+        <select class="form-control" style="max-width:180px;" id="qbank-year" onchange="filterQBank()">
           <option value="">All Years</option>
           <option>2024</option><option>2023</option><option>2022</option>
           <option>2021</option><option>2020</option><option>2019</option>
@@ -183,7 +852,7 @@
       </div>
       <div class="card">
         <div class="card-header">
-          <h3 style="font-size:16px">Question Bank</h3>
+          <h3>Question Bank</h3>
           <span class="badge badge-muted" id="qbank-count">0 questions</span>
         </div>
         <div class="table-wrap">
@@ -196,98 +865,125 @@
       </div>
     </div>
 
-    <!-- ADD SINGLE QUESTION -->
+    <!-- ── ADD SINGLE QUESTION — split layout ── -->
     <div id="panel-add-single" class="admin-panel">
-      <div class="card" style="max-width:860px;">
-        <div class="card-header"><h3 style="font-size:16px">Add Single Question</h3></div>
-        <div class="card-body">
-          <div class="grid-2">
-            <div class="form-group">
-              <label>Question Type</label>
-              <select class="form-control" id="q-type" onchange="renderOptionFields()">
-                <option value="scq">Single Correct (SCQ)</option>
-                <option value="mcq">Multiple Correct (MCQ)</option>
-                <option value="nat">Numerical Answer (NAT)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>GATE Year (optional)</label>
-              <select class="form-control" id="q-year">
-                <option value="">—</option>
-                <option>2024</option><option>2023</option><option>2022</option>
-                <option>2021</option><option>2020</option><option>2019</option>
-                <option>2018</option><option>2017</option>
-              </select>
-            </div>
+      <!-- LEFT: question form -->
+      <div class="add-single-left">
+        <div class="add-single-panel-title">
+          <i class="fas fa-plus-circle"></i> Add Single Question
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Question Type</label>
+            <select class="form-control" id="q-type" onchange="renderOptionFields()">
+              <option value="scq">Single Correct (SCQ)</option>
+              <option value="mcq">Multiple Correct (MCQ)</option>
+              <option value="nat">Numerical Answer (NAT)</option>
+            </select>
           </div>
           <div class="form-group">
-            <label>Question Text (supports HTML)</label>
-            <textarea class="form-control" id="q-text" rows="4" placeholder="Enter the question text here…"></textarea>
+            <label>GATE Year</label>
+            <select class="form-control" id="q-year">
+              <option value="">—</option>
+              <option>2024</option><option>2023</option><option>2022</option>
+              <option>2021</option><option>2020</option><option>2019</option>
+              <option>2018</option><option>2017</option>
+            </select>
           </div>
-          <div id="q-image-widget-slot"></div>
-          <div id="options-section"></div>
-          <div class="grid-3 mt-2">
-            <div class="form-group">
-              <label>Positive Marks</label>
-              <input type="number" class="form-control" id="q-pos" value="1" min="0" step="0.5">
-            </div>
-            <div class="form-group">
-              <label>Negative Marks</label>
-              <input type="number" class="form-control" id="q-neg" value="0.33" min="0" step="0.01">
-            </div>
-            <div class="form-group">
-              <label>Tolerance (NAT only)</label>
-              <input type="number" class="form-control" id="q-tol" value="0" min="0" step="any">
-            </div>
+        </div>
+        <div class="form-group">
+          <label>Question Text (supports HTML)</label>
+          <textarea class="form-control" id="q-text" rows="5" placeholder="Enter the question text here…"></textarea>
+        </div>
+        <div id="options-section"></div>
+        <div class="grid-3 mt-2">
+          <div class="form-group">
+            <label>Positive Marks</label>
+            <input type="number" class="form-control" id="q-pos" value="1" min="0" step="0.5">
           </div>
           <div class="form-group">
-            <label>Solution / Explanation (optional)</label>
-            <textarea class="form-control" id="q-solution" rows="3" placeholder="Detailed solution for this question…"></textarea>
+            <label>Negative Marks</label>
+            <input type="number" class="form-control" id="q-neg" value="0.33" min="0" step="0.01">
           </div>
           <div class="form-group">
-            <label>Tags / Topic (comma separated)</label>
-            <input type="text" class="form-control" id="q-tags" placeholder="e.g. Structural Geology, GATE 2023">
+            <label>Tolerance (NAT)</label>
+            <input type="number" class="form-control" id="q-tol" value="0" min="0" step="any">
           </div>
-          <button class="btn btn-primary btn-lg" onclick="saveQuestion()"><i class="fas fa-save"></i> Save Question</button>
+        </div>
+        <div class="form-group">
+          <label>Solution / Explanation</label>
+          <textarea class="form-control" id="q-solution" rows="3" placeholder="Detailed solution…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Tags / Topic (comma separated)</label>
+          <input type="text" class="form-control" id="q-tags" placeholder="e.g. Structural Geology, GATE 2023">
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="saveQuestion()" style="width:100%;justify-content:center;">
+          <i class="fas fa-save"></i> Save Question
+        </button>
+      </div>
+
+      <!-- RIGHT: image upload panel -->
+      <div class="add-single-right">
+        <div class="add-single-panel-title" style="font-size:13px;">
+          <i class="fas fa-image"></i> Question Image
+        </div>
+        <!-- image widget slot injected by JS -->
+        <div id="q-image-widget-slot"></div>
+
+        <!-- Info box -->
+        <div style="background:#fff4e0;border:1px solid #fcd34d;border-radius:8px;padding:12px;font-size:12px;color:#7c4a00;margin-top:auto;">
+          <strong style="display:block;margin-bottom:4px;"><i class="fas fa-info-circle"></i> Storage Note</strong>
+          Images are stored as base64 in Firestore — no cloud storage needed. Keep images under 800 KB to stay within the 1 MB document limit.
+        </div>
+        <div style="background:#e3f0ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;font-size:12px;color:#1e3a6e;">
+          <strong style="display:block;margin-bottom:4px;"><i class="fas fa-lightbulb"></i> Tips</strong>
+          <ul style="margin:0;padding-left:16px;line-height:1.7;">
+            <li>Select the correct option(s) using the radio / checkboxes on the left</li>
+            <li>For NAT questions enter the exact numerical answer</li>
+            <li>Option images are optional — paste a URL or upload a file</li>
+          </ul>
         </div>
       </div>
     </div>
 
-    <!-- BULK UPLOAD -->
+    <!-- ── BULK UPLOAD ── -->
     <div id="panel-add-bulk" class="admin-panel">
-      <div class="card" style="max-width:860px;">
-        <div class="card-header"><h3 style="font-size:16px"><i class="fas fa-file"></i> Bulk Upload via PDF</h3></div>
-        <div class="card-body">
-          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:20px;font-size:13px;">
-            <strong>How it works:</strong> Upload a PDF of questions. The system will extract text from each page and attempt to auto-identify and split questions. You can then review, edit, and confirm each question before saving to the Question Bank.
+      <div class="bulk-top">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div style="width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0;">
+            <i class="fas fa-file-pdf"></i>
           </div>
-          <div class="form-group">
-            <label>Upload PDF File</label>
-            <div id="pdf-drop-zone" style="border:3px dashed var(--border);border-radius:12px;padding:40px;text-align:center;cursor:pointer;transition:border-color .2s;" onclick="document.getElementById('pdf-input').click()">
-              <div style="font-size:48px;margin-bottom:12px;"><i class="fas fa-file"></i></div>
-              <div style="font-size:16px;font-weight:600;margin-bottom:6px;">Drop PDF here or click to browse</div>
-              <div style="font-size:13px;color:var(--text2);">Supports multi-page PDFs. Max 50 MB.</div>
-              <input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="handlePDFUpload(this)">
-            </div>
+          <div>
+            <div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--navy);">Bulk Upload via PDF</div>
+            <div style="font-size:12px;color:var(--gray-600);">Extract questions automatically from any PDF, review and save to Question Bank</div>
           </div>
-          <div id="pdf-progress" class="hidden">
-            <div style="background:var(--bg2);border-radius:6px;overflow:hidden;height:10px;margin-bottom:8px;">
-              <div id="pdf-prog-fill" style="height:100%;background:var(--primary);transition:width .3s;width:0%"></div>
-            </div>
-            <div id="pdf-prog-text" style="font-size:13px;color:var(--text2);text-align:center;">Processing…</div>
-          </div>
-          <div id="pdf-questions-list"></div>
         </div>
+        <div class="pdf-drop-zone" id="pdf-drop-zone" onclick="document.getElementById('pdf-input').click()">
+          <div class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+          <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Drop PDF here or click to browse</div>
+          <div style="font-size:12px;color:var(--gray-600);">Supports multi-page PDFs · Max 50 MB</div>
+          <input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="handlePDFUpload(this)">
+        </div>
+        <div id="pdf-progress" class="hidden" style="margin-top:14px;">
+          <div style="background:var(--gray-200);border-radius:6px;overflow:hidden;height:8px;margin-bottom:6px;">
+            <div id="pdf-prog-fill" style="height:100%;background:var(--blue);transition:width .3s;width:0%;border-radius:6px;"></div>
+          </div>
+          <div id="pdf-prog-text" style="font-size:12px;color:var(--gray-600);text-align:center;">Processing…</div>
+        </div>
+      </div>
+      <div class="bulk-results-area">
+        <div id="pdf-questions-list"></div>
       </div>
     </div>
 
-    <!-- MANAGE EXAMS -->
+    <!-- ── MANAGE EXAMS ── -->
     <div id="panel-exams" class="admin-panel">
-      <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
         <button class="btn btn-primary" onclick="showPanel('create-exam')"><i class="fas fa-plus-circle"></i> Create New Exam</button>
       </div>
       <div class="card">
-        <div class="card-header"><h3 style="font-size:16px">All Exams</h3></div>
+        <div class="card-header"><h3>All Exams</h3></div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Title</th><th>Questions</th><th>Duration</th><th>Status</th><th>Actions</th></tr></thead>
@@ -297,10 +993,10 @@
       </div>
     </div>
 
-    <!-- CREATE EXAM -->
+    <!-- ── CREATE EXAM ── -->
     <div id="panel-create-exam" class="admin-panel">
-      <div class="card" style="">
-        <div class="card-header"><h3 style="font-size:16px" id="create-exam-title">Create New Exam</h3></div>
+      <div class="card">
+        <div class="card-header"><h3 id="create-exam-title">Create New Exam</h3></div>
         <div class="card-body">
           <input type="hidden" id="exam-edit-id">
           <div class="grid-2">
@@ -310,47 +1006,32 @@
             </div>
             <div class="form-group">
               <label>Subject</label>
-              <input type="text" class="form-control" id="ex-subject" value="GATE Geology" placeholder="GATE Geology">
+              <input type="text" class="form-control" id="ex-subject" value="GATE Geology">
             </div>
           </div>
           <div class="form-group">
             <label>Description</label>
-            <textarea class="form-control" id="ex-desc" rows="2" placeholder="Brief description of this exam…"></textarea>
+            <textarea class="form-control" id="ex-desc" rows="2" placeholder="Brief description…"></textarea>
           </div>
           <div class="grid-3">
-            <div class="form-group">
-              <label>Duration (minutes)</label>
-              <input type="number" class="form-control" id="ex-dur" value="180" min="10">
-            </div>
-            <div class="form-group">
-              <label>Start Time</label>
-              <input type="datetime-local" class="form-control" id="ex-start">
-            </div>
-            <div class="form-group">
-              <label>End Time</label>
-              <input type="datetime-local" class="form-control" id="ex-end">
-            </div>
+            <div class="form-group"><label>Duration (minutes)</label><input type="number" class="form-control" id="ex-dur" value="180" min="10"></div>
+            <div class="form-group"><label>Start Time</label><input type="datetime-local" class="form-control" id="ex-start"></div>
+            <div class="form-group"><label>End Time</label><input type="datetime-local" class="form-control" id="ex-end"></div>
           </div>
-
-          <!-- Sections -->
           <div class="form-group">
             <label>Exam Sections</label>
-            <div id="sections-builder" style="border:1px solid var(--border);border-radius:8px;padding:16px;background:var(--bg);">
+            <div style="border:1px solid var(--border-col);border-radius:8px;padding:14px;background:var(--gray-50);">
               <div id="sections-list"></div>
-              <button class="btn btn-outline btn-sm mt-2" onclick="addSection()">+ Add Section</button>
+              <button class="btn btn-ghost btn-sm mt-2" onclick="addSection()">+ Add Section</button>
             </div>
           </div>
-
-          <!-- Question Picker -->
           <div class="form-group">
             <label>Add Questions to Exam</label>
-            <div style="display:flex;gap:8px;margin-bottom:10px;">
-              <input type="text" class="form-control" id="qpick-search" placeholder="Search questions…" oninput="filterQPicker()">
-              <select class="form-control" style="max-width:160px;" id="qpick-type" onchange="filterQPicker()">
+            <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+              <input type="text" class="form-control" id="qpick-search" placeholder="Search questions…" oninput="filterQPicker()" style="min-width:200px;flex:1;">
+              <select class="form-control" style="max-width:150px;" id="qpick-type" onchange="filterQPicker()">
                 <option value="">All Types</option>
-                <option value="scq">SCQ</option>
-                <option value="mcq">MCQ</option>
-                <option value="nat">NAT</option>
+                <option value="scq">SCQ</option><option value="mcq">MCQ</option><option value="nat">NAT</option>
               </select>
               <select class="form-control" style="max-width:130px;" id="qpick-section" title="Add to section">
                 <option value="0">Section 1</option>
@@ -358,19 +1039,18 @@
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
               <div>
-                <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;">Available Questions</div>
-                <div id="qpick-available" style="height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--bg);"></div>
+                <div style="font-size:11px;font-weight:700;color:var(--gray-600);margin-bottom:6px;text-transform:uppercase;">Available Questions</div>
+                <div id="qpick-available" style="height:380px;overflow-y:auto;border:1px solid var(--border-col);border-radius:8px;padding:8px;background:var(--gray-50);scrollbar-width:thin;scrollbar-color:var(--accent2) transparent;"></div>
               </div>
               <div>
-                <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;">Selected Questions <span id="sel-count" class="badge badge-primary">0</span></div>
-                <div id="qpick-selected" style="height:420px;overflow-y:auto;border:2px solid var(--primary);border-radius:8px;padding:8px;background:var(--bg);"></div>
+                <div style="font-size:11px;font-weight:700;color:var(--gray-600);margin-bottom:6px;text-transform:uppercase;">Selected <span id="sel-count" class="badge badge-primary">0</span></div>
+                <div id="qpick-selected" style="height:380px;overflow-y:auto;border:2px solid var(--blue);border-radius:8px;padding:8px;background:var(--gray-50);scrollbar-width:thin;scrollbar-color:var(--accent2) transparent;"></div>
               </div>
             </div>
           </div>
-
-          <div style="display:flex;gap:12px;align-items:center;margin-top:8px;">
+          <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
             <button class="btn btn-primary btn-lg" onclick="saveExam()"><i class="fas fa-save"></i> Save Exam</button>
-            <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
               <input type="checkbox" id="ex-published"> Publish immediately
             </label>
           </div>
@@ -378,23 +1058,23 @@
       </div>
     </div>
 
-    <!-- ATTEMPTS -->
+    <!-- ── ATTEMPTS ── -->
     <div id="panel-attempts" class="admin-panel">
       <div class="card">
-        <div class="card-header"><h3 style="font-size:16px">All Exam Attempts</h3></div>
+        <div class="card-header"><h3>All Exam Attempts</h3></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Correct/Wrong</th><th><i class="fas fa-clock"></i> Time Spent</th><th>Status</th><th>Date</th><th>ID</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Correct/Wrong</th><th><i class="fas fa-clock"></i> Time</th><th>Status</th><th>Date</th><th>ID</th><th>Actions</th></tr></thead>
             <tbody id="attempts-tbody"><tr><td colspan="9" class="text-center text-muted">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- USERS -->
+    <!-- ── USERS ── -->
     <div id="panel-users" class="admin-panel">
       <div class="card">
-        <div class="card-header"><h3 style="font-size:16px">Registered Users</h3></div>
+        <div class="card-header"><h3>Registered Users</h3></div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
@@ -404,39 +1084,21 @@
       </div>
     </div>
 
-    <!-- FLAGGED ATTEMPTS -->
+    <!-- ── FLAGGED ATTEMPTS ── -->
     <div id="panel-flagged" class="admin-panel">
-      <style>
-        .flag-reason-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; margin:2px; }
-        .flag-tab { background:#fff;color:#ef4444;border:2px solid #ef4444; }
-        .flag-fs  { background:#fff;color:#f59e0b;border:2px solid #f59e0b; }
-        .flag-idle{ background:#fff;color:#8b5cf6;border:2px solid #8b5cf6; }
-        .integrity-log { font-size:11px; color:var(--text2); font-family:monospace; max-height:160px; overflow-y:auto; background:var(--bg); border-radius:6px; padding:8px; margin-top:8px; border:1px solid var(--border); }
-        .integrity-log-row { padding:3px 0; border-bottom:1px solid var(--border); }
-        .flagged-banner { background:linear-gradient(135deg,#7f1d1d,#991b1b); color:#fff; border-radius:var(--radius-lg); padding:20px 24px; margin-bottom:20px; display:flex; align-items:center; gap:16px; }
-        .flagged-banner .fb-num { font-size:42px; font-weight:800; font-family:'Rajdhani'; }
-        .flag-row-expand { cursor:pointer; }
-        .flag-detail-row { display:none; background:var(--bg); }
-        .flag-detail-row.open { display:table-row; }
-      </style>
-
       <div class="flagged-banner">
-        <div style="font-size:36px;"><i class="fas fa-shield-alt"></i></div>
+        <div style="font-size:34px;"><i class="fas fa-shield-alt"></i></div>
         <div>
-          <div style="font-size:20px;font-weight:800;margin-bottom:4px;">Integrity Monitoring</div>
-          <div style="opacity:.8;font-size:14px;">Attempts flagged for suspicious proctoring activity — tab switching, fullscreen exits, or prolonged idleness.</div>
+          <div style="font-size:19px;font-weight:800;font-family:'Rajdhani',sans-serif;margin-bottom:3px;">Integrity Monitoring</div>
+          <div style="opacity:.8;font-size:13px;">Attempts flagged for tab switching, fullscreen exits, or prolonged idleness.</div>
         </div>
         <div style="margin-left:auto;text-align:center;">
           <div class="fb-num" id="flagged-total-count">—</div>
-          <div style="font-size:12px;opacity:.7;">Flagged Attempts</div>
+          <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.04em;">Flagged</div>
         </div>
       </div>
-
-      <!-- Filter row -->
-      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-        <select class="form-control" style="max-width:260px;" id="flagged-exam-filter" onchange="renderFlaggedTable()">
-          <option value="">All Exams</option>
-        </select>
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+        <select class="form-control" style="max-width:260px;" id="flagged-exam-filter" onchange="renderFlaggedTable()"><option value="">All Exams</option></select>
         <select class="form-control" style="max-width:200px;" id="flagged-type-filter" onchange="renderFlaggedTable()">
           <option value="">All Flag Types</option>
           <option value="tab">Tab Switch</option>
@@ -445,13 +1107,12 @@
           <option value="resize">Window Resize</option>
           <option value="idle">Idle Flagged</option>
         </select>
-        <button class="btn btn-outline btn-sm" onclick="loadFlaggedAttempts()"><i class="fas fa-sync-alt"></i> Refresh</button>
-        <span id="flagged-filter-count" style="font-size:13px;color:var(--text2);margin-left:4px;"></span>
+        <button class="btn btn-ghost btn-sm" onclick="loadFlaggedAttempts()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <span id="flagged-filter-count" style="font-size:12px;color:var(--gray-600);"></span>
       </div>
-
       <div class="card">
         <div class="card-header">
-          <h3 style="font-size:16px;"><i class="fas fa-flag" style="color:#ef4444;"></i> Flagged Submissions</h3>
+          <h3><i class="fas fa-flag" style="color:var(--red);margin-right:6px;"></i>Flagged Submissions</h3>
           <span class="badge badge-danger" id="flagged-count-badge">0</span>
         </div>
         <div class="table-wrap">
@@ -459,15 +1120,8 @@
             <thead>
               <tr>
                 <th style="width:28px;"></th>
-                <th>Student</th>
-                <th>Exam</th>
-                <th>Score</th>
-                <th>Violations</th>
-                <th>Tab Switches</th>
-                <th>FS Exits</th>
-                <th>Idle</th>
-                <th>Submitted</th>
-                <th>Actions</th>
+                <th>Student</th><th>Exam</th><th>Score</th><th>Violations</th>
+                <th>Tabs</th><th>FS Exits</th><th>Idle</th><th>Submitted</th><th>Actions</th>
               </tr>
             </thead>
             <tbody id="flagged-tbody">
@@ -478,159 +1132,86 @@
       </div>
     </div>
 
-    <!-- REVALUATION CENTRE -->
+    <!-- ── REVALUATION ── -->
     <div id="panel-revaluation" class="admin-panel">
-      <style>
-        /* ── Reval panel styles ── */
-        .reval-layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
-        .reval-exam-card {
-          padding: 12px 14px; border: 2px solid var(--border); border-radius: 8px;
-          cursor: pointer; margin-bottom: 8px; transition: all .18s; background: var(--surface);
-        }
-        .reval-exam-card:hover { border-color: var(--primary-light); background: #eff6ff; }
-        .reval-exam-card.selected { border-color: var(--primary); background: #dbeafe; }
-        .reval-stat-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
-        .reval-chip { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 700; color: var(--text2); display: flex; align-items: center; gap: 6px; }
-        .reval-prog-bar { background: var(--bg); border-radius: 6px; overflow: hidden; height: 10px; margin-bottom: 8px; }
-        .reval-prog-fill { height: 100%; background: var(--primary); transition: width .3s; width: 0%; }
-        .delta-up   { color: var(--success); font-weight:700; }
-        .delta-down { color: var(--danger);  font-weight:700; }
-        .delta-same { color: var(--text2);   font-weight:700; }
-        .reval-warn-box {
-          background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px;
-          padding: 12px 16px; font-size: 13px; color: #92400e;
-          display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px;
-        }
-        .rank-badge { display: inline-flex; align-items:center; justify-content:center; width:30px;height:30px;border-radius:50%;font-weight:800;font-size:12px;color:#fff; }
-        .rank-1 { background: #f59e0b; }
-        .rank-2 { background: #9ca3af; }
-        .rank-3 { background: #b45309; }
-        .rank-n { background: var(--primary); }
-      </style>
-
       <div class="reval-warn-box">
-        <i class="fas fa-exclamation-triangle" style="font-size:16px;margin-top:1px;"></i>
+        <i class="fas fa-exclamation-triangle" style="font-size:16px;margin-top:1px;color:#b45309;"></i>
         <div>
-          <strong>How Revaluation Works:</strong> Revaluation re-scores each submitted attempt using the
-          <em>current</em> correct answers stored in the Question Bank. If you changed a question's correct answer
-          after the exam was submitted, run revaluation to update all scores, results, and ranks automatically.
+          <strong>How Revaluation Works:</strong> Re-scores every submitted attempt using the <em>current</em> correct answers in the Question Bank. Run this after changing any answer key.
         </div>
       </div>
-
       <div class="reval-layout">
-
-        <!-- LEFT: Exam Selector -->
         <div>
           <div class="card">
-            <div class="card-header">
-              <h3 style="font-size:14px;"><i class="fas fa-file-alt"></i> Select Exam</h3>
-            </div>
-            <div class="card-body" style="padding:12px;max-height:500px;overflow-y:auto;">
+            <div class="card-header"><h3><i class="fas fa-file-alt"></i> Select Exam</h3></div>
+            <div class="card-body" style="padding:10px;max-height:500px;overflow-y:auto;">
               <div id="reval-exam-list"><p class="text-muted text-small">Loading exams…</p></div>
             </div>
           </div>
         </div>
-
-        <!-- RIGHT: Attempts + Actions -->
         <div>
-          <!-- Actions bar -->
           <div id="reval-attempts-section" style="display:none;">
-            <div class="card" style="margin-bottom:16px;">
+            <div class="card" style="margin-bottom:14px;">
               <div class="card-header" style="flex-wrap:wrap;gap:10px;">
                 <div>
-                  <h3 style="font-size:15px;" id="reval-exam-name">—</h3>
-                  <span style="font-size:12px;color:var(--text2);" id="reval-count">0 attempts</span>
+                  <h3 id="reval-exam-name">—</h3>
+                  <span style="font-size:12px;color:var(--gray-600);" id="reval-count">0 attempts</span>
                 </div>
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                  <button class="btn btn-outline btn-sm" onclick="clearRevalLog()">
-                    <i class="fas fa-trash"></i> Clear Log
-                  </button>
+                  <button class="btn btn-ghost btn-sm" onclick="clearRevalLog()"><i class="fas fa-trash"></i> Clear Log</button>
                   <button class="btn btn-primary" id="reval-bulk-btn" onclick="revaluateAll()" disabled>
-                    <i class="fas fa-sync-alt"></i> Revaluate All Attempts
+                    <i class="fas fa-sync-alt"></i> Revaluate All
                   </button>
                 </div>
               </div>
-
-              <!-- Progress bar (hidden until bulk starts) -->
-              <div id="reval-progress" style="display:none;padding:0 20px 16px;">
-                <div class="reval-prog-bar">
-                  <div class="reval-prog-fill" id="reval-prog-fill"></div>
-                </div>
-                <div style="font-size:12px;color:var(--text2);text-align:center;" id="reval-prog-text">Starting…</div>
+              <div id="reval-progress" style="display:none;padding:0 18px 14px;">
+                <div class="reval-prog-bar"><div class="reval-prog-fill" id="reval-prog-fill"></div></div>
+                <div style="font-size:12px;color:var(--gray-600);text-align:center;" id="reval-prog-text">Starting…</div>
               </div>
             </div>
-
-            <!-- Attempts table -->
-            <div class="card" style="margin-bottom:16px;">
-              <div class="card-header"><h3 style="font-size:14px;"><i class="fas fa-list"></i> Submitted Attempts</h3></div>
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-header"><h3><i class="fas fa-list"></i> Submitted Attempts</h3></div>
               <div class="table-wrap">
                 <table>
-                  <thead>
-                    <tr>
-                      <th>Candidate</th>
-                      <th>Score</th>
-                      <th>Max</th>
-                      <th style="text-align:center;">Rank</th>
-                      <th>Submitted</th>
-                      <th>Last Revaluated</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody id="reval-attempts-tbody">
-                    <tr><td colspan="7" class="text-center text-muted">Select an exam to begin.</td></tr>
-                  </tbody>
+                  <thead><tr><th>Candidate</th><th>Score</th><th>Max</th><th>Rank</th><th>Submitted</th><th>Last Reval</th><th>Action</th></tr></thead>
+                  <tbody id="reval-attempts-tbody"><tr><td colspan="7" class="text-center text-muted">Select an exam.</td></tr></tbody>
                 </table>
               </div>
             </div>
           </div>
-
-          <!-- Revaluation Log (shown after a run) -->
           <div id="reval-log-section" style="display:none;">
             <div class="card">
-              <div class="card-header">
-                <h3 style="font-size:14px;"><i class="fas fa-clipboard-list"></i> Revaluation Log</h3>
-                <span class="badge badge-muted">This session only</span>
-              </div>
+              <div class="card-header"><h3><i class="fas fa-clipboard-list"></i> Revaluation Log</h3><span class="badge badge-muted">This session only</span></div>
               <div class="table-wrap">
                 <table>
-                  <thead>
-                    <tr>
-                      <th>Candidate</th>
-                      <th>Old Score</th>
-                      <th>New Score</th>
-                      <th>Change</th>
-                      <th>New Rank</th>
-                      <th>Time</th>
-                    </tr>
-                  </thead>
+                  <thead><tr><th>Candidate</th><th>Old Score</th><th>New Score</th><th>Change</th><th>New Rank</th><th>Time</th></tr></thead>
                   <tbody id="reval-log-tbody"></tbody>
                 </table>
               </div>
             </div>
           </div>
-
-          <!-- Empty state when no exam selected -->
-          <div id="reval-empty-state" style="text-align:center;padding:60px 20px;color:var(--text3);">
-            <div style="font-size:48px;margin-bottom:16px;"><i class="fas fa-sync-alt"></i></div>
-            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Select an exam to begin</div>
-            <div style="font-size:13px;">Choose an exam from the left panel to view its attempts and run revaluation.</div>
+          <div id="reval-empty-state" style="text-align:center;padding:60px 20px;color:var(--gray-600);">
+            <div style="font-size:48px;margin-bottom:14px;opacity:.3;"><i class="fas fa-sync-alt"></i></div>
+            <div style="font-size:15px;font-weight:700;margin-bottom:6px;color:var(--navy);">Select an exam to begin</div>
+            <div style="font-size:13px;">Choose an exam from the left panel to view attempts and run revaluation.</div>
           </div>
         </div>
-
       </div>
     </div>
 
     <!-- ── DISCUSSION PANEL ── -->
     <div class="admin-panel" id="panel-discussion">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
         <div>
-          <h2 style="font-size:20px;font-weight:800;color:var(--primary);margin-bottom:4px;">
-            <i class="fas fa-comments"></i> Discussion Moderation
-          </h2>
-          <p style="font-size:13px;color:var(--text2);">Monitor, moderate and post announcements across all channels.</p>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;">
+            <span style="background:var(--blue);color:#fff;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;"><i class="fas fa-comments"></i></span>
+            Discussion Moderation
+          </div>
+          <div style="font-size:12px;color:var(--gray-600);margin-top:3px;">Monitor, moderate and post announcements across all channels.</div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <select class="form-control" id="admin-ch-filter" style="width:180px;" onchange="adminLoadDiscussion()">
+          <select class="form-control" id="admin-ch-filter" style="width:175px;" onchange="adminLoadDiscussion()">
             <option value="">All Channels</option>
             <option value="general">general</option>
             <option value="gate-geology">gate-geology</option>
@@ -638,39 +1219,41 @@
             <option value="doubts">doubts</option>
             <option value="announcements">announcements</option>
           </select>
-          <button class="btn btn-primary btn-sm" onclick="adminOpenAnnouncement()">
+          <button class="btn btn-accent btn-sm" onclick="adminOpenAnnouncement()">
             <i class="fas fa-bullhorn"></i> Post Announcement
           </button>
         </div>
       </div>
 
       <!-- Stats row -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
-        <div class="card" style="padding:16px;text-align:center;">
-          <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--primary);" id="disc-stat-total">—</div>
-          <div style="font-size:12px;color:var(--text2);font-weight:600;">Total Messages</div>
+      <div class="disc-stats-row">
+        <div class="disc-stat-card">
+          <div class="ds-num" style="color:var(--navy);" id="disc-stat-total">—</div>
+          <div class="ds-lbl">Total Messages</div>
         </div>
-        <div class="card" style="padding:16px;text-align:center;">
-          <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--success);" id="disc-stat-today">—</div>
-          <div style="font-size:12px;color:var(--text2);font-weight:600;">Today</div>
+        <div class="disc-stat-card">
+          <div class="ds-num" style="color:var(--green);" id="disc-stat-today">—</div>
+          <div class="ds-lbl">Today</div>
         </div>
-        <div class="card" style="padding:16px;text-align:center;">
-          <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--warning);" id="disc-stat-flagged">—</div>
-          <div style="font-size:12px;color:var(--text2);font-weight:600;">Flagged</div>
+        <div class="disc-stat-card">
+          <div class="ds-num" style="color:var(--accent);" id="disc-stat-flagged">—</div>
+          <div class="ds-lbl">Flagged</div>
         </div>
-        <div class="card" style="padding:16px;text-align:center;">
-          <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--accent);" id="disc-stat-online">—</div>
-          <div style="font-size:12px;color:var(--text2);font-weight:600;">Online Now</div>
+        <div class="disc-stat-card">
+          <div class="ds-num" style="color:var(--blue);" id="disc-stat-online">—</div>
+          <div class="ds-lbl">Online Now</div>
         </div>
       </div>
 
-      <!-- Announcement Composer (hidden by default) -->
-      <div class="card" id="announce-composer" style="display:none;margin-bottom:20px;border:2px solid var(--primary);">
-        <div class="card-header" style="background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);color:#fff;">
-          <h3 style="font-size:15px;color:#fff;"><i class="fas fa-bullhorn"></i> Post Announcement</h3>
-          <button class="btn btn-ghost btn-sm" onclick="adminCloseAnnouncement()" style="color:rgba(255,255,255,.8)"><i class="fas fa-times"></i></button>
+      <!-- Announcement composer -->
+      <div class="announce-composer" id="announce-composer" style="display:none;">
+        <div class="announce-composer-header">
+          <h3><i class="fas fa-bullhorn"></i> Post Announcement</h3>
+          <button class="btn btn-ghost btn-sm" onclick="adminCloseAnnouncement()" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.2);">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-        <div class="card-body" style="padding:16px;">
+        <div class="announce-composer-body">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
             <div>
               <label class="form-label">Channel</label>
@@ -683,7 +1266,7 @@
               </select>
             </div>
             <div style="display:flex;align-items:flex-end;">
-              <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
                 <input type="checkbox" id="ann-pin"> <span>📌 Pin this message</span>
               </label>
             </div>
@@ -697,36 +1280,42 @@
         </div>
       </div>
 
-      <!-- Messages Table -->
+      <!-- Messages list -->
       <div class="card">
         <div class="card-header">
-          <h3 style="font-size:15px;">Recent Messages</h3>
+          <h3>Recent Messages</h3>
           <div style="display:flex;gap:8px;">
             <input type="text" class="form-control" id="disc-search" placeholder="Search…" style="width:200px;" oninput="adminFilterDiscussion()">
-            <button class="btn btn-ghost btn-sm" onclick="adminLoadDiscussion()"><i class="fas fa-sync-alt"></i></button>
+            <button class="btn btn-ghost btn-sm" onclick="adminLoadDiscussion()" title="Refresh"><i class="fas fa-sync-alt"></i></button>
           </div>
         </div>
-        <div class="card-body" style="padding:0;">
-          <div id="disc-msg-list" style="max-height:580px;overflow-y:auto;">
-            <div style="text-align:center;padding:48px;color:var(--text3);">
-              <i class="fas fa-comments" style="font-size:36px;opacity:.3;margin-bottom:12px;display:block;"></i>
+        <div style="padding:0;">
+          <div id="disc-msg-list" style="max-height:560px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--accent2) transparent;">
+            <div style="text-align:center;padding:48px;color:var(--gray-600);">
+              <i class="fas fa-comments" style="font-size:36px;opacity:.2;margin-bottom:12px;display:block;"></i>
               Click the Discussion nav item to load messages.
             </div>
           </div>
         </div>
       </div>
     </div>
-    <!-- ── END DISCUSSION PANEL ── -->
+    <!-- ── END DISCUSSION ── -->
 
-  </div>
-</div>
+  </div><!-- admin-content -->
+</div><!-- admin-main -->
 
 <!-- Question Edit Modal -->
 <div class="modal-overlay" id="edit-q-modal">
   <div class="modal" style="max-width:720px;">
-    <div class="modal-header"><h3>Edit Question</h3><button class="modal-close" onclick="closeModal('edit-q-modal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-header">
+      <h3>Edit Question</h3>
+      <button class="modal-close" onclick="closeModal('edit-q-modal')"><i class="fas fa-times"></i></button>
+    </div>
     <div class="modal-body" id="edit-q-body"></div>
-    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('edit-q-modal')">Cancel</button><button class="btn btn-primary" onclick="updateQuestion()">Save Changes</button></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('edit-q-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="updateQuestion()">Save Changes</button>
+    </div>
   </div>
 </div>
 
@@ -737,11 +1326,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="../js/firebase-config.js"></script>
 <script>
-// ── Breadcrumb labels — applied after admin.js loads via window.onload ──
 const PANEL_LABELS = {
   'dashboard':    ['Overview',   'Dashboard'],
   'qbank':        ['Questions',  'Question Bank'],
-  'add-single':   ['Questions',  'Add Single Question'],
+  'add-single':   ['Questions',  'Add Question'],
   'add-bulk':     ['Questions',  'Bulk Upload PDF'],
   'exams':        ['Exams',      'Manage Exams'],
   'create-exam':  ['Exams',      'Create / Edit Exam'],
@@ -751,7 +1339,6 @@ const PANEL_LABELS = {
   'revaluation':  ['Tools',      'Revaluation Centre'],
   'discussion':   ['Community',  'Discussion Moderation'],
 };
-// Wrap showPanel AFTER admin.js has loaded (window.onload fires after all scripts)
 window.addEventListener('load', () => {
   const origSP = window.showPanel;
   if (typeof origSP === 'function') {
@@ -759,11 +1346,12 @@ window.addEventListener('load', () => {
       origSP(id);
       const lbl = PANEL_LABELS[id] || ['Admin', id];
       const bc = document.getElementById('panel-breadcrumb');
-      if (bc) bc.textContent = 'GeoExam Admin › ' + lbl[0] + ' › ' + lbl[1];
+      if (bc) bc.textContent = 'GeoExam Admin \u203a ' + lbl[0] + ' \u203a ' + lbl[1];
     };
   }
 });
-
-// NOTE: All discussion logic lives exclusively in js/admin.js
+// All discussion + panel logic lives in js/admin.js
 </script>
 <script src="js/admin.js"></script>
+</body>
+</html>
