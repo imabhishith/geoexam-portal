@@ -777,8 +777,10 @@ function adminLoadDiscussion() {
   const chFilter = document.getElementById('admin-ch-filter')?.value || '';
   if (adminDiscUnsubscribe) adminDiscUnsubscribe();
 
-  let query = db.collection('discussion_messages').orderBy('createdAt', 'desc').limit(200);
+  // FIX: .where() must come before .orderBy() to avoid Firestore composite index errors
+  let query = db.collection('discussion_messages');
   if (chFilter) query = query.where('channel', '==', chFilter);
+  query = query.orderBy('createdAt', 'desc').limit(200);
 
   adminDiscUnsubscribe = query.onSnapshot(snap => {
     adminDiscMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -788,6 +790,10 @@ function adminLoadDiscussion() {
     const flagged = adminDiscMessages.filter(m => m.flagged).length;
     const badge = document.getElementById('nav-discussion-badge');
     if (badge) { badge.textContent = flagged; badge.style.display = flagged > 0 ? 'inline' : 'none'; }
+  }, err => {
+    const list = document.getElementById('disc-msg-list');
+    if (list) list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--danger);"><i class="fas fa-exclamation-triangle" style="font-size:32px;margin-bottom:12px;"></i><p style="font-weight:700;">Error loading messages</p><p style="font-size:12px;opacity:.7;">${err.message}</p>${err.message.includes('index') ? '<p style="font-size:12px;margin-top:8px;">Create a Firestore composite index for <strong>channel + createdAt</strong>.</p>' : ''}</div>`;
+    Utils.toast('Discussion error: ' + err.message, 'error');
   });
 
   db.collection('presence').where('online', '==', true).get().then(s => {
@@ -846,7 +852,7 @@ function adminRenderMessages(msgs) {
           ${msg.flagged ? '<span class="badge badge-danger" style="font-size:10px;">🚩 Flagged</span>' : ''}
           <span style="font-size:11px;color:var(--text3);margin-left:auto;">${ts}</span>
         </div>
-        <div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;">${msg.text || ''}</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;">${adminEscHtml(msg.text || '')}</div>
       </div>
       <div style="display:flex;gap:4px;flex-shrink:0;">
         <button class="btn btn-ghost btn-sm" onclick="adminPinMsg('${msg.id}',${!msg.pinned})" title="${msg.pinned ? 'Unpin' : 'Pin'}">
@@ -903,7 +909,9 @@ async function adminPostAnnouncement() {
   if (!text) { Utils.toast('Please enter a message.', 'error'); return; }
 
   const adminUser = auth.currentUser;
-  const ud = (await db.collection('users').doc(adminUser.uid).get()).data();
+  if (!adminUser) { Utils.toast('Not authenticated.', 'error'); return; }
+  const udSnap = await db.collection('users').doc(adminUser.uid).get();
+  const ud = udSnap.exists ? udSnap.data() : {};
 
   if (pin) {
     const existing = adminDiscMessages.filter(m => m.channel === channel && m.pinned);
@@ -927,6 +935,12 @@ async function adminPostAnnouncement() {
   Utils.toast('Announcement posted!', 'success');
 }
 /* ─── END ADMIN DISCUSSION LOGIC ─── */
+
+// ── HTML escape helper (prevents XSS in admin message list) ──
+function adminEscHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
 </script>
 <script src="js/admin.js"></script>
 </body>
