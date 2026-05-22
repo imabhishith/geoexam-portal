@@ -1191,6 +1191,7 @@ async function selectRevalExam(examId) {
   const exam = revalExams.find(e => e.id === examId);
   document.getElementById('reval-exam-name').textContent = exam?.title || '—';
   document.getElementById('reval-attempts-section').style.display = 'block';
+  document.getElementById('reval-empty-state').style.display = 'none';
   document.getElementById('reval-log-section').style.display = 'none';
   document.getElementById('reval-attempts-tbody').innerHTML =
     '<tr><td colspan="7" class="text-center text-muted"><div class="spinner" style="margin:0 auto;width:20px;height:20px;border-width:3px;"></div></td></tr>';
@@ -1511,11 +1512,13 @@ function adminLoadDiscussion() {
       adminDiscUnsubscribe = null;
     }
 
-    let query = db.collection('discussion_messages').orderBy('createdAt', 'desc').limit(200);
-    
+    // IMPORTANT: .where() must come before .orderBy() in Firestore or it throws
+    // "requires a composite index" / invalid query errors.
+    let query = db.collection('discussion_messages');
     if (chFilter) {
       query = query.where('channel', '==', chFilter);
     }
+    query = query.orderBy('createdAt', 'desc').limit(200);
 
     // Listen with proper error handling
     adminDiscUnsubscribe = query.onSnapshot(
@@ -1581,6 +1584,9 @@ function adminUpdateStats() {
   if (flaggedEl) {
     const flagged = adminDiscMessages.filter(m => m.flagged).length;
     flaggedEl.textContent = flagged;
+    // Also update the nav badge
+    const badge = document.getElementById('nav-discussion-badge');
+    if (badge) { badge.textContent = flagged; badge.style.display = flagged > 0 ? 'inline' : 'none'; }
   }
 }
 
