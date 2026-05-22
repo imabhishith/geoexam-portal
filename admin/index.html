@@ -737,211 +737,33 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="../js/firebase-config.js"></script>
 <script>
-// Breadcrumb labels
+// ── Breadcrumb labels — applied after admin.js loads via window.onload ──
 const PANEL_LABELS = {
-  'dashboard': ['Overview', 'Dashboard'],
-  'qbank': ['Questions', 'Question Bank'],
-  'add-single': ['Questions', 'Add Single Question'],
-  'add-bulk': ['Questions', 'Bulk Upload PDF'],
-  'exams': ['Exams', 'Manage Exams'],
-  'create-exam': ['Exams', 'Create / Edit Exam'],
-  'attempts': ['Analytics', 'All Attempts'],
-  'flagged': ['Analytics', 'Flagged Attempts'],
-  'users': ['Analytics', 'Users'],
-  'revaluation': ['Tools', 'Revaluation Centre'],
-  'discussion': ['Community', 'Discussion Moderation'],
+  'dashboard':    ['Overview',   'Dashboard'],
+  'qbank':        ['Questions',  'Question Bank'],
+  'add-single':   ['Questions',  'Add Single Question'],
+  'add-bulk':     ['Questions',  'Bulk Upload PDF'],
+  'exams':        ['Exams',      'Manage Exams'],
+  'create-exam':  ['Exams',      'Create / Edit Exam'],
+  'attempts':     ['Analytics',  'All Attempts'],
+  'flagged':      ['Analytics',  'Flagged Attempts'],
+  'users':        ['Analytics',  'Users'],
+  'revaluation':  ['Tools',      'Revaluation Centre'],
+  'discussion':   ['Community',  'Discussion Moderation'],
 };
-const _origShowPanel = typeof showPanel === 'function' ? showPanel : null;
-document.addEventListener('DOMContentLoaded', () => {
-  // Wrap showPanel after admin.js loads
+// Wrap showPanel AFTER admin.js has loaded (window.onload fires after all scripts)
+window.addEventListener('load', () => {
   const origSP = window.showPanel;
-  if (origSP) {
+  if (typeof origSP === 'function') {
     window.showPanel = function(id) {
       origSP(id);
       const lbl = PANEL_LABELS[id] || ['Admin', id];
       const bc = document.getElementById('panel-breadcrumb');
       if (bc) bc.textContent = 'GeoExam Admin › ' + lbl[0] + ' › ' + lbl[1];
-      // Auto-load discussion when panel is shown
-      if (id === 'discussion') {
-        if (typeof adminLoadDiscussion === 'function') adminLoadDiscussion();
-      }
     };
   }
 });
 
-/* ─── ADMIN DISCUSSION LOGIC ─── */
-let adminDiscMessages = [];
-let adminDiscUnsubscribe = null;
-
-function adminLoadDiscussion() {
-  const chFilter = document.getElementById('admin-ch-filter')?.value || '';
-  if (adminDiscUnsubscribe) adminDiscUnsubscribe();
-
-  // FIX: .where() must come before .orderBy() to avoid Firestore composite index errors
-  let query = db.collection('discussion_messages');
-  if (chFilter) query = query.where('channel', '==', chFilter);
-  query = query.orderBy('createdAt', 'desc').limit(200);
-
-  adminDiscUnsubscribe = query.onSnapshot(snap => {
-    adminDiscMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    adminUpdateDiscStats();
-    adminRenderMessages(adminDiscMessages);
-    // Update badge with flagged count
-    const flagged = adminDiscMessages.filter(m => m.flagged).length;
-    const badge = document.getElementById('nav-discussion-badge');
-    if (badge) { badge.textContent = flagged; badge.style.display = flagged > 0 ? 'inline' : 'none'; }
-  }, err => {
-    const list = document.getElementById('disc-msg-list');
-    if (list) list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--danger);"><i class="fas fa-exclamation-triangle" style="font-size:32px;margin-bottom:12px;"></i><p style="font-weight:700;">Error loading messages</p><p style="font-size:12px;opacity:.7;">${err.message}</p>${err.message.includes('index') ? '<p style="font-size:12px;margin-top:8px;">Create a Firestore composite index for <strong>channel + createdAt</strong>.</p>' : ''}</div>`;
-    Utils.toast('Discussion error: ' + err.message, 'error');
-  });
-
-  db.collection('presence').where('online', '==', true).get().then(s => {
-    const el = document.getElementById('disc-stat-online');
-    if (el) el.textContent = s.size;
-  }).catch(() => {});
-}
-
-function adminUpdateDiscStats() {
-  const total = document.getElementById('disc-stat-total');
-  const today = document.getElementById('disc-stat-today');
-  const flagged = document.getElementById('disc-stat-flagged');
-  if (!total) return;
-  total.textContent = adminDiscMessages.length;
-  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
-  today.textContent = adminDiscMessages.filter(m => {
-    const ts = m.createdAt?.toDate?.();
-    return ts && ts >= todayStart;
-  }).length;
-  flagged.textContent = adminDiscMessages.filter(m => m.flagged).length;
-}
-
-function adminFilterDiscussion() {
-  const q = (document.getElementById('disc-search')?.value || '').toLowerCase();
-  const filtered = q
-    ? adminDiscMessages.filter(m => m.text?.toLowerCase().includes(q) || m.senderName?.toLowerCase().includes(q))
-    : adminDiscMessages;
-  adminRenderMessages(filtered);
-}
-
-function adminRenderMessages(msgs) {
-  const list = document.getElementById('disc-msg-list');
-  if (!list) return;
-  if (!msgs.length) {
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);">No messages found.</div>';
-    return;
-  }
-  const CH_COLORS = {
-    general: '#dbeafe', 'gate-geology': '#dcfce7', 'csir-net': '#fef9c3',
-    doubts: '#fce7f3', announcements: '#f3e8ff'
-  };
-  list.innerHTML = msgs.slice(0, 100).map(msg => {
-    const ts = msg.createdAt?.toDate?.()?.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) || '—';
-    const chColor = CH_COLORS[msg.channel] || '#f1f5f9';
-    const flagBg = msg.flagged ? 'background:#fff7ed;border-left:3px solid #f97316;' : '';
-    return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);${flagBg}transition:background .15s;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
-      <div style="width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">
-        ${(msg.senderName || 'S')[0].toUpperCase()}
-      </div>
-      <div style="flex:1;min-width:0;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
-          <strong style="font-size:14px;">${msg.senderName || 'Student'}</strong>
-          ${msg.senderRole === 'admin' ? '<span class="badge" style="background:#7c3aed;color:#fff;font-size:10px;">ADMIN</span>' : ''}
-          <span style="background:${chColor};color:var(--text);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;">#${msg.channel}</span>
-          ${msg.pinned ? '<span class="badge badge-warning" style="font-size:10px;">📌 Pinned</span>' : ''}
-          ${msg.flagged ? '<span class="badge badge-danger" style="font-size:10px;">🚩 Flagged</span>' : ''}
-          <span style="font-size:11px;color:var(--text3);margin-left:auto;">${ts}</span>
-        </div>
-        <div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;">${adminEscHtml(msg.text || '')}</div>
-      </div>
-      <div style="display:flex;gap:4px;flex-shrink:0;">
-        <button class="btn btn-ghost btn-sm" onclick="adminPinMsg('${msg.id}',${!msg.pinned})" title="${msg.pinned ? 'Unpin' : 'Pin'}">
-          <i class="fas fa-thumbtack" style="color:${msg.pinned ? 'var(--warning)' : 'var(--text3)'}"></i>
-        </button>
-        <button class="btn btn-ghost btn-sm" onclick="adminFlagMsg('${msg.id}',${!msg.flagged})" title="${msg.flagged ? 'Unflag' : 'Flag'}">
-          <i class="fas fa-flag" style="color:${msg.flagged ? 'var(--danger)' : 'var(--text3)'}"></i>
-        </button>
-        <button class="btn btn-ghost btn-sm" onclick="adminDeleteMsg('${msg.id}')" title="Delete">
-          <i class="fas fa-trash" style="color:var(--danger)"></i>
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function adminPinMsg(id, pinned) {
-  if (pinned) {
-    const msg = adminDiscMessages.find(m => m.id === id);
-    if (msg) {
-      const others = adminDiscMessages.filter(m => m.channel === msg.channel && m.pinned && m.id !== id);
-      await Promise.all(others.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
-    }
-  }
-  await db.collection('discussion_messages').doc(id).update({ pinned });
-  Utils.toast(pinned ? 'Message pinned.' : 'Message unpinned.', 'success');
-}
-
-async function adminFlagMsg(id, flagged) {
-  await db.collection('discussion_messages').doc(id).update({ flagged });
-  Utils.toast(flagged ? 'Message flagged.' : 'Message unflagged.', flagged ? 'error' : 'success');
-}
-
-async function adminDeleteMsg(id) {
-  if (!confirm('Delete this message permanently?')) return;
-  await db.collection('discussion_messages').doc(id).delete();
-  Utils.toast('Message deleted.', 'success');
-}
-
-function adminOpenAnnouncement() {
-  const el = document.getElementById('announce-composer');
-  if (el) { el.style.display = 'block'; document.getElementById('ann-text')?.focus(); }
-}
-
-function adminCloseAnnouncement() {
-  const el = document.getElementById('announce-composer');
-  if (el) el.style.display = 'none';
-}
-
-async function adminPostAnnouncement() {
-  const text = document.getElementById('ann-text')?.value.trim();
-  const channel = document.getElementById('ann-channel')?.value;
-  const pin = document.getElementById('ann-pin')?.checked;
-  if (!text) { Utils.toast('Please enter a message.', 'error'); return; }
-
-  const adminUser = auth.currentUser;
-  if (!adminUser) { Utils.toast('Not authenticated.', 'error'); return; }
-  const udSnap = await db.collection('users').doc(adminUser.uid).get();
-  const ud = udSnap.exists ? udSnap.data() : {};
-
-  if (pin) {
-    const existing = adminDiscMessages.filter(m => m.channel === channel && m.pinned);
-    await Promise.all(existing.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
-  }
-
-  await db.collection('discussion_messages').add({
-    channel,
-    userId: adminUser.uid,
-    senderName: `${ud?.firstName || 'Admin'} ${ud?.lastName || ''}`.trim(),
-    senderRole: 'admin',
-    text,
-    pinned: pin,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    reactions: {},
-  });
-
-  document.getElementById('ann-text').value = '';
-  if (document.getElementById('ann-pin')) document.getElementById('ann-pin').checked = false;
-  adminCloseAnnouncement();
-  Utils.toast('Announcement posted!', 'success');
-}
-/* ─── END ADMIN DISCUSSION LOGIC ─── */
-
-// ── HTML escape helper (prevents XSS in admin message list) ──
-function adminEscHtml(str) {
-  if (!str) return '';
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-}
+// NOTE: All discussion logic lives exclusively in js/admin.js
 </script>
 <script src="js/admin.js"></script>
-</body>
-</html>
