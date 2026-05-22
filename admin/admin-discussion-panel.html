@@ -1,6 +1,9 @@
 <!-- ============================================================
-  ADMIN DISCUSSION PANEL
-  Add this inside the admin HTML's sidebar nav + panel area.
+  ADMIN DISCUSSION PANEL — FIXED VERSION
+  Bug Fixes:
+  1. Added proper error handling for Firestore permissions
+  2. Fixed emoji picker functionality  
+  3. Improved listener management
   ============================================================ -->
 
 <!-- 1. Add this nav link inside .admin-nav (in your admin HTML sidebar) -->
@@ -73,10 +76,13 @@
             <option value="doubts">doubts</option>
           </select>
         </div>
-        <div style="display:flex;align-items:flex-end;">
+        <div style="display:flex;align-items:flex-end;gap:8px;">
           <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
             <input type="checkbox" id="ann-pin"> <span>📌 Pin this message</span>
           </label>
+          <button class="btn btn-ghost btn-sm" id="admin-emoji-btn" type="button" title="Add emoji">
+            <i class="fas fa-smile"></i>
+          </button>
         </div>
       </div>
       <label class="form-label">Message</label>
@@ -106,7 +112,7 @@
 </div>
 
 <!-- ============================================================
-  ADMIN DISCUSSION JAVASCRIPT
+  ADMIN DISCUSSION JAVASCRIPT — FIXED VERSION
   Add this to the bottom of admin.js
   ============================================================ -->
 <script>
@@ -114,30 +120,73 @@
 
 let adminDiscMessages = [];
 let adminDiscUnsubscribe = null;
+let adminEmojiOpen = false;
+const ADMIN_EMOJIS = ['😀','😂','🤔','👍','👎','🔥','✅','❌','❓','💡','📖','🎯','🏆','😅','🙏'];
 
-// Called when Discussion panel is shown
+// ── FIXED: Called when Discussion panel is shown ──
 function adminLoadDiscussion() {
-  const chFilter = document.getElementById('admin-ch-filter').value;
-  if (adminDiscUnsubscribe) adminDiscUnsubscribe();
+  try {
+    const chFilter = document.getElementById('admin-ch-filter')?.value || '';
+    
+    // Unsubscribe previous listener if exists
+    if (adminDiscUnsubscribe) {
+      adminDiscUnsubscribe();
+      adminDiscUnsubscribe = null;
+    }
 
-  let query = db.collection('discussion_messages').orderBy('createdAt', 'desc').limit(200);
-  if (chFilter) query = query.where('channel', '==', chFilter);
+    let query = db.collection('discussion_messages').orderBy('createdAt', 'desc').limit(200);
+    
+    if (chFilter) {
+      query = query.where('channel', '==', chFilter);
+    }
 
-  adminDiscUnsubscribe = query.onSnapshot(snap => {
-    adminDiscMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    adminUpdateStats();
-    adminRenderMessages(adminDiscMessages);
-  });
+    // Listen with proper error handling
+    adminDiscUnsubscribe = query.onSnapshot(
+      snap => {
+        try {
+          adminDiscMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          adminUpdateStats();
+          adminRenderMessages(adminDiscMessages);
+        } catch(error) {
+          console.error('Error processing messages:', error);
+          Utils.toast('Error loading messages: ' + error.message, 'error');
+        }
+      },
+      error => {
+        console.error('Firestore listener error:', error);
+        if (error.code === 'permission-denied') {
+          Utils.toast('Permission denied. Check Firestore security rules.', 'error');
+        } else {
+          Utils.toast('Error loading messages: ' + error.message, 'error');
+        }
+      }
+    );
 
-  // Online count
-  db.collection('presence').where('online','==',true).get().then(s => {
-    document.getElementById('disc-stat-online').textContent = s.size;
-  });
+    // Load online count with error handling
+    setTimeout(() => {
+      db.collection('presence')
+        .where('online', '==', true)
+        .get()
+        .then(s => {
+          const onlineEl = document.getElementById('disc-stat-online');
+          if (onlineEl) onlineEl.textContent = s.size;
+        })
+        .catch(err => {
+          console.error('Error loading online count:', err);
+          document.getElementById('disc-stat-online').textContent = '0';
+        });
+    }, 500);
+
+  } catch(error) {
+    console.error('Error in adminLoadDiscussion:', error);
+    Utils.toast('Error: ' + error.message, 'error');
+  }
 }
 
 function adminUpdateStats() {
   document.getElementById('disc-stat-total').textContent = adminDiscMessages.length;
-  const today = new Date(); today.setHours(0,0,0,0);
+  const today = new Date(); 
+  today.setHours(0,0,0,0);
   const todayCount = adminDiscMessages.filter(m => {
     const ts = m.createdAt?.toDate?.();
     return ts && ts >= today;
@@ -202,27 +251,38 @@ function adminRenderMessages(msgs) {
 }
 
 async function adminPinMsg(id, pinned) {
-  // Unpin all others in channel first if pinning
-  if (pinned) {
-    const msg = adminDiscMessages.find(m => m.id === id);
-    if (msg) {
-      const others = adminDiscMessages.filter(m => m.channel === msg.channel && m.pinned && m.id !== id);
-      await Promise.all(others.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
+  try {
+    if (pinned) {
+      const msg = adminDiscMessages.find(m => m.id === id);
+      if (msg) {
+        const others = adminDiscMessages.filter(m => m.channel === msg.channel && m.pinned && m.id !== id);
+        await Promise.all(others.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
+      }
     }
+    await db.collection('discussion_messages').doc(id).update({ pinned });
+    Utils.toast(pinned ? 'Message pinned.' : 'Message unpinned.', 'success');
+  } catch(e) {
+    Utils.toast('Error: ' + e.message, 'error');
   }
-  await db.collection('discussion_messages').doc(id).update({ pinned });
-  Utils.toast(pinned ? 'Message pinned.' : 'Message unpinned.', 'success');
 }
 
 async function adminFlagMsg(id, flagged) {
-  await db.collection('discussion_messages').doc(id).update({ flagged });
-  Utils.toast(flagged ? 'Message flagged.' : 'Message unflagged.', flagged ? 'error' : 'success');
+  try {
+    await db.collection('discussion_messages').doc(id).update({ flagged });
+    Utils.toast(flagged ? 'Message flagged.' : 'Message unflagged.', flagged ? 'error' : 'success');
+  } catch(e) {
+    Utils.toast('Error: ' + e.message, 'error');
+  }
 }
 
 async function adminDeleteMsg(id) {
   if (!confirm('Delete this message permanently?')) return;
-  await db.collection('discussion_messages').doc(id).delete();
-  Utils.toast('Message deleted.', 'success');
+  try {
+    await db.collection('discussion_messages').doc(id).delete();
+    Utils.toast('Message deleted.', 'success');
+  } catch(e) {
+    Utils.toast('Error: ' + e.message, 'error');
+  }
 }
 
 function adminOpenAnnouncement() {
@@ -232,6 +292,10 @@ function adminOpenAnnouncement() {
 
 function adminCloseAnnouncement() {
   document.getElementById('announce-composer').style.display = 'none';
+  // Close emoji picker if open
+  const ep = document.getElementById('admin-emoji-picker');
+  if (ep) ep.remove();
+  adminEmojiOpen = false;
 }
 
 async function adminPostAnnouncement() {
@@ -239,34 +303,144 @@ async function adminPostAnnouncement() {
   const channel = document.getElementById('ann-channel').value;
   const pin = document.getElementById('ann-pin').checked;
 
-  if (!text) { Utils.toast('Please enter a message.', 'error'); return; }
-
-  const adminUser = auth.currentUser;
-  const ud = (await db.collection('users').doc(adminUser.uid).get()).data();
-
-  if (pin) {
-    // Unpin existing in channel
-    const existing = adminDiscMessages.filter(m => m.channel === channel && m.pinned);
-    await Promise.all(existing.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
+  if (!text) { 
+    Utils.toast('Please enter a message.', 'error'); 
+    return; 
   }
 
-  await db.collection('discussion_messages').add({
-    channel,
-    userId: adminUser.uid,
-    senderName: `${ud?.firstName||'Admin'} ${ud?.lastName||''}`.trim(),
-    senderRole: 'admin',
-    text,
-    pinned: pin,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    reactions: {},
+  try {
+    const adminUser = auth.currentUser;
+    const userDoc = await db.collection('users').doc(adminUser.uid).get();
+    const ud = userDoc.data();
+
+    if (pin) {
+      const existing = adminDiscMessages.filter(m => m.channel === channel && m.pinned);
+      await Promise.all(existing.map(m => db.collection('discussion_messages').doc(m.id).update({ pinned: false })));
+    }
+
+    await db.collection('discussion_messages').add({
+      channel,
+      userId: adminUser.uid,
+      senderName: `${ud?.firstName||'Admin'} ${ud?.lastName||''}`.trim(),
+      senderRole: 'admin',
+      text,
+      pinned: pin,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      reactions: {},
+    });
+
+    document.getElementById('ann-text').value = '';
+    document.getElementById('ann-pin').checked = false;
+    adminCloseAnnouncement();
+    Utils.toast('Announcement posted!', 'success');
+  } catch(e) {
+    console.error('Error posting announcement:', e);
+    Utils.toast('Error: ' + e.message, 'error');
+  }
+}
+
+// ── FIXED: Emoji Picker for Admin Panel ──
+function initAdminEmojiPicker() {
+  const emojiBtn = document.getElementById('admin-emoji-btn');
+  if (!emojiBtn) return;
+  
+  emojiBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    adminPickEmoji(this);
+  });
+}
+
+function adminPickEmoji(btn) {
+  // Close existing picker
+  const existing = document.getElementById('admin-emoji-picker');
+  if (existing) {
+    existing.remove();
+    adminEmojiOpen = false;
+    return;
+  }
+
+  adminEmojiOpen = true;
+  const ep = document.createElement('div');
+  ep.id = 'admin-emoji-picker';
+  ep.style.cssText = `
+    position: fixed;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 200px;
+    z-index: 9999;
+  `;
+
+  // Position below button
+  const rect = btn.getBoundingClientRect();
+  ep.style.left = rect.left + 'px';
+  ep.style.top = (rect.bottom + 8) + 'px';
+
+  ADMIN_EMOJIS.forEach(emoji => {
+    const span = document.createElement('span');
+    span.textContent = emoji;
+    span.style.cssText = 'font-size:18px;cursor:pointer;padding:4px;border-radius:6px;transition:background .1s;user-select:none;';
+    span.onmouseenter = () => span.style.background = 'var(--bg2)';
+    span.onmouseleave = () => span.style.background = '';
+    span.onclick = (e) => {
+      e.stopPropagation();
+      const textarea = document.getElementById('ann-text');
+      if (textarea) {
+        textarea.value += emoji;
+        textarea.focus();
+      }
+      ep.remove();
+      adminEmojiOpen = false;
+    };
+    ep.appendChild(span);
   });
 
-  document.getElementById('ann-text').value = '';
-  document.getElementById('ann-pin').checked = false;
-  adminCloseAnnouncement();
-  Utils.toast('Announcement posted!', 'success');
+  document.body.appendChild(ep);
+  
+  // Close on outside click
+  setTimeout(() => {
+    document.addEventListener('click', function closeEmojiPicker(e) {
+      if (ep && !ep.contains(e.target) && e.target !== btn) {
+        ep.remove();
+        adminEmojiOpen = false;
+        document.removeEventListener('click', closeEmojiPicker);
+      }
+    });
+  }, 100);
+}
+
+// Initialize emoji picker when the composer panel becomes visible
+function monitorAnnounceComposer() {
+  const observer = new MutationObserver(() => {
+    const composer = document.getElementById('announce-composer');
+    if (composer && composer.style.display !== 'none') {
+      initAdminEmojiPicker();
+    }
+  });
+  
+  const composer = document.getElementById('announce-composer');
+  if (composer) {
+    observer.observe(composer, { attributes: true });
+  }
+}
+
+// Call init after DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initAdminEmojiPicker();
+    monitorAnnounceComposer();
+  });
+} else {
+  initAdminEmojiPicker();
+  monitorAnnounceComposer();
 }
 
 // Add 'discussion' to showPanel titles map in your existing showPanel function:
-// titles['discussion'] = 'Discussion';
+// if (name === 'discussion') adminLoadDiscussion();
 </script>
