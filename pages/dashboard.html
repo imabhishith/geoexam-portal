@@ -65,13 +65,13 @@
     .nav-link {
       display: flex; align-items: center; padding: 0 14px;
       color: rgba(255,255,255,.6); font-size: 12.5px; font-weight: 600;
-      text-decoration: none; border-bottom: 3px solid transparent;
-      margin-bottom: -3px; letter-spacing: .01em;
-      transition: color .15s, border-color .15s;
+      text-decoration: none;
+      letter-spacing: .01em;
+      transition: color .15s;
       white-space: nowrap;
     }
-    .nav-link:hover { color: #fff; border-bottom-color: rgba(255,255,255,.25); text-decoration: none; }
-    .nav-link.active { color: #fff; border-bottom-color: var(--accent2); }
+    .nav-link:hover, .nav-link:focus, .nav-link:active { color: #fff; text-decoration: none; background: none !important; box-shadow: none !important; border-bottom: none !important; outline: none !important; }
+    .nav-link.active { color: #fff; }
     .nav-link i { font-size: 13px; }
     .nav-link span { margin-left: 5px; }
     .nav-right { display: flex; align-items: center; gap: 8px; padding: 0 14px; margin-left: auto; }
