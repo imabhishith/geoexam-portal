@@ -774,6 +774,16 @@
         <span class="icon"><i class="fas fa-comments"></i></span> Discussion
         <span id="nav-discussion-badge" style="background:var(--accent);color:#fff;display:none;margin-left:auto;font-size:10px;padding:1px 7px;border-radius:20px;font-weight:800;">0</span>
       </button>
+      <button class="admin-nav-link" data-panel="doubts" onclick="showPanel('doubts')">
+  <i class="fas fa-lightbulb"></i> Doubt Room
+  <span id="nav-doubts-badge" class="badge badge-danger" style="display:none;margin-left:auto;font-size:10px;">0</span>
+</button>
+<button class="admin-nav-link" data-panel="resources" onclick="showPanel('resources')">
+  <i class="fas fa-book"></i> Resources
+</button>
+<button class="admin-nav-link" data-panel="notifications" onclick="showPanel('notifications')">
+  <i class="fas fa-bell"></i> Notifications
+</button>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Tools</div>
@@ -1351,6 +1361,307 @@ window.addEventListener('load', () => {
   }
 });
 // All discussion + panel logic lives in js/admin.js
+  <!-- ══════════════════════════════════════════════════════════
+     PANEL 1: DOUBT SOLVING ROOM
+     ══════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="panel-doubts">
+ 
+  <!-- Header -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h2 style="font-size:20px;font-weight:800;color:var(--primary);margin-bottom:4px;">
+        <i class="fas fa-lightbulb"></i> Doubt Solving Room
+      </h2>
+      <p style="font-size:13px;color:var(--text2);">Answer student doubts, mark solved, manage replies.</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <select class="form-control" id="doubt-status-filter" style="width:150px;" onchange="adminLoadDoubts()">
+        <option value="">All Status</option>
+        <option value="open">⏳ Open</option>
+        <option value="solved">✅ Solved</option>
+      </select>
+      <select class="form-control" id="doubt-topic-filter" style="width:160px;" onchange="adminLoadDoubts()">
+        <option value="">All Topics</option>
+        <option value="gate-geology">GATE Geology</option>
+        <option value="csir-net">CSIR-NET</option>
+        <option value="general">General</option>
+        <option value="numericals">Numericals</option>
+        <option value="theory">Theory</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+  </div>
+ 
+  <!-- Stats -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--primary);" id="doubt-stat-total">—</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;">Total Doubts</div>
+    </div>
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--warning);" id="doubt-stat-open">—</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;">Open</div>
+    </div>
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--success);" id="doubt-stat-solved">—</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;">Solved</div>
+    </div>
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--accent);" id="doubt-stat-replies">—</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;">Total Replies</div>
+    </div>
+  </div>
+ 
+  <!-- Search -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-header">
+      <h3 style="font-size:15px;">Student Doubts</h3>
+      <div style="display:flex;gap:8px;">
+        <input type="text" class="form-control" id="doubt-search" placeholder="Search doubts…" style="width:220px;" oninput="adminFilterDoubts()">
+        <button class="btn btn-ghost btn-sm" onclick="adminLoadDoubts()" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div id="doubt-list" style="max-height:680px;overflow-y:auto;padding:16px;">
+        <div style="text-align:center;padding:40px;color:var(--text3);">
+          <i class="fas fa-lightbulb" style="font-size:36px;opacity:.3;display:block;margin-bottom:12px;"></i>
+          Click Doubt Room in the sidebar to load doubts.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ── END DOUBT PANEL ── -->
+ 
+ 
+<!-- ══════════════════════════════════════════════════════════
+     PANEL 2: RESOURCE LIBRARY
+     ══════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="panel-resources">
+ 
+  <!-- Header -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h2 style="font-size:20px;font-weight:800;color:var(--primary);margin-bottom:4px;">
+        <i class="fas fa-book"></i> Resource Library
+      </h2>
+      <p style="font-size:13px;color:var(--text2);">Manage PDFs, videos, notes and PYQs for students.</p>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="adminShowResourceForm(false)">
+      <i class="fas fa-plus"></i> Add Resource
+    </button>
+  </div>
+ 
+  <!-- Stats -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--primary);" id="res-stat-total">—</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;">Total</div>
+    </div>
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:#dc2626;" id="res-stat-pdf">—</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;">📄 PDFs</div>
+    </div>
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:#2563eb;" id="res-stat-video">—</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;">🎥 Videos</div>
+    </div>
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--success);" id="res-stat-downloads">—</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;">Total Downloads</div>
+    </div>
+  </div>
+ 
+  <!-- Add / Edit Resource Form (hidden by default) -->
+  <div class="card" id="res-form-container" style="display:none;margin-bottom:20px;border:2px solid var(--primary);">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);">
+      <h3 id="res-form-title" style="font-size:15px;color:#fff;">➕ Add New Resource</h3>
+      <button class="btn btn-ghost btn-sm" onclick="adminCloseResourceForm()" style="color:rgba(255,255,255,.8)"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="card-body" style="padding:20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div>
+          <label class="form-label">Title *</label>
+          <input type="text" class="form-control" id="res-f-title" placeholder="e.g. GATE 2023 Previous Year Questions">
+        </div>
+        <div>
+          <label class="form-label">Resource Type *</label>
+          <select class="form-control" id="res-f-type">
+            <option value="pdf">📄 PDF</option>
+            <option value="video">🎥 Video</option>
+            <option value="notes">📝 Notes</option>
+            <option value="pyq">📋 PYQ (Previous Year Questions)</option>
+            <option value="link">🔗 Link</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Subject</label>
+          <select class="form-control" id="res-f-subject">
+            <option>GATE Geology</option><option>CSIR-NET</option><option>General Geology</option>
+            <option>Geomorphology</option><option>Petrology</option><option>Mineralogy</option>
+            <option>Structural Geology</option><option>Stratigraphy</option><option>Economic Geology</option>
+            <option>Remote Sensing</option><option>Hydrogeology</option><option>Engineering Geology</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">URL / Link *</label>
+          <input type="url" class="form-control" id="res-f-url" placeholder="https://drive.google.com/… or YouTube link">
+        </div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" id="res-f-description" rows="2" placeholder="Brief description for students…" style="resize:vertical;"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:14px;align-items:end;">
+        <div>
+          <label class="form-label">Tags (comma-separated)</label>
+          <input type="text" class="form-control" id="res-f-tags" placeholder="e.g. petrology, igneous, 2023">
+        </div>
+        <div style="padding-bottom:4px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
+            <input type="checkbox" id="res-f-visible" checked> <span>Visible to students</span>
+          </label>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+        <button class="btn btn-ghost btn-sm" onclick="adminCloseResourceForm()">Cancel</button>
+        <button class="btn btn-primary" onclick="adminSaveResource()"><i class="fas fa-save"></i> Save Resource</button>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Filter + List -->
+  <div class="card">
+    <div class="card-header">
+      <h3 style="font-size:15px;">All Resources</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input type="text" class="form-control" id="res-search" placeholder="Search…" style="width:180px;" oninput="adminFilterResources()">
+        <select class="form-control" id="res-type-filter" style="width:130px;" onchange="adminFilterResources()">
+          <option value="">All Types</option>
+          <option value="pdf">📄 PDF</option><option value="video">🎥 Video</option>
+          <option value="notes">📝 Notes</option><option value="pyq">📋 PYQ</option>
+          <option value="link">🔗 Link</option>
+        </select>
+        <select class="form-control" id="res-subj-filter" style="width:170px;" onchange="adminFilterResources()">
+          <option value="">All Subjects</option>
+          <option>GATE Geology</option><option>CSIR-NET</option><option>General Geology</option>
+          <option>Petrology</option><option>Mineralogy</option><option>Structural Geology</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="adminLoadResources()" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0;overflow-x:auto;">
+      <div id="res-list" style="min-height:200px;">
+        <div style="text-align:center;padding:40px;color:var(--text3);">
+          <i class="fas fa-book" style="font-size:36px;opacity:.3;display:block;margin-bottom:12px;"></i>
+          Click Resources in the sidebar to load.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ── END RESOURCES PANEL ── -->
+ 
+ 
+<!-- ══════════════════════════════════════════════════════════
+     PANEL 3: NOTIFICATION CENTRE
+     ══════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="panel-notifications">
+ 
+  <!-- Header -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h2 style="font-size:20px;font-weight:800;color:var(--primary);margin-bottom:4px;">
+        <i class="fas fa-bell"></i> Notification Centre
+      </h2>
+      <p style="font-size:13px;color:var(--text2);">Send push notifications to all or specific students.</p>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="adminOpenNotifComposer()">
+      <i class="fas fa-paper-plane"></i> Send Notification
+    </button>
+  </div>
+ 
+  <!-- Stats -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;">
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--primary);" id="notif-stat-total">—</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;">Total Sent</div>
+    </div>
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--success);" id="notif-stat-broadcast">—</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;">📢 Broadcasts</div>
+    </div>
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--accent);" id="notif-stat-personal">—</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;">👤 Personal</div>
+    </div>
+  </div>
+ 
+  <!-- Compose Notification -->
+  <div class="card" id="notif-composer" style="display:none;margin-bottom:20px;border:2px solid var(--primary);">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);">
+      <h3 style="font-size:15px;color:#fff;"><i class="fas fa-paper-plane"></i> Compose Notification</h3>
+      <button class="btn btn-ghost btn-sm" onclick="adminCloseNotifComposer()" style="color:rgba(255,255,255,.8)"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="card-body" style="padding:20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div>
+          <label class="form-label">Title *</label>
+          <input type="text" class="form-control" id="notif-f-title" placeholder="e.g. New Exam Published!">
+        </div>
+        <div>
+          <label class="form-label">Type</label>
+          <select class="form-control" id="notif-f-type">
+            <option value="general">📢 General</option>
+            <option value="exam">📝 Exam</option>
+            <option value="resource">📚 Resource</option>
+            <option value="doubt">💡 Doubt</option>
+            <option value="system">⚙️ System</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Send To</label>
+          <select class="form-control" id="notif-f-target" onchange="adminToggleTargetField()">
+            <option value="all">📢 All Students (Broadcast)</option>
+            <option value="user">👤 Specific Student</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Link (optional)</label>
+          <input type="text" class="form-control" id="notif-f-link" placeholder="../pages/resources.html">
+        </div>
+      </div>
+      <div id="notif-target-email" style="display:none;margin-bottom:14px;">
+        <label class="form-label">Student Email</label>
+        <input type="email" class="form-control" id="notif-f-email" placeholder="student@example.com">
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label">Message *</label>
+        <textarea class="form-control" id="notif-f-body" rows="3" placeholder="Write your notification message…" style="resize:vertical;"></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button class="btn btn-ghost btn-sm" onclick="adminCloseNotifComposer()">Cancel</button>
+        <button class="btn btn-primary" onclick="adminSendNotification()"><i class="fas fa-paper-plane"></i> Send</button>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Notification History -->
+  <div class="card">
+    <div class="card-header">
+      <h3 style="font-size:15px;">Sent Notifications</h3>
+      <button class="btn btn-ghost btn-sm" onclick="adminLoadNotifications()" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div id="notif-list" style="max-height:580px;overflow-y:auto;">
+        <div style="text-align:center;padding:40px;color:var(--text3);">
+          <i class="fas fa-bell" style="font-size:36px;opacity:.3;display:block;margin-bottom:12px;"></i>
+          Click Notifications in the sidebar to load history.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </script>
 <script src="js/admin.js"></script>
 </body>
