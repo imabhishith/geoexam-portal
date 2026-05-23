@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exams — GeoExam Portal</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <style>
+    .page-content { max-width:1160px; margin:0 auto; padding:28px 20px; }
+
+    /* Section header */
+    .section-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .section-hd h2 { font-size:18px; font-weight:800; color:var(--primary); display:flex; align-items:center; gap:8px; }
+
+    /* Two-column layout */
+    .two-col { display:grid; grid-template-columns:1fr 300px; gap:24px; margin-bottom:28px; }
+
+    /* Exam cards */
+    .exam-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
+    .exam-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:box-shadow .2s,transform .2s; }
+    .exam-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
+    .exam-card-header { padding:16px 18px 12px; border-bottom:1px solid var(--border); background:#f8fafc; }
+    .exam-card-title { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px; }
+    .exam-card-title h3 { font-size:15px; color:var(--primary); font-weight:700; line-height:1.3; }
+    .exam-card-body { padding:14px 18px; }
+    .meta-chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+    .meta-chip { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text2); background:var(--bg); border:1px solid var(--border); padding:3px 8px; border-radius:20px; }
+    .exam-desc { font-size:13px; color:var(--text2); margin-bottom:12px; line-height:1.5; }
+    .exam-actions { display:flex; gap:8px; }
+    .sbadge { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; flex-shrink:0; }
+    .sbadge-live     { background:#dcfce7; color:#15803d; }
+    .sbadge-upcoming { background:#dbeafe; color:#1d4ed8; }
+    .sbadge-ended    { background:#f1f5f9; color:var(--text2); }
+    .live-dot { display:inline-block; width:6px; height:6px; background:#22c55e; border-radius:50%; margin-right:4px; animation:pdot 1.4s ease-in-out infinite; }
+    @keyframes pdot { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.4;transform:scale(1.6);} }
+
+    /* Community widgets */
+    .cw-box { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:16px; }
+    .cw-head { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .cw-head h3 { font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px; }
+    .cw-item { padding:11px 16px; border-bottom:1px solid var(--border); display:flex; gap:10px; align-items:flex-start; transition:background .15s; cursor:pointer; }
+    .cw-item:hover { background:var(--bg); }
+    .cw-item:last-child { border-bottom:none; }
+
+    /* Attempts table */
+    .attempts-wrap { overflow-x:auto; }
+    .attempts-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .attempts-table th { background:#f1f5f9; color:var(--text2); font-size:11px; text-transform:uppercase; letter-spacing:.05em; font-weight:700; padding:10px 14px; text-align:left; border-bottom:2px solid var(--border); }
+    .attempts-table td { padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    .attempts-table tr:last-child td { border-bottom:none; }
+    .attempts-table tr:hover td { background:#f8fafc; }
+    .score-pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-weight:700; font-size:12px; }
+    .sp-good { background:#dcfce7; color:#15803d; }
+    .sp-ok   { background:#fef9c3; color:#92400e; }
+    .sp-poor { background:#fee2e2; color:#991b1b; }
+
+    /* Progress bars */
+    .pb-wrap { margin-bottom:14px; }
+    .pb-label { display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:var(--text2); margin-bottom:5px; }
+    .pb-track { height:9px; background:var(--bg2); border-radius:9px; overflow:hidden; }
+    .pb-fill  { height:100%; border-radius:9px; transition:width .9s cubic-bezier(.25,.8,.25,1); }
+
+    /* User dropdown */
+    .dd-item { display:flex; align-items:center; gap:10px; padding:10px 16px; font-size:13px; color:var(--text); text-decoration:none; transition:background .15s; cursor:pointer; }
+    .dd-item:hover { background:var(--bg); text-decoration:none; }
+
+    @media(max-width:1000px) { .two-col { grid-template-columns:1fr; } }
+    @media(max-width:650px)  { .exam-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span style="font-size:26px;"><i class="fas fa-gem"></i></span>
+    <div><h1>GeoExam Portal</h1><span>GATE Geology · CSIR-NET · CBT Platform</span></div>
+  </div>
+  <div class="navbar-nav" style="gap:6px;">
+    <a href="dashboard.html"  class="nav-link"><i class="fas fa-arrow-left"></i> Dashboard</a>
+    <a href="exams.html"      class="nav-link active">Exams</a>
+    <a href="my-results.html" class="nav-link">My Results</a>
+    <a href="ranklist.html"   class="nav-link">Ranklist</a>
+    <a href="discussion.html" class="nav-link" title="Discussion"><i class="fas fa-comments"></i></a>
+    <a href="doubt-room.html" class="nav-link" title="Doubt Room"><i class="fas fa-lightbulb"></i></a>
+    <a href="resources.html"  class="nav-link" title="Resources"><i class="fas fa-book"></i></a>
+
+    <button id="notif-bell-btn" onclick="GxNotifications.toggle(event)"
+      style="position:relative;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+             color:#fff;border-radius:8px;width:36px;height:36px;cursor:pointer;
+             display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0;">
+      <i class="fas fa-bell" style="font-size:14px;"></i>
+      <span id="notif-badge"
+        style="display:none;position:absolute;top:-4px;right:-4px;
+               background:#ef4444;color:#fff;font-size:9px;min-width:17px;height:17px;
+               border-radius:9px;align-items:center;justify-content:center;
+               font-weight:800;padding:0 3px;border:2px solid #1a3c6e;">0</span>
+    </button>
+
+    <div id="user-menu-wrap" style="position:relative;">
+      <div id="user-avatar" onclick="toggleUserMenu()"
+        style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);
+               border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;
+               justify-content:center;font-size:15px;font-weight:800;color:#fff;cursor:pointer;flex-shrink:0;">?</div>
+      <div id="user-dropdown"
+        style="display:none;position:absolute;right:0;top:44px;background:var(--surface);
+               border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);
+               min-width:190px;z-index:500;overflow:hidden;">
+        <div id="dd-name" style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);">…</div>
+        <a href="dashboard.html"  class="dd-item"><i class="fas fa-home"        style="color:#2563ab;width:16px;"></i> Dashboard</a>
+        <a href="my-results.html" class="dd-item"><i class="fas fa-chart-bar"   style="color:#1d4ed8;width:16px;"></i> My Results</a>
+        <a href="ranklist.html"   class="dd-item"><i class="fas fa-trophy"       style="color:#ca8a04;width:16px;"></i> Ranklist</a>
+        <a href="discussion.html" class="dd-item"><i class="fas fa-comments"     style="color:#7c3aed;width:16px;"></i> Discussion</a>
+        <a href="doubt-room.html" class="dd-item"><i class="fas fa-lightbulb"    style="color:#d97706;width:16px;"></i> Doubt Room</a>
+        <a href="resources.html"  class="dd-item"><i class="fas fa-book"         style="color:#059669;width:16px;"></i> Resources</a>
+        <div style="border-top:1px solid var(--border);">
+          <div onclick="doLogout()" class="dd-item" style="color:var(--danger);"><i class="fas fa-sign-out-alt" style="width:16px;"></i> Logout</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page-content">
+
+  <!-- Score Trend (hidden until data loads) -->
+  <div id="progress-section" style="display:none;margin-bottom:28px;">
+    <div class="section-hd"><h2><i class="fas fa-chart-line"></i> Score Trend</h2></div>
+    <div class="card" style="padding:20px;" id="progress-card"></div>
+  </div>
+
+  <!-- Exams + Sidebar -->
+  <div class="two-col">
+    <div>
+      <div class="section-hd">
+        <h2><i class="fas fa-clipboard-list"></i> Available Exams</h2>
+        <span id="exam-count" style="font-size:12px;color:var(--text2);background:var(--bg2);padding:3px 10px;border-radius:20px;font-weight:600;"></span>
+      </div>
+      <div id="exams-grid" class="exam-grid">
+        <div class="loading-screen" style="grid-column:1/-1;min-height:140px;"><div class="spinner"></div><p>Loading exams…</p></div>
+      </div>
+    </div>
+
+    <div>
+      <!-- Notifications widget -->
+      <div class="cw-box">
+        <div class="cw-head">
+          <h3><i class="fas fa-bell" style="color:var(--primary);"></i> Notifications</h3>
+          <a href="#" onclick="GxNotifications.toggle(event)" style="font-size:12px;color:var(--primary);text-decoration:none;">View all</a>
+        </div>
+        <div id="notif-widget-list">
+          <div style="padding:18px;text-align:center;color:var(--text3);font-size:13px;">Loading…</div>
+        </div>
+      </div>
+
+      <!-- Recent Doubts widget -->
+      <div class="cw-box">
+        <div class="cw-head">
+          <h3><i class="fas fa-lightbulb" style="color:#d97706;"></i> Recent Doubts</h3>
+          <a href="doubt-room.html" style="font-size:12px;color:var(--primary);text-decoration:none;">Answer <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div id="doubts-widget">
+          <div style="padding:18px;text-align:center;color:var(--text3);font-size:13px;">Loading…</div>
+        </div>
+      </div>
+
+      <!-- New Resources widget -->
+      <div class="cw-box">
+        <div class="cw-head">
+          <h3><i class="fas fa-book" style="color:#059669;"></i> New Resources</h3>
+          <a href="resources.html" style="font-size:12px;color:var(--primary);text-decoration:none;">Browse <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div id="resources-widget">
+          <div style="padding:18px;text-align:center;color:var(--text3);font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Attempts -->
+  <div style="margin-bottom:28px;">
+    <div class="section-hd">
+      <h2><i class="fas fa-history"></i> Recent Attempts</h2>
+      <a href="my-results.html" class="btn btn-outline btn-sm">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="card">
+      <div class="attempts-wrap">
+        <table class="attempts-table">
+          <thead><tr><th>Exam</th><th>Date</th><th>Score</th><th>Correct / Wrong / Skip</th><th>Rank</th><th>Actions</th></tr></thead>
+          <tbody id="attempts-tbody">
+            <tr><td colspan="6" style="padding:28px;text-align:center;color:var(--text2);">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script>
+let currentUser = null;
+
+function toggleUserMenu() {
+  const dd = document.getElementById('user-dropdown');
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('user-menu-wrap');
+  if (wrap && !wrap.contains(e.target))
+    document.getElementById('user-dropdown').style.display = 'none';
+});
+
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = '../index.html'; return; }
+  currentUser = user;
+  try {
+    const ud = await db.collection('users').doc(user.uid).get();
+    const data = ud.exists ? ud.data() : {};
+    if (data.role === 'admin') { window.location.href = '../admin/index.html'; return; }
+    const firstName = data.firstName || 'Student';
+    document.getElementById('user-avatar').textContent = firstName[0].toUpperCase();
+    document.getElementById('dd-name').textContent = `${data.firstName||''} ${data.lastName||''}`.trim() || user.email;
+  } catch(e) {}
+
+  GxNotifications.init(user);
+  loadExams();
+  loadAttempts();
+  loadDoubtsWidget();
+  loadResourcesWidget();
+});
+
+/* ── Load Exams ── */
+async function loadExams() {
+  const grid = document.getElementById('exams-grid');
+  try {
+    const snap = await db.collection('exams').where('published','==',true).orderBy('createdAt','desc').get();
+    if (snap.empty) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text2);"><i class="fas fa-inbox" style="font-size:40px;opacity:.3;display:block;margin-bottom:12px;"></i>No exams published yet.</div>';
+      return;
+    }
+    document.getElementById('exam-count').textContent = `${snap.size} exam${snap.size!==1?'s':''}`;
+    grid.innerHTML = '';
+    snap.forEach(doc => {
+      const e = doc.data(), eid = doc.id;
+      const now = Date.now();
+      const startMs = e.startTime?.toMillis?.() || 0;
+      const endMs   = e.endTime?.toMillis?.()   || Infinity;
+      let badgeHtml, actionBtn;
+      if (now >= startMs && now <= endMs) {
+        badgeHtml = `<span class="sbadge sbadge-live"><span class="live-dot"></span>Live</span>`;
+        actionBtn = `<button class="btn btn-primary btn-sm" onclick="window.location='exam-instructions.html?id=${eid}'">Start Exam <i class="fas fa-arrow-right"></i></button>`;
+      } else if (now > endMs) {
+        badgeHtml = `<span class="sbadge sbadge-ended">Ended</span>`;
+        actionBtn = `<button class="btn btn-ghost btn-sm" disabled>Exam Ended</button>`;
+      } else {
+        const opens = startMs ? new Date(startMs).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '';
+        badgeHtml = `<span class="sbadge sbadge-upcoming">Upcoming</span>`;
+        actionBtn = `<button class="btn btn-ghost btn-sm" disabled>Opens ${opens}</button>`;
+      }
+      grid.innerHTML += `
+        <div class="exam-card">
+          <div class="exam-card-header">
+            <div class="exam-card-title"><h3>${esc(e.title||'')}</h3>${badgeHtml}</div>
+            <div class="meta-chips">
+              <span class="meta-chip"><i class="fas fa-clock"></i> ${e.durationMinutes||0} min</span>
+              <span class="meta-chip"><i class="fas fa-question-circle"></i> ${e.totalQuestions||0} Qs</span>
+              <span class="meta-chip"><i class="fas fa-tag"></i> ${esc(e.subject||'GATE Geology')}</span>
+            </div>
+          </div>
+          <div class="exam-card-body">
+            <p class="exam-desc">${esc(e.description||'Practice exam for competitive geology preparation.')}</p>
+            <div class="exam-actions">
+              ${actionBtn}
+              <button class="btn btn-outline btn-sm" onclick="window.location='exam-instructions.html?id=${eid}'">
+                <i class="fas fa-info-circle"></i> Details
+              </button>
+            </div>
+          </div>
+        </div>`;
+    });
+  } catch(e) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--danger);">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+/* ── Load Attempts ── */
+async function loadAttempts() {
+  const tbody = document.getElementById('attempts-tbody');
+  try {
+    const snap = await db.collection('attempts')
+      .where('userId','==',currentUser.uid)
+      .where('status','==','submitted')
+      .orderBy('submittedAt','desc')
+      .limit(5).get();
+    if (snap.empty) {
+      tbody.innerHTML = `<tr><td colspan="6" style="padding:32px;text-align:center;color:var(--text2);"><i class="fas fa-inbox" style="font-size:28px;display:block;margin-bottom:8px;opacity:.3;"></i>No attempts yet — take your first exam!</td></tr>`;
+      return;
+    }
+    const recent = [];
+    tbody.innerHTML = '';
+    snap.forEach(doc => {
+      const a = doc.data(), aid = doc.id;
+      recent.push({...a, id: aid});
+      const date  = a.submittedAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})||'—';
+      const score = a.totalScore||0, max = a.maxScore||100;
+      const pct   = max > 0 ? (score/max*100) : 0;
+      const pillCls = pct >= 65 ? 'sp-good' : pct >= 40 ? 'sp-ok' : 'sp-poor';
+      tbody.innerHTML += `<tr>
+        <td><strong style="font-size:13px;">${esc(a.examTitle||'Exam')}</strong></td>
+        <td style="font-size:12px;color:var(--text2);">${date}</td>
+        <td>
+          <span class="score-pill ${pillCls}">${score.toFixed(2)} / ${max}</span>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">${pct.toFixed(1)}%</div>
+        </td>
+        <td style="font-size:12px;">
+          <span style="color:var(--success);font-weight:600;"><i class="fas fa-check"></i> ${a.correct||0}</span> &nbsp;·&nbsp;
+          <span style="color:var(--danger);font-weight:600;"><i class="fas fa-times"></i> ${a.wrong||0}</span> &nbsp;·&nbsp;
+          <span style="color:var(--text2);"><i class="fas fa-minus"></i> ${a.skipped||0}</span>
+        </td>
+        <td>${a.rank ? `<span style="font-weight:800;color:var(--primary);font-family:'Rajdhani',sans-serif;font-size:16px;">#${a.rank}</span>` : '<span style="color:var(--text3);">—</span>'}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <a href="result.html?id=${aid}" class="btn btn-primary btn-sm"><i class="fas fa-chart-bar"></i> Analysis</a>
+            <a href="ranklist.html?examId=${esc(a.examId||'')}" class="btn btn-ghost btn-sm" title="Ranklist"><i class="fas fa-trophy"></i></a>
+          </div>
+        </td>
+      </tr>`;
+    });
+    buildScoreTrend(recent.reverse());
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:20px;">Could not load attempts: ${esc(e.message)}</td></tr>`;
+  }
+}
+
+/* ── Score Trend ── */
+function buildScoreTrend(list) {
+  if (list.length < 2) return;
+  document.getElementById('progress-section').style.display = 'block';
+  const card = document.getElementById('progress-card');
+  card.innerHTML = `<div style="font-size:13px;color:var(--text2);margin-bottom:14px;font-weight:600;">Your last ${list.length} attempts:</div>` +
+    list.map(a => {
+      const pct   = a.maxScore > 0 ? Math.min((a.totalScore/a.maxScore)*100, 100) : 0;
+      const date  = a.submittedAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short'})||'';
+      const color = pct >= 65 ? '#15803d' : pct >= 40 ? '#ca8a04' : '#c0392b';
+      return `<div class="pb-wrap">
+        <div class="pb-label">
+          <span>${esc(a.examTitle||'Exam')} <span style="font-weight:400;color:var(--text3);font-size:11px;">${date}</span></span>
+          <span style="color:${color};font-weight:700;">${pct.toFixed(1)}%</span>
+        </div>
+        <div class="pb-track"><div class="pb-fill" style="width:0%;background:${color};" data-target="${pct}"></div></div>
+      </div>`;
+    }).join('');
+  setTimeout(() => {
+    card.querySelectorAll('.pb-fill').forEach(el => el.style.width = el.dataset.target + '%');
+  }, 100);
+}
+
+/* ── Recent Doubts widget ── */
+async function loadDoubtsWidget() {
+  const el = document.getElementById('doubts-widget');
+  try {
+    const snap = await db.collection('doubts').orderBy('createdAt','desc').limit(4).get();
+    if (snap.empty) { el.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;font-style:italic;">No doubts yet. Be first to ask!</div>'; return; }
+    const TC = {'gate-geology':'#dcfce7','csir-net':'#dbeafe','general':'#f3e8ff','numericals':'#fff7ed','theory':'#fef9c3','other':'#f1f5f9'};
+    el.innerHTML = snap.docs.map(d => {
+      const dd = d.data();
+      const ts = dd.createdAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short'})||'';
+      const solved = dd.status === 'solved';
+      return `<div class="cw-item" onclick="window.location='doubt-room.html'">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;">${(dd.userName||'S')[0].toUpperCase()}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(dd.text||'')}</div>
+          <div style="display:flex;gap:5px;align-items:center;margin-top:3px;">
+            <span style="background:${TC[dd.topic]||'#f1f5f9'};font-size:10px;padding:1px 6px;border-radius:8px;font-weight:600;">${dd.topic||'general'}</span>
+            <i class="fas ${solved ? 'fa-check-circle' : 'fa-clock'}" style="font-size:10px;color:${solved ? 'var(--success)' : 'var(--warning)'};"></i>
+            <span style="font-size:11px;color:var(--text3);margin-left:auto;">${ts}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;">Could not load doubts.</div>'; }
+}
+
+/* ── New Resources widget ── */
+async function loadResourcesWidget() {
+  const el = document.getElementById('resources-widget');
+  try {
+    const snap = await db.collection('resources').orderBy('createdAt','desc').limit(4).get();
+    if (snap.empty) { el.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;font-style:italic;">No resources yet.</div>'; return; }
+    const TE = {pdf:'fa-file-pdf',video:'fa-video',notes:'fa-sticky-note',pyq:'fa-clipboard-list',link:'fa-link'};
+    const TC = {pdf:'#dc2626',video:'#2563eb',notes:'#059669',pyq:'#d97706',link:'#7c3aed'};
+    const TB = {pdf:'#fff1f2',video:'#eff6ff',notes:'#f0fdf4',pyq:'#fffbeb',link:'#f5f3ff'};
+    el.innerHTML = snap.docs.map(d => {
+      const r = d.data(), rid = d.id;
+      const ts = r.createdAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short'})||'';
+      const icon = TE[r.type]||'fa-folder';
+      const color = TC[r.type]||'var(--primary)';
+      const bg = TB[r.type]||'#f3f4f6';
+      return `<div class="cw-item" onclick="window.open('${r.url||'#'}','_blank');db.collection('resources').doc('${rid}').update({downloads:firebase.firestore.FieldValue.increment(1)}).catch(()=>{});">
+        <div style="width:34px;height:34px;border-radius:8px;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas ${icon}" style="color:${color};font-size:15px;"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(r.title||'Resource')}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">${esc(r.subject||'')}${r.subject&&ts?' · ':''}${ts}</div>
+        </div>
+        <i class="fas fa-external-link-alt" style="font-size:11px;color:var(--text3);flex-shrink:0;"></i>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;">Could not load resources.</div>'; }
+}
+
+function esc(s) { if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+async function doLogout() { await auth.signOut(); window.location.href = '../index.html'; }
+</script>
+<script src="../js/notifications.js"></script>
+</body>
+</html>
