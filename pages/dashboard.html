@@ -2,170 +2,349 @@
 <html lang="en">
 <head>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — GeoExam Portal</title>
   <link rel="stylesheet" href="../css/global.css">
   <style>
-    .page-content { max-width:1160px; margin:0 auto; padding:28px 20px; }
+    *, *::before, *::after { box-sizing: border-box; }
 
-    /* Hero */
-    .hero { background:linear-gradient(135deg,#0f2545 0%,#1a3c6e 55%,#2563ab 100%); border-radius:18px; padding:32px 36px; margin-bottom:28px; display:flex; justify-content:space-between; align-items:center; position:relative; overflow:hidden; }
-    .hero::before { content:''; position:absolute; right:-40px; top:-40px; width:260px; height:260px; border-radius:50%; background:rgba(255,255,255,.04); pointer-events:none; }
-    .hero::after  { content:''; position:absolute; right:60px; bottom:-60px; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,.06); pointer-events:none; }
-    .hero-left h2 { font-size:28px; color:#fff; font-weight:800; margin-bottom:6px; }
-    .hero-left p  { color:rgba(255,255,255,.72); font-size:14px; margin-bottom:16px; }
-    .hero-tags { display:flex; gap:8px; flex-wrap:wrap; }
-    .hero-tag { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.9); padding:5px 13px; border-radius:20px; font-size:12px; font-weight:600; display:flex; align-items:center; gap:5px; }
-    .hero-icon { font-size:72px; opacity:.15; color:#fff; flex-shrink:0; }
+    :root {
+      --navy:      #0a2540;
+      --navy2:     #0e3460;
+      --blue:      #1565c0;
+      --accent:    #e65100;
+      --accent2:   #f57c00;
+      --green:     #2e7d32;
+      --red:       #c62828;
+      --purple:    #6a1b9a;
+      --bg:        #eceff1;
+      --surface:   #ffffff;
+      --gray-100:  #f1f3f4;
+      --gray-200:  #e8eaed;
+      --gray-300:  #dadce0;
+      --gray-600:  #80868b;
+      --text:      #202124;
+      --text2:     #5f6368;
+      --border:    #dadce0;
+      --font:      'Noto Sans','Segoe UI',Arial,sans-serif;
+      --hdr-h:     56px;
+      --radius:    8px;
+    }
 
-    /* Stats */
-    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
-    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 16px; display:flex; align-items:center; gap:14px; transition:box-shadow .2s,transform .2s; }
-    .stat-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
-    .stat-icon { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
-    .si-blue   { background:#dbeafe; color:#1d4ed8; }
-    .si-gold   { background:#fef9c3; color:#ca8a04; }
-    .si-green  { background:#dcfce7; color:#15803d; }
-    .si-purple { background:#f3e8ff; color:#7c3aed; }
-    .stat-num { font-size:26px; font-weight:800; font-family:'Rajdhani',sans-serif; color:var(--primary); line-height:1; }
-    .stat-lbl { font-size:12px; color:var(--text2); font-weight:600; margin-top:3px; }
+    body { background:var(--bg); font-family:var(--font); color:var(--text); font-size:13px; margin:0; }
 
-    /* Section header */
-    .section-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-    .section-hd h2 { font-size:18px; font-weight:800; color:var(--primary); display:flex; align-items:center; gap:8px; }
+    /* ── NAVBAR ── */
+    .navbar {
+      position: sticky; top: 0; z-index: 200;
+      height: var(--hdr-h);
+      background: var(--navy);
+      border-bottom: 3px solid var(--accent2);
+      display: flex; align-items: stretch;
+    }
+    .nav-logo {
+      background: var(--accent);
+      width: var(--hdr-h); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: #fff;
+    }
+    .nav-brand {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 0 18px;
+      border-right: 1px solid rgba(255,255,255,.1);
+    }
+    .nav-brand h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px; font-weight: 700; color: #fff;
+      margin: 0; line-height: 1.1;
+    }
+    .nav-brand span { font-size: 10px; color: rgba(255,255,255,.45); letter-spacing: .05em; text-transform: uppercase; }
+    .nav-links { display: flex; align-items: stretch; flex: 1; padding: 0 8px; }
+    .nav-link {
+      display: flex; align-items: center; padding: 0 14px;
+      color: rgba(255,255,255,.6); font-size: 12.5px; font-weight: 600;
+      text-decoration: none; border-bottom: 3px solid transparent;
+      margin-bottom: -3px; letter-spacing: .01em;
+      transition: color .15s, border-color .15s;
+      white-space: nowrap;
+    }
+    .nav-link:hover { color: #fff; border-bottom-color: rgba(255,255,255,.25); text-decoration: none; }
+    .nav-link.active { color: #fff; border-bottom-color: var(--accent2); }
+    .nav-link i { font-size: 14px; }
+    .nav-right { display: flex; align-items: center; gap: 8px; padding: 0 14px; margin-left: auto; }
+    .nav-icon-btn {
+      width: 34px; height: 34px; border-radius: var(--radius);
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
+      color: rgba(255,255,255,.8); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; position: relative; transition: background .15s;
+      text-decoration: none;
+    }
+    .nav-icon-btn:hover { background: rgba(255,255,255,.18); color: #fff; text-decoration: none; }
+    .notif-dot {
+      display: none; position: absolute; top: -3px; right: -3px;
+      background: var(--accent); color: #fff;
+      font-size: 9px; font-weight: 700;
+      min-width: 16px; height: 16px; border-radius: 8px;
+      align-items: center; justify-content: center;
+      padding: 0 3px; border: 2px solid var(--navy);
+    }
+    .avatar-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.3);
+      color: #fff; font-family: 'Rajdhani', sans-serif;
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .avatar-btn:hover { background: rgba(255,255,255,.25); }
+    .dropdown {
+      display: none; position: absolute; top: calc(100% + 8px); right: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: 0 4px 24px rgba(0,0,0,.15);
+      min-width: 200px; z-index: 500; overflow: hidden;
+    }
+    .dropdown.open { display: block; }
+    .dd-name { padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border); }
+    .dd-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-size: 13px; color: var(--text); text-decoration: none; transition: background .12s; cursor: pointer; }
+    .dd-item:hover { background: var(--gray-100); text-decoration: none; }
+    .dd-item i { width: 15px; text-align: center; }
 
-    /* Feature hub */
-    .feature-hub { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px; }
-    .feature-card { border-radius:16px; padding:20px; text-decoration:none; color:inherit; display:flex; flex-direction:column; gap:10px; transition:box-shadow .25s,transform .25s; position:relative; overflow:hidden; border:1px solid transparent; }
-    .feature-card:hover { box-shadow:0 8px 28px rgba(0,0,0,.14); transform:translateY(-3px); text-decoration:none; }
-    .feature-card::after { content:''; position:absolute; bottom:-20px; right:-20px; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,.1); }
-    .fc-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; background:rgba(255,255,255,.2); color:#fff; flex-shrink:0; }
-    .fc-title { font-size:15px; font-weight:800; color:#fff; }
-    .fc-desc  { font-size:12px; color:rgba(255,255,255,.8); line-height:1.5; }
-    .fc-arrow { font-size:11px; color:rgba(255,255,255,.7); margin-top:auto; display:flex; align-items:center; gap:6px; font-weight:600; }
-    .fc-indigo  { background:linear-gradient(135deg,#4f46e5,#7c3aed); }
-    .fc-emerald { background:linear-gradient(135deg,#059669,#0891b2); }
-    .fc-sky     { background:linear-gradient(135deg,#0284c7,#0891b2); }
-    .fc-rose    { background:linear-gradient(135deg,#be185d,#9333ea); }
-    .fc-amber   { background:linear-gradient(135deg,#d97706,#dc2626); }
-    .fc-slate   { background:linear-gradient(135deg,#334155,#475569); }
+    /* ── PAGE ── */
+    .page { max-width: 1160px; margin: 0 auto; padding: 28px 20px; }
 
-    /* User dropdown */
-    .dd-item { display:flex; align-items:center; gap:10px; padding:10px 16px; font-size:13px; color:var(--text); text-decoration:none; transition:background .15s; cursor:pointer; }
-    .dd-item:hover { background:var(--bg); text-decoration:none; }
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 60%, #1565c0 100%);
+      border-radius: var(--radius); padding: 32px 36px;
+      margin-bottom: 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      position: relative; overflow: hidden;
+      border-left: 4px solid var(--accent2);
+    }
+    .hero::before {
+      content: ''; position: absolute;
+      right: -30px; top: -30px;
+      width: 220px; height: 220px; border-radius: 50%;
+      background: rgba(255,255,255,.03); pointer-events: none;
+    }
+    .hero::after {
+      content: ''; position: absolute;
+      right: 80px; bottom: -50px;
+      width: 150px; height: 150px; border-radius: 50%;
+      background: rgba(245,124,0,.08); pointer-events: none;
+    }
+    .hero-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 30px; font-weight: 700; color: #fff;
+      line-height: 1.15; margin-bottom: 6px;
+    }
+    .hero-sub { color: rgba(255,255,255,.6); font-size: 13px; margin-bottom: 18px; }
+    .hero-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .hero-tag {
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
+      color: rgba(255,255,255,.85); padding: 4px 12px; border-radius: 4px;
+      font-size: 11.5px; font-weight: 600;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .hero-tag i { color: var(--accent2); }
+    .hero-tag.streak i { color: #ffd54f; }
+    .hero-gem { font-size: 80px; opacity: .08; color: #fff; flex-shrink: 0; line-height: 1; }
 
-    @media(max-width:1000px) { .feature-hub { grid-template-columns:repeat(2,1fr); } }
-    @media(max-width:650px)  { .stats-row { grid-template-columns:repeat(2,1fr); } .feature-hub { grid-template-columns:1fr; } }
-    @media(max-width:480px)  { .hero { flex-direction:column; } .hero-icon { display:none; } }
+    /* ── STATS ── */
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px;
+      display: flex; align-items: center; gap: 14px;
+      border-top: 3px solid transparent;
+      transition: box-shadow .2s, transform .15s;
+    }
+    .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.10); transform: translateY(-1px); }
+    .stat-card.blue   { border-top-color: #1565c0; }
+    .stat-card.orange { border-top-color: var(--accent2); }
+    .stat-card.green  { border-top-color: var(--green); }
+    .stat-card.purple { border-top-color: var(--purple); }
+    .stat-icon {
+      width: 44px; height: 44px; border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .si-blue   { background: #e3f2fd; color: #1565c0; }
+    .si-orange { background: #fff3e0; color: var(--accent); }
+    .si-green  { background: #e8f5e9; color: var(--green); }
+    .si-purple { background: #f3e5f5; color: var(--purple); }
+    .stat-num {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 28px; font-weight: 700; color: var(--navy);
+      line-height: 1;
+    }
+    .stat-lbl { font-size: 11px; color: var(--text2); font-weight: 600; margin-top: 3px; text-transform: uppercase; letter-spacing: .04em; }
+
+    /* ── SECTION HEADER ── */
+    .sec-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px; padding-bottom: 10px;
+      border-bottom: 2px solid var(--gray-200);
+    }
+    .sec-hd h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 17px; font-weight: 700; color: var(--navy);
+      display: flex; align-items: center; gap: 8px; margin: 0;
+    }
+    .sec-hd h2 i { color: var(--accent2); font-size: 15px; }
+
+    /* ── FEATURE HUB ── */
+    .feature-hub { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+    .fc {
+      border-radius: var(--radius); padding: 20px;
+      text-decoration: none; display: flex; flex-direction: column; gap: 12px;
+      position: relative; overflow: hidden;
+      transition: box-shadow .2s, transform .2s;
+      border: 1px solid transparent;
+    }
+    .fc:hover { box-shadow: 0 8px 28px rgba(0,0,0,.18); transform: translateY(-3px); text-decoration: none; }
+    .fc::after {
+      content: ''; position: absolute;
+      bottom: -18px; right: -18px;
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(255,255,255,.1);
+    }
+    .fc-top { display: flex; align-items: center; gap: 12px; }
+    .fc-icon {
+      width: 42px; height: 42px; border-radius: var(--radius);
+      background: rgba(255,255,255,.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px; color: #fff; flex-shrink: 0;
+    }
+    .fc-title { font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 700; color: #fff; line-height: 1.2; }
+    .fc-desc  { font-size: 12px; color: rgba(255,255,255,.75); line-height: 1.5; }
+    .fc-foot  { font-size: 11px; color: rgba(255,255,255,.65); margin-top: auto; display: flex; align-items: center; gap: 6px; font-weight: 600; }
+    .fc-foot i { font-size: 10px; }
+
+    .fc-indigo  { background: linear-gradient(140deg, #3730a3 0%, #6d28d9 100%); }
+    .fc-emerald { background: linear-gradient(140deg, #065f46 0%, #0e7490 100%); }
+    .fc-sky     { background: linear-gradient(140deg, #0369a1 0%, #0891b2 100%); }
+    .fc-rose    { background: linear-gradient(140deg, #9d174d 0%, #7c3aed 100%); }
+    .fc-amber   { background: linear-gradient(140deg, #b45309 0%, #c2410c 100%); }
+    .fc-navy    { background: linear-gradient(140deg, var(--navy) 0%, var(--navy2) 100%); border: 1px solid var(--accent2); }
+    .fc-navy .fc-foot { color: var(--accent2); }
+
+    @media(max-width:1000px) { .feature-hub { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:650px)  { .stats-row { grid-template-columns: repeat(2,1fr); } .feature-hub { grid-template-columns: 1fr; } }
+    @media(max-width:480px)  { .hero { flex-direction: column; } .hero-gem { display: none; } .nav-link span { display: none; } }
   </style>
 </head>
 <body>
 
+<!-- NAVBAR -->
 <nav class="navbar">
-  <div class="navbar-brand">
-    <span style="font-size:26px;"><i class="fas fa-gem"></i></span>
-    <div><h1>GeoExam Portal</h1><span>GATE Geology · CSIR-NET · CBT Platform</span></div>
+  <div class="nav-logo"><i class="fas fa-gem"></i></div>
+  <div class="nav-brand">
+    <h1>GeoExam Portal</h1>
+    <span>GATE Geology · CSIR-NET · CBT</span>
   </div>
-  <div class="navbar-nav" style="gap:6px;">
-    <a href="dashboard.html"  class="nav-link active">Dashboard</a>
-    <a href="exams.html"      class="nav-link">Exams</a>
-    <a href="my-results.html" class="nav-link">My Results</a>
-    <a href="ranklist.html"   class="nav-link">Ranklist</a>
+  <div class="nav-links">
+    <a href="dashboard.html"  class="nav-link active"><span>Dashboard</span></a>
+    <a href="exams.html"      class="nav-link"><span>Exams</span></a>
+    <a href="my-results.html" class="nav-link"><span>My Results</span></a>
+    <a href="ranklist.html"   class="nav-link"><span>Ranklist</span></a>
     <a href="discussion.html" class="nav-link" title="Discussion"><i class="fas fa-comments"></i></a>
     <a href="doubt-room.html" class="nav-link" title="Doubt Room"><i class="fas fa-lightbulb"></i></a>
     <a href="resources.html"  class="nav-link" title="Resources"><i class="fas fa-book"></i></a>
-
-    <button id="notif-bell-btn" onclick="GxNotifications.toggle(event)"
-      style="position:relative;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
-             color:#fff;border-radius:8px;width:36px;height:36px;cursor:pointer;
-             display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0;">
-      <i class="fas fa-bell" style="font-size:14px;"></i>
-      <span id="notif-badge"
-        style="display:none;position:absolute;top:-4px;right:-4px;
-               background:#ef4444;color:#fff;font-size:9px;min-width:17px;height:17px;
-               border-radius:9px;align-items:center;justify-content:center;
-               font-weight:800;padding:0 3px;border:2px solid #1a3c6e;">0</span>
+  </div>
+  <div class="nav-right">
+    <button id="notif-bell-btn" class="nav-icon-btn" onclick="GxNotifications.toggle(event)">
+      <i class="fas fa-bell"></i>
+      <span id="notif-badge" class="notif-dot">0</span>
     </button>
-
-    <div id="user-menu-wrap" style="position:relative;">
-      <div id="user-avatar" onclick="toggleUserMenu()"
-        style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);
-               border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;
-               justify-content:center;font-size:15px;font-weight:800;color:#fff;cursor:pointer;flex-shrink:0;">?</div>
-      <div id="user-dropdown"
-        style="display:none;position:absolute;right:0;top:44px;background:var(--surface);
-               border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);
-               min-width:190px;z-index:500;overflow:hidden;">
-        <div id="dd-name" style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);">…</div>
-        <a href="exams.html"      class="dd-item"><i class="fas fa-play-circle" style="color:#2563ab;width:16px;"></i> Exams</a>
-        <a href="my-results.html" class="dd-item"><i class="fas fa-chart-bar"   style="color:#1d4ed8;width:16px;"></i> My Results</a>
-        <a href="ranklist.html"   class="dd-item"><i class="fas fa-trophy"       style="color:#ca8a04;width:16px;"></i> Ranklist</a>
-        <a href="discussion.html" class="dd-item"><i class="fas fa-comments"     style="color:#7c3aed;width:16px;"></i> Discussion</a>
-        <a href="doubt-room.html" class="dd-item"><i class="fas fa-lightbulb"    style="color:#d97706;width:16px;"></i> Doubt Room</a>
-        <a href="resources.html"  class="dd-item"><i class="fas fa-book"         style="color:#059669;width:16px;"></i> Resources</a>
+    <div style="position:relative;">
+      <div id="user-avatar" class="avatar-btn" onclick="toggleMenu()">?</div>
+      <div id="user-dropdown" class="dropdown">
+        <div id="dd-name" class="dd-name">…</div>
+        <a href="exams.html"      class="dd-item"><i class="fas fa-play-circle" style="color:var(--accent);"></i> Exams</a>
+        <a href="my-results.html" class="dd-item"><i class="fas fa-chart-bar"   style="color:#1565c0;"></i> My Results</a>
+        <a href="ranklist.html"   class="dd-item"><i class="fas fa-trophy"       style="color:#b45309;"></i> Ranklist</a>
+        <a href="discussion.html" class="dd-item"><i class="fas fa-comments"     style="color:var(--purple);"></i> Discussion</a>
+        <a href="doubt-room.html" class="dd-item"><i class="fas fa-lightbulb"    style="color:#b45309;"></i> Doubt Room</a>
+        <a href="resources.html"  class="dd-item"><i class="fas fa-book"         style="color:var(--green);"></i> Resources</a>
         <div style="border-top:1px solid var(--border);">
-          <div onclick="doLogout()" class="dd-item" style="color:var(--danger);"><i class="fas fa-sign-out-alt" style="width:16px;"></i> Logout</div>
+          <div onclick="doLogout()" class="dd-item" style="color:var(--red);"><i class="fas fa-sign-out-alt" style="color:var(--red);"></i> Logout</div>
         </div>
       </div>
     </div>
   </div>
 </nav>
 
-<div class="page-content">
+<div class="page">
 
-  <!-- Hero -->
+  <!-- HERO -->
   <div class="hero">
-    <div class="hero-left">
-      <h2 id="welcome-name">Welcome back!</h2>
-      <p>Ready to push your rank higher today?</p>
+    <div>
+      <div class="hero-title" id="welcome-name">Welcome back!</div>
+      <div class="hero-sub">Ready to push your rank higher today?</div>
       <div class="hero-tags">
         <span class="hero-tag"><i class="fas fa-crosshairs"></i> GATE Geology</span>
         <span class="hero-tag"><i class="fas fa-atom"></i> CSIR-NET</span>
         <span class="hero-tag"><i class="fas fa-calendar-alt"></i> 8 Years PYQs</span>
-        <span class="hero-tag" id="hero-streak" style="display:none;">
-          <i class="fas fa-fire" style="color:#f59e0b;"></i>
-          <span id="streak-count">0</span> Day Streak
+        <span class="hero-tag streak" id="hero-streak" style="display:none;">
+          <i class="fas fa-fire"></i> <span id="streak-count">0</span> Day Streak
         </span>
       </div>
     </div>
-    <div class="hero-icon"><i class="fas fa-gem"></i></div>
+    <div class="hero-gem"><i class="fas fa-gem"></i></div>
   </div>
 
-  <!-- Stats -->
+  <!-- STATS -->
   <div class="stats-row">
-    <div class="stat-card"><div class="stat-icon si-blue"><i class="fas fa-file-alt"></i></div><div><div class="stat-num" id="stat-attempts">—</div><div class="stat-lbl">Exams Attempted</div></div></div>
-    <div class="stat-card"><div class="stat-icon si-gold"><i class="fas fa-star"></i></div><div><div class="stat-num" id="stat-best">—</div><div class="stat-lbl">Best Score</div></div></div>
-    <div class="stat-card"><div class="stat-icon si-green"><i class="fas fa-chart-line"></i></div><div><div class="stat-num" id="stat-avg">—</div><div class="stat-lbl">Average Score</div></div></div>
-    <div class="stat-card"><div class="stat-icon si-purple"><i class="fas fa-bullseye"></i></div><div><div class="stat-num" id="stat-accuracy">—</div><div class="stat-lbl">Avg Accuracy</div></div></div>
+    <div class="stat-card blue">
+      <div class="stat-icon si-blue"><i class="fas fa-file-alt"></i></div>
+      <div><div class="stat-num" id="stat-attempts">—</div><div class="stat-lbl">Attempted</div></div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-icon si-orange"><i class="fas fa-star"></i></div>
+      <div><div class="stat-num" id="stat-best">—</div><div class="stat-lbl">Best Score</div></div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-icon si-green"><i class="fas fa-chart-line"></i></div>
+      <div><div class="stat-num" id="stat-avg">—</div><div class="stat-lbl">Avg Score</div></div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-icon si-purple"><i class="fas fa-bullseye"></i></div>
+      <div><div class="stat-num" id="stat-accuracy">—</div><div class="stat-lbl">Accuracy</div></div>
+    </div>
   </div>
 
-  <!-- Feature Hub -->
-  <div class="section-hd"><h2><i class="fas fa-th-large"></i> Portal Features</h2></div>
+  <!-- FEATURE HUB -->
+  <div class="sec-hd" style="margin-top:4px;">
+    <h2><i class="fas fa-th-large"></i> Portal Features</h2>
+  </div>
   <div class="feature-hub">
-    <a href="doubt-room.html" class="feature-card fc-indigo">
-      <div style="display:flex;align-items:center;gap:12px;"><div class="fc-icon"><i class="fas fa-lightbulb"></i></div><div><div class="fc-title">Doubt Solving Room</div><div class="fc-desc">Post doubts and get expert answers</div></div></div>
-      <div class="fc-arrow"><i class="fas fa-arrow-right"></i> <span id="open-doubts-count">Open Doubts</span></div>
+    <a href="doubt-room.html" class="fc fc-indigo">
+      <div class="fc-top"><div class="fc-icon"><i class="fas fa-lightbulb"></i></div><div><div class="fc-title">Doubt Solving Room</div><div class="fc-desc">Post doubts, get expert answers fast</div></div></div>
+      <div class="fc-foot"><i class="fas fa-arrow-right"></i> <span id="open-doubts-count">Open Doubts</span></div>
     </a>
-    <a href="resources.html" class="feature-card fc-emerald">
-      <div style="display:flex;align-items:center;gap:12px;"><div class="fc-icon"><i class="fas fa-book-open"></i></div><div><div class="fc-title">Resource Library</div><div class="fc-desc">PDFs, videos, notes and PYQs</div></div></div>
-      <div class="fc-arrow"><i class="fas fa-arrow-right"></i> <span id="res-count-fc">Browse Resources</span></div>
+    <a href="resources.html" class="fc fc-emerald">
+      <div class="fc-top"><div class="fc-icon"><i class="fas fa-book-open"></i></div><div><div class="fc-title">Resource Library</div><div class="fc-desc">PDFs, videos, notes and PYQs</div></div></div>
+      <div class="fc-foot"><i class="fas fa-arrow-right"></i> <span id="res-count-fc">Browse Resources</span></div>
     </a>
-    <a href="discussion.html" class="feature-card fc-sky">
-      <div style="display:flex;align-items:center;gap:12px;"><div class="fc-icon"><i class="fas fa-comments"></i></div><div><div class="fc-title">Discussion Forum</div><div class="fc-desc">Chat in GATE, CSIR-NET channels</div></div></div>
-      <div class="fc-arrow"><i class="fas fa-arrow-right"></i> Join Discussion</div>
+    <a href="discussion.html" class="fc fc-sky">
+      <div class="fc-top"><div class="fc-icon"><i class="fas fa-comments"></i></div><div><div class="fc-title">Discussion Forum</div><div class="fc-desc">Chat in GATE, CSIR-NET channels</div></div></div>
+      <div class="fc-foot"><i class="fas fa-arrow-right"></i> Join Discussion</div>
     </a>
-    <a href="my-results.html" class="feature-card fc-rose">
-      <div style="display:flex;align-items:center;gap:12px;"><div class="fc-icon"><i class="fas fa-chart-bar"></i></div><div><div class="fc-title">My Results</div><div class="fc-desc">Score trends and accuracy charts</div></div></div>
-      <div class="fc-arrow"><i class="fas fa-arrow-right"></i> View Analysis</div>
+    <a href="my-results.html" class="fc fc-rose">
+      <div class="fc-top"><div class="fc-icon"><i class="fas fa-chart-bar"></i></div><div><div class="fc-title">My Results</div><div class="fc-desc">Score trends and accuracy analysis</div></div></div>
+      <div class="fc-foot"><i class="fas fa-arrow-right"></i> View Analysis</div>
     </a>
-    <a href="ranklist.html" class="feature-card fc-amber">
-      <div style="display:flex;align-items:center;gap:12px;"><div class="fc-icon"><i class="fas fa-trophy"></i></div><div><div class="fc-title">Ranklist</div><div class="fc-desc">See your rank among all aspirants</div></div></div>
-      <div class="fc-arrow"><i class="fas fa-arrow-right"></i> Check Your Rank</div>
+    <a href="ranklist.html" class="fc fc-amber">
+      <div class="fc-top"><div class="fc-icon"><i class="fas fa-trophy"></i></div><div><div class="fc-title">Ranklist</div><div class="fc-desc">See your rank among all aspirants</div></div></div>
+      <div class="fc-foot"><i class="fas fa-arrow-right"></i> Check Your Rank</div>
     </a>
-    <a href="exams.html" class="feature-card fc-slate">
-      <div style="display:flex;align-items:center;gap:12px;"><div class="fc-icon"><i class="fas fa-play-circle"></i></div><div><div class="fc-title">Live Exams</div><div class="fc-desc">Full-length CBT mock tests</div></div></div>
-      <div class="fc-arrow"><i class="fas fa-arrow-right"></i> <span id="live-exam-count">See Available Exams</span></div>
+    <a href="exams.html" class="fc fc-navy">
+      <div class="fc-top"><div class="fc-icon" style="background:rgba(245,124,0,.2);"><i class="fas fa-play-circle" style="color:var(--accent2);"></i></div><div><div class="fc-title">Live Exams</div><div class="fc-desc">Full-length CBT mock tests</div></div></div>
+      <div class="fc-foot"><i class="fas fa-arrow-right"></i> <span id="live-exam-count">See Available Exams</span></div>
     </a>
   </div>
 
@@ -179,14 +358,13 @@
 <script>
 let currentUser = null;
 
-function toggleUserMenu() {
-  const dd = document.getElementById('user-dropdown');
-  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+function toggleMenu() {
+  document.getElementById('user-dropdown').classList.toggle('open');
 }
 document.addEventListener('click', e => {
-  const wrap = document.getElementById('user-menu-wrap');
+  const wrap = document.getElementById('user-avatar')?.parentElement;
   if (wrap && !wrap.contains(e.target))
-    document.getElementById('user-dropdown').style.display = 'none';
+    document.getElementById('user-dropdown').classList.remove('open');
 });
 
 auth.onAuthStateChanged(async user => {
@@ -203,7 +381,6 @@ auth.onAuthStateChanged(async user => {
     document.getElementById('user-avatar').textContent  = firstName[0].toUpperCase();
     document.getElementById('dd-name').textContent = `${data.firstName||''} ${data.lastName||''}`.trim() || user.email;
   } catch(e) {}
-
   GxNotifications.init(user);
   loadStats();
   loadFeatureCounts();
@@ -215,19 +392,18 @@ async function loadStats() {
       .where('userId','==',currentUser.uid)
       .where('status','==','submitted').get();
     if (snap.empty) return;
-    let best=0, totalScore=0, count=0, totalQ=0, totalCorrect=0;
+    let best=0, total=0, count=0, totalQ=0, totalC=0;
     snap.forEach(d => {
-      const a = d.data(), s = a.totalScore||0;
-      totalScore += s; count++;
-      if (s > best) best = s;
-      totalQ       += (a.correct||0)+(a.wrong||0)+(a.skipped||0);
-      totalCorrect += (a.correct||0);
+      const a=d.data(), s=a.totalScore||0;
+      total+=s; count++; if(s>best)best=s;
+      totalQ+=(a.correct||0)+(a.wrong||0)+(a.skipped||0);
+      totalC+=(a.correct||0);
     });
     document.getElementById('stat-attempts').textContent = count;
     document.getElementById('stat-best').textContent     = best.toFixed(1);
-    document.getElementById('stat-avg').textContent      = (totalScore/count).toFixed(1);
-    document.getElementById('stat-accuracy').textContent = totalQ > 0 ? ((totalCorrect/totalQ)*100).toFixed(0)+'%' : '—';
-    const dates  = snap.docs.map(d => d.data().submittedAt?.toDate?.()).filter(Boolean).map(d => d.toDateString());
+    document.getElementById('stat-avg').textContent      = (total/count).toFixed(1);
+    document.getElementById('stat-accuracy').textContent = totalQ>0 ? ((totalC/totalQ)*100).toFixed(0)+'%' : '—';
+    const dates  = snap.docs.map(d=>d.data().submittedAt?.toDate?.()).filter(Boolean).map(d=>d.toDateString());
     const unique = [...new Set(dates)];
     if (unique.length >= 2) {
       document.getElementById('hero-streak').style.display = 'flex';
@@ -243,26 +419,23 @@ async function loadFeatureCounts() {
       db.collection('resources').get(),
       db.collection('exams').where('published','==',true).get()
     ]);
-    const openEl = document.getElementById('open-doubts-count');
-    if (openEl) openEl.textContent = dSnap.size > 0 ? `${dSnap.size} open doubts` : 'Ask a Doubt';
-    const resEl = document.getElementById('res-count-fc');
-    if (resEl) resEl.textContent = rSnap.size > 0 ? `${rSnap.size} resources available` : 'Browse Resources';
-    // Count live exams for the Live Exams card
-    const now = Date.now();
-    let liveCount = 0;
+    const oEl = document.getElementById('open-doubts-count');
+    if (oEl) oEl.textContent = dSnap.size > 0 ? `${dSnap.size} open doubts` : 'Ask a Doubt';
+    const rEl = document.getElementById('res-count-fc');
+    if (rEl) rEl.textContent = rSnap.size > 0 ? `${rSnap.size} resources` : 'Browse Resources';
+    const now = Date.now(); let live = 0;
     eSnap.forEach(doc => {
-      const e = doc.data();
-      const startMs = e.startTime?.toMillis?.() || 0;
-      const endMs   = e.endTime?.toMillis?.()   || Infinity;
-      if (now >= startMs && now <= endMs) liveCount++;
+      const e=doc.data();
+      const s=e.startTime?.toMillis?.()||0, en=e.endTime?.toMillis?.()||Infinity;
+      if(now>=s&&now<=en) live++;
     });
-    const liveEl = document.getElementById('live-exam-count');
-    if (liveEl) liveEl.textContent = liveCount > 0 ? `${liveCount} Live Now` : `${eSnap.size} Available`;
+    const lEl = document.getElementById('live-exam-count');
+    if (lEl) lEl.textContent = live > 0 ? `${live} Live Now` : `${eSnap.size} Available`;
   } catch(e) {}
 }
 
-function esc(s) { if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-async function doLogout() { await auth.signOut(); window.location.href = '../index.html'; }
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+async function doLogout(){await auth.signOut();window.location.href='../index.html';}
 </script>
 <script src="../js/notifications.js"></script>
 </body>
