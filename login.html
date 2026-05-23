@@ -3,11 +3,10 @@
 <head>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GeoExam Portal — Login</title>
-  <link rel="stylesheet" href="css/global.css">
   <style>
     :root {
       --navy:    #0a2540;
@@ -15,412 +14,615 @@
       --blue:    #1565c0;
       --accent:  #e65100;
       --accent2: #f57c00;
-      --font:    'Noto Sans','Segoe UI',Arial,sans-serif;
+      --font:    'Noto Sans', 'Segoe UI', sans-serif;
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; overflow: hidden; }
 
     body {
       font-family: var(--font);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       background: var(--navy);
-      overflow: hidden;
+      display: flex;
       position: relative;
     }
 
-    /* ── LIVE CANVAS BACKGROUND ── */
+    /* ══════════════════════════════════════
+       CANVAS BG
+    ══════════════════════════════════════ */
     #bg-canvas {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
       z-index: 0;
     }
 
-    /* ── RADIAL GLOW OVERLAYS ── */
-    .glow-orb {
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 1;
-      filter: blur(80px);
-      animation: orbFloat 12s ease-in-out infinite;
-    }
-    .glow-orb.orb1 {
-      width: 420px; height: 420px;
-      background: radial-gradient(circle, rgba(21,101,192,.35) 0%, transparent 70%);
-      top: -80px; left: -80px;
-      animation-delay: 0s;
-    }
-    .glow-orb.orb2 {
-      width: 360px; height: 360px;
-      background: radial-gradient(circle, rgba(230,81,0,.25) 0%, transparent 70%);
-      bottom: -60px; right: -60px;
-      animation-delay: -6s;
-    }
-    .glow-orb.orb3 {
-      width: 280px; height: 280px;
-      background: radial-gradient(circle, rgba(245,124,0,.18) 0%, transparent 70%);
-      top: 40%; left: 60%;
-      animation-delay: -3s;
-    }
-    @keyframes orbFloat {
-      0%,100% { transform: translate(0,0) scale(1); }
-      33%      { transform: translate(30px,-20px) scale(1.08); }
-      66%      { transform: translate(-20px,25px) scale(.94); }
+    /* ══════════════════════════════════════
+       LAYOUT
+    ══════════════════════════════════════ */
+    .split {
+      position: relative; z-index: 10;
+      display: flex; width: 100%; height: 100vh;
     }
 
-    /* ── LAYOUT ── */
-    .auth-wrapper {
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 56px;
       position: relative;
-      z-index: 10;
-      width: 100%;
-      max-width: 460px;
-      padding: 20px 16px;
-      animation: slideUp .6s cubic-bezier(.22,.61,.36,1) both;
-    }
-    @keyframes slideUp {
-      from { opacity:0; transform: translateY(32px); }
-      to   { opacity:1; transform: translateY(0); }
+      overflow: hidden;
     }
 
-    /* ── LOGO ── */
-    .auth-logo {
-      text-align: center;
-      margin-bottom: 28px;
-    }
-    .logo-ring {
-      width: 76px; height: 76px;
-      margin: 0 auto 14px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--blue) 0%, var(--navy2) 100%);
-      border: 2px solid var(--accent2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 34px; color: #fff;
-      box-shadow: 0 0 0 6px rgba(245,124,0,.15), 0 8px 32px rgba(0,0,0,.4);
-      position: relative;
-    }
-    .logo-ring::after {
+    /* diagonal slice divider */
+    .left-panel::after {
       content: '';
       position: absolute;
-      inset: -6px;
-      border-radius: 50%;
-      border: 1px solid rgba(245,124,0,.25);
-      animation: ringPulse 2.8s ease-in-out infinite;
-    }
-    @keyframes ringPulse {
-      0%,100% { transform: scale(1);   opacity: .6; }
-      50%      { transform: scale(1.1); opacity: 0; }
-    }
-    .auth-logo h1 {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 30px; font-weight: 700; color: #fff;
-      letter-spacing: .02em; margin-bottom: 4px;
-    }
-    .auth-logo h1 span { color: var(--accent2); }
-    .auth-logo p {
-      font-size: 12.5px;
-      color: rgba(255,255,255,.5);
-      letter-spacing: .06em;
-      text-transform: uppercase;
+      top: 0; right: -40px;
+      width: 80px; height: 100%;
+      background: inherit;
+      transform: skewX(-3deg);
+      z-index: 2;
+      pointer-events: none;
     }
 
-    /* ── CARD ── */
-    .auth-card {
-      background: rgba(255,255,255,.96);
-      backdrop-filter: blur(12px);
+    /* vertical accent line */
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      right: 0; top: 10%; bottom: 10%;
+      width: 1px;
+      background: linear-gradient(180deg, transparent, rgba(245,124,0,.5), transparent);
+    }
+
+    .brand-gem {
+      width: 72px; height: 72px;
       border-radius: 18px;
-      padding: 34px 32px 28px;
-      box-shadow: 0 24px 64px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.08);
-      border-top: 3px solid var(--accent2);
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; color: #fff;
+      margin-bottom: 28px;
+      box-shadow: 0 0 0 8px rgba(245,124,0,.12), 0 12px 40px rgba(230,81,0,.4);
+      position: relative;
+      animation: gemGlow 3s ease-in-out infinite;
     }
-    .card-title {
+    @keyframes gemGlow {
+      0%,100% { box-shadow: 0 0 0 8px rgba(245,124,0,.12), 0 12px 40px rgba(230,81,0,.4); }
+      50%      { box-shadow: 0 0 0 14px rgba(245,124,0,.08), 0 16px 50px rgba(230,81,0,.55); }
+    }
+
+    .brand-name {
       font-family: 'Rajdhani', sans-serif;
-      font-size: 22px; font-weight: 700;
-      color: var(--navy);
+      font-size: 48px; font-weight: 700;
+      color: #fff;
+      line-height: 1;
       margin-bottom: 6px;
-      display: flex; align-items: center; gap: 8px;
+      letter-spacing: .01em;
     }
-    .card-title i { color: var(--accent); font-size: 18px; }
-    .card-sub {
-      font-size: 13px; color: #6b7280;
-      margin-bottom: 22px;
-      padding-bottom: 18px;
-      border-bottom: 1px solid #e5e7eb;
+    .brand-name span { color: var(--accent2); }
+
+    .brand-tagline {
+      font-size: 13px;
+      color: rgba(255,255,255,.45);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 40px;
     }
 
-    /* ── INFO BOX ── */
-    .info-box {
-      background: linear-gradient(90deg, #eff6ff, #fff7ed);
-      border-left: 3px solid var(--accent2);
-      padding: 10px 14px;
-      border-radius: 7px;
+    .brand-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,.65);
+      line-height: 1.75;
+      max-width: 380px;
+      margin-bottom: 44px;
+    }
+    .brand-desc strong { color: rgba(255,255,255,.9); font-weight: 600; }
+
+    /* feature pills */
+    .features { display: flex; flex-direction: column; gap: 14px; }
+    .feat {
+      display: flex; align-items: center; gap: 14px;
+    }
+    .feat-icon {
+      width: 38px; height: 38px; flex-shrink: 0;
+      border-radius: 10px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; color: var(--accent2);
+    }
+    .feat-text { font-size: 13.5px; color: rgba(255,255,255,.7); line-height: 1.4; }
+    .feat-text strong { color: #fff; font-weight: 600; display: block; }
+
+    /* bottom badges */
+    .exam-badges {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      margin-top: 48px;
+    }
+    .badge {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 11.5px; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+    }
+    .badge-gate  { background: rgba(21,101,192,.3); border: 1px solid rgba(21,101,192,.5); color: #90caf9; }
+    .badge-csir  { background: rgba(230,81,0,.25);  border: 1px solid rgba(245,124,0,.4);  color: #ffcc80; }
+    .badge-cbt   { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.6); }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      width: 440px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 40px;
+      background: rgba(10,25,50,.45);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border-left: 1px solid rgba(255,255,255,.07);
+      overflow-y: auto;
+    }
+
+    .form-box {
+      width: 100%;
+      animation: slideIn .55s cubic-bezier(.22,.61,.36,1) both;
+    }
+    @keyframes slideIn {
+      from { opacity:0; transform:translateX(28px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+
+    .form-header { margin-bottom: 28px; }
+    .form-header h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 26px; font-weight: 700;
+      color: #fff; margin-bottom: 5px;
+    }
+    .form-header p { font-size: 13px; color: rgba(255,255,255,.45); }
+
+    /* orange top bar */
+    .form-header-bar {
+      width: 36px; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      margin-bottom: 14px;
+    }
+
+    /* info strip */
+    .info-strip {
+      background: rgba(245,124,0,.1);
+      border: 1px solid rgba(245,124,0,.2);
+      border-radius: 8px;
+      padding: 10px 13px;
       font-size: 12.5px;
-      color: #92400e;
-      margin-bottom: 20px;
-      display: flex; align-items: center; gap: 8px;
+      color: rgba(255,255,255,.65);
+      margin-bottom: 22px;
+      display: flex; align-items: center; gap: 9px;
     }
-    .info-box i { color: var(--accent2); flex-shrink: 0; }
+    .info-strip i { color: var(--accent2); flex-shrink: 0; }
 
-    /* ── FORM ── */
+    /* form fields */
     .form-group { margin-bottom: 16px; }
     .form-group label {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 12.5px; font-weight: 600;
-      color: #374151; margin-bottom: 7px;
+      display: flex; align-items: center; gap: 7px;
+      font-size: 12px; font-weight: 600;
+      color: rgba(255,255,255,.55);
+      letter-spacing: .04em; text-transform: uppercase;
+      margin-bottom: 8px;
     }
-    .form-group label i { color: var(--blue); font-size: 11px; }
+    .form-group label i { color: var(--accent2); font-size: 10px; }
+
     .form-control {
-      width: 100%; padding: 11px 14px;
-      border: 1.5px solid #d1d5db;
-      border-radius: 9px; font-size: 14px;
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px;
+      font-size: 14px;
       font-family: var(--font);
-      background: #fafafa;
+      color: #fff;
       outline: none;
-      transition: border .2s, box-shadow .2s, background .2s;
+      transition: border .2s, background .2s, box-shadow .2s;
     }
+    .form-control::placeholder { color: rgba(255,255,255,.25); }
     .form-control:focus {
-      border-color: var(--blue);
-      background: #fff;
-      box-shadow: 0 0 0 3px rgba(21,101,192,.12);
+      border-color: rgba(245,124,0,.55);
+      background: rgba(255,255,255,.1);
+      box-shadow: 0 0 0 3px rgba(245,124,0,.1);
     }
 
-    /* ── BUTTON ── */
-    .btn-primary {
+    /* login button */
+    .btn-login {
       width: 100%; padding: 13px;
+      margin-top: 6px;
       background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
       color: #fff; border: none; border-radius: 10px;
-      font-size: 15px; font-weight: 700;
       font-family: 'Rajdhani', sans-serif;
-      letter-spacing: .04em;
+      font-size: 16px; font-weight: 700;
+      letter-spacing: .06em;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      box-shadow: 0 6px 24px rgba(230,81,0,.4);
       transition: filter .2s, transform .15s, box-shadow .2s;
-      box-shadow: 0 4px 18px rgba(230,81,0,.35);
+      position: relative; overflow: hidden;
     }
-    .btn-primary:hover:not(:disabled) {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 22px rgba(230,81,0,.45);
+    .btn-login::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.15), transparent);
+      opacity: 0; transition: opacity .2s;
     }
-    .btn-primary:active:not(:disabled) { transform: translateY(0); }
-    .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+    .btn-login:hover::before { opacity: 1; }
+    .btn-login:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(230,81,0,.5);
+    }
+    .btn-login:disabled { opacity: .55; cursor: not-allowed; transform: none; }
 
-    /* ── EXTRAS ── */
-    .forgot-wrap {
+    .form-footer {
       text-align: center;
-      margin-top: 12px;
+      margin-top: 20px;
     }
-    .forgot-wrap a {
-      font-size: 12.5px; color: var(--blue);
-      text-decoration: none; font-weight: 600;
+    .form-footer a {
+      font-size: 12.5px;
+      color: rgba(255,255,255,.45);
+      text-decoration: none;
     }
-    .forgot-wrap a:hover { text-decoration: underline; }
+    .form-footer a:hover { color: var(--accent2); }
+    .form-footer a i { margin-right: 4px; }
 
     .divider {
       display: flex; align-items: center; gap: 12px;
-      margin: 20px 0 16px;
+      margin: 20px 0;
     }
     .divider::before, .divider::after {
-      content: ''; flex: 1; height: 1px; background: #e5e7eb;
+      content: ''; flex: 1; height: 1px;
+      background: rgba(255,255,255,.1);
     }
-    .divider span { font-size: 12px; color: #9ca3af; white-space: nowrap; }
+    .divider span { font-size: 11.5px; color: rgba(255,255,255,.3); white-space: nowrap; }
 
-    .signup-link {
-      text-align: center; font-size: 13.5px; color: #6b7280;
+    .signup-row {
+      text-align: center;
+      font-size: 13.5px;
+      color: rgba(255,255,255,.4);
     }
-    .signup-link a {
-      color: var(--accent); font-weight: 700; text-decoration: none;
+    .signup-row a {
+      color: var(--accent2);
+      font-weight: 700;
+      text-decoration: none;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      letter-spacing: .03em;
     }
-    .signup-link a:hover { text-decoration: underline; }
+    .signup-row a:hover { text-decoration: underline; }
 
     /* ── TOAST ── */
-    .toast-container {
-      position: fixed; top: 20px; right: 20px;
-      z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+    .toast-container { position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px; }
+    .toast { background:rgba(15,25,45,.95);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);
+             color:#fff;padding:12px 18px;border-radius:10px;font-size:13.5px;opacity:0;
+             transform:translateX(40px);transition:all .3s;max-width:320px;
+             display:flex;align-items:center;gap:9px;box-shadow:0 8px 24px rgba(0,0,0,.4); }
+    .toast.show { opacity:1;transform:translateX(0); }
+    .toast-success { border-left:3px solid #34d399; }
+    .toast-error   { border-left:3px solid #f87171; }
+    .toast-warning { border-left:3px solid var(--accent2); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 820px) {
+      html, body { overflow: auto; }
+      .split { flex-direction: column; height: auto; min-height: 100vh; }
+      .left-panel { padding: 48px 28px 32px; }
+      .left-panel::after { display: none; }
+      .left-panel::before { display: none; }
+      .brand-name { font-size: 36px; }
+      .right-panel { width: 100%; padding: 32px 24px 48px; border-left: none; border-top: 1px solid rgba(255,255,255,.07); }
     }
-    .toast {
-      background: #1f2937; color: #fff;
-      padding: 12px 18px; border-radius: 9px;
-      font-size: 13.5px; opacity: 0;
-      transform: translateX(40px);
-      transition: all .3s; max-width: 320px;
-      display: flex; align-items: center; gap: 9px;
-      box-shadow: 0 4px 18px rgba(0,0,0,.3);
-    }
-    .toast.show { opacity: 1; transform: translateX(0); }
-    .toast-success { background: #065f46; }
-    .toast-error   { background: #7f1d1d; }
-    .toast-warning { background: #78350f; }
   </style>
 </head>
 <body>
 
 <canvas id="bg-canvas"></canvas>
-<div class="glow-orb orb1"></div>
-<div class="glow-orb orb2"></div>
-<div class="glow-orb orb3"></div>
 <div id="toast-container" class="toast-container"></div>
 
-<div class="auth-wrapper">
-  <!-- Logo -->
-  <div class="auth-logo">
-    <div class="logo-ring"><i class="fas fa-gem"></i></div>
-    <h1>Geo<span>Exam</span> Portal</h1>
-    <p>GATE Geology &nbsp;·&nbsp; CSIR-NET Geology &nbsp;·&nbsp; CBT Platform</p>
+<div class="split">
+
+  <!-- ══ LEFT PANEL ══ -->
+  <div class="left-panel">
+    <div class="brand-gem"><i class="fas fa-gem"></i></div>
+
+    <div class="brand-name">Geo<span>Exam</span></div>
+    <div class="brand-name" style="font-size:22px;color:rgba(255,255,255,.5);font-weight:600;margin-top:-4px;margin-bottom:10px;">Portal</div>
+    <div class="brand-tagline">GATE Geology &nbsp;·&nbsp; CSIR-NET Geology &nbsp;·&nbsp; CBT Platform</div>
+
+    <p class="brand-desc">
+      India's dedicated exam portal for <strong>Geology aspirants</strong>. Prepare smarter with full-length mock tests, PYQ practice, expert doubt solving and detailed performance analytics.
+    </p>
+
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon"><i class="fas fa-file-alt"></i></div>
+        <div class="feat-text">
+          <strong>Full-Length CBT Mock Tests</strong>
+          GATE & CSIR-NET pattern with live timers
+        </div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="feat-text">
+          <strong>Deep Performance Analytics</strong>
+          Track accuracy, score trends and weak topics
+        </div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon"><i class="fas fa-lightbulb"></i></div>
+        <div class="feat-text">
+          <strong>Expert Doubt Solving Room</strong>
+          Post doubts and get answers from specialists
+        </div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon"><i class="fas fa-book-open"></i></div>
+        <div class="feat-text">
+          <strong>Resource Library</strong>
+          8 years of PYQs, PDFs, notes and video links
+        </div>
+      </div>
+    </div>
+
+    <div class="exam-badges">
+      <span class="badge badge-gate">GATE Geology</span>
+      <span class="badge badge-csir">CSIR-NET</span>
+      <span class="badge badge-cbt">CBT Platform</span>
+    </div>
   </div>
 
-  <!-- Card -->
-  <div class="auth-card">
-    <div class="card-title"><i class="fas fa-circle-user"></i> Login to your account</div>
-    <p class="card-sub">Welcome back! Enter your credentials to continue.</p>
+  <!-- ══ RIGHT PANEL ══ -->
+  <div class="right-panel">
+    <div class="form-box">
+      <div class="form-header">
+        <div class="form-header-bar"></div>
+        <h2><i class="fas fa-circle-user" style="color:var(--accent2);margin-right:8px;"></i>Welcome back</h2>
+        <p>Sign in to continue to your portal</p>
+      </div>
 
-    <div class="info-box">
-      <i class="fas fa-bullhorn"></i>
-      Use your registered email and password to access the portal.
-    </div>
+      <div class="info-strip">
+        <i class="fas fa-bullhorn"></i>
+        Use your registered email and password to access the portal.
+      </div>
 
-    <div class="form-group">
-      <label><i class="fas fa-envelope"></i> Email Address</label>
-      <input type="email" id="login-email" class="form-control" placeholder="yourname@example.com">
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-lock"></i> Password</label>
-      <input type="password" id="login-password" class="form-control" placeholder="Enter your password">
-    </div>
+      <div class="form-group">
+        <label><i class="fas fa-envelope"></i> Email Address</label>
+        <input type="email" id="login-email" class="form-control" placeholder="yourname@example.com">
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-lock"></i> Password</label>
+        <input type="password" id="login-password" class="form-control" placeholder="Enter your password">
+      </div>
 
-    <button class="btn-primary" onclick="doLogin()" id="btn-login">
-      <i class="fas fa-right-to-bracket"></i> Login to Portal
-    </button>
+      <button class="btn-login" onclick="doLogin()" id="btn-login">
+        <i class="fas fa-right-to-bracket"></i> LOGIN TO PORTAL
+      </button>
 
-    <div class="forgot-wrap">
-      <a href="#" onclick="forgotPassword()"><i class="fas fa-key"></i> Forgot Password?</a>
-    </div>
+      <div class="form-footer">
+        <a href="#" onclick="forgotPassword()"><i class="fas fa-key"></i> Forgot Password?</a>
+      </div>
 
-    <div class="divider"><span>New here?</span></div>
+      <div class="divider"><span>New to GeoExam?</span></div>
 
-    <div class="signup-link">
-      <i class="fas fa-user-plus"></i> Don't have an account?
-      <a href="signup.html">Sign Up Free</a>
+      <div class="signup-row">
+        Don't have an account? &nbsp;<a href="signup.html"><i class="fas fa-user-plus"></i> Sign Up Free</a>
+      </div>
     </div>
   </div>
+
 </div>
 
-<!-- ── ANIMATED BACKGROUND ── -->
+<!-- ══ CANVAS ANIMATION ══ -->
 <script>
-(function(){
+(function () {
   const canvas = document.getElementById('bg-canvas');
-  const ctx    = canvas.getContext('2d');
-  let W, H, nodes;
+  const ctx = canvas.getContext('2d');
+  let W, H, particles, meteors;
 
-  const COLORS = {
-    node:  ['rgba(21,101,192,', 'rgba(245,124,0,', 'rgba(255,255,255,'],
-    line:  'rgba(245,124,0,',
-    line2: 'rgba(21,101,192,'
-  };
+  const NAVY  = [10, 37, 64];
+  const BLUE  = [21, 101, 192];
+  const ORG   = [245, 124, 0];
+  const WHITE = [255, 255, 255];
 
-  function resize(){
+  function resize() {
     W = canvas.width  = window.innerWidth;
     H = canvas.height = window.innerHeight;
   }
 
-  function initNodes(n){
-    nodes = [];
-    for(let i=0;i<n;i++){
-      const t = Math.random();
-      nodes.push({
-        x:  Math.random()*W,
-        y:  Math.random()*H,
-        r:  1.2 + Math.random()*2.4,
-        vx: (Math.random()-.5)*.4,
-        vy: (Math.random()-.5)*.4,
-        c:  t < .5 ? 0 : t < .82 ? 1 : 2,
-        a:  .4 + Math.random()*.5,
-        pulse: Math.random()*Math.PI*2,
-        pSpeed: .015 + Math.random()*.02
+  function randRange(a, b) { return a + Math.random() * (b - a); }
+
+  function initParticles(n) {
+    particles = [];
+    for (let i = 0; i < n; i++) {
+      const type = Math.random();
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: randRange(1, 3.2),
+        vx: randRange(-.3, .3),
+        vy: randRange(-.3, .3),
+        color: type < .55 ? BLUE : type < .82 ? ORG : WHITE,
+        alpha: randRange(.35, .9),
+        pulse: Math.random() * Math.PI * 2,
+        ps: randRange(.012, .028),
       });
     }
   }
 
-  function draw(){
-    ctx.clearRect(0,0,W,H);
+  function initMeteors() {
+    meteors = [];
+    for (let i = 0; i < 6; i++) spawnMeteor();
+  }
 
-    // dark base gradient
-    const bg = ctx.createLinearGradient(0,0,W,H);
-    bg.addColorStop(0,   '#0a2540');
-    bg.addColorStop(.45, '#0e3460');
-    bg.addColorStop(1,   '#0d1f3c');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0,0,W,H);
+  function spawnMeteor() {
+    meteors.push({
+      x: Math.random() * W * 1.4,
+      y: Math.random() * H * .5,
+      len: randRange(80, 180),
+      speed: randRange(4, 9),
+      alpha: randRange(.2, .5),
+      angle: Math.PI / 5,
+      life: 0,
+      maxLife: randRange(60, 120),
+      delay: randRange(0, 200),
+    });
+  }
 
-    // faint grid
-    ctx.strokeStyle = 'rgba(255,255,255,.025)';
-    ctx.lineWidth = .6;
-    const gx = 80;
-    for(let x=0;x<W;x+=gx){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
-    for(let y=0;y<H;y+=gx){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  function drawBg() {
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0,   '#071828');
+    g.addColorStop(.4,  '#0a2540');
+    g.addColorStop(.75, '#0e3460');
+    g.addColorStop(1,   '#071828');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
 
-    // connect lines
-    const DIST = 160;
-    for(let i=0;i<nodes.length;i++){
-      for(let j=i+1;j<nodes.length;j++){
-        const dx = nodes[i].x - nodes[j].x;
-        const dy = nodes[i].y - nodes[j].y;
-        const d  = Math.sqrt(dx*dx+dy*dy);
-        if(d < DIST){
-          const alpha = (1-d/DIST)*0.22;
-          const useOrange = (nodes[i].c===1 || nodes[j].c===1);
-          ctx.strokeStyle = (useOrange ? COLORS.line : COLORS.line2) + alpha + ')';
-          ctx.lineWidth   = .8;
+    // radial deep glow — left (blue)
+    const lg = ctx.createRadialGradient(W*.15, H*.35, 0, W*.15, H*.35, W*.45);
+    lg.addColorStop(0, 'rgba(21,101,192,.18)');
+    lg.addColorStop(1, 'transparent');
+    ctx.fillStyle = lg;
+    ctx.fillRect(0, 0, W, H);
+
+    // radial deep glow — right (orange)
+    const rg = ctx.createRadialGradient(W*.78, H*.7, 0, W*.78, H*.7, W*.38);
+    rg.addColorStop(0, 'rgba(230,81,0,.14)');
+    rg.addColorStop(1, 'transparent');
+    ctx.fillStyle = rg;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  function drawGrid() {
+    ctx.strokeStyle = 'rgba(255,255,255,.022)';
+    ctx.lineWidth = .7;
+    const s = 70;
+    for (let x = 0; x < W; x += s) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (let y = 0; y < H; y += s) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+  }
+
+  function drawConnections() {
+    const LIMIT = 145;
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const d  = Math.hypot(dx, dy);
+        if (d < LIMIT) {
+          const al  = (1 - d / LIMIT) * .18;
+          const useOrg = particles[i].color === ORG || particles[j].color === ORG;
+          const c   = useOrg ? ORG : BLUE;
+          ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${al})`;
+          ctx.lineWidth   = .75;
           ctx.beginPath();
-          ctx.moveTo(nodes[i].x, nodes[i].y);
-          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
           ctx.stroke();
         }
       }
     }
-
-    // nodes
-    nodes.forEach(n=>{
-      n.pulse += n.pSpeed;
-      const pAlpha = n.a * (.75 + .25*Math.sin(n.pulse));
-      const cr = COLORS.node[n.c];
-
-      // outer glow
-      const grd = ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r*5);
-      grd.addColorStop(0, cr + pAlpha*.4 + ')');
-      grd.addColorStop(1, cr + '0)');
-      ctx.fillStyle = grd;
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, n.r*5, 0, Math.PI*2);
-      ctx.fill();
-
-      // core dot
-      ctx.fillStyle = cr + pAlpha + ')';
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
-      ctx.fill();
-
-      // move
-      n.x += n.vx; n.y += n.vy;
-      if(n.x<-20) n.x=W+20; if(n.x>W+20) n.x=-20;
-      if(n.y<-20) n.y=H+20; if(n.y>H+20) n.y=-20;
-    });
-
-    requestAnimationFrame(draw);
   }
 
-  window.addEventListener('resize', ()=>{ resize(); initNodes(90); });
+  function drawParticles() {
+    particles.forEach(p => {
+      p.pulse += p.ps;
+      const a = p.alpha * (.72 + .28 * Math.sin(p.pulse));
+      const c = p.color;
+
+      // halo
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 6);
+      g.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${a * .3})`);
+      g.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // core
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < -20) p.x = W + 20;
+      if (p.x > W + 20) p.x = -20;
+      if (p.y < -20) p.y = H + 20;
+      if (p.y > H + 20) p.y = -20;
+    });
+  }
+
+  function drawMeteors() {
+    meteors.forEach((m, idx) => {
+      if (m.delay > 0) { m.delay--; return; }
+      m.life++;
+      if (m.life > m.maxLife) {
+        meteors[idx] = { ...spawnMeteorObj() };
+        return;
+      }
+      const progress = m.life / m.maxLife;
+      const alpha    = m.alpha * Math.sin(progress * Math.PI);
+      const ex = m.x + Math.cos(m.angle) * m.len;
+      const ey = m.y + Math.sin(m.angle) * m.len;
+      const g  = ctx.createLinearGradient(m.x, m.y, ex, ey);
+      g.addColorStop(0, `rgba(255,255,255,0)`);
+      g.addColorStop(.4, `rgba(255,200,120,${alpha})`);
+      g.addColorStop(1, `rgba(255,255,255,${alpha * .7})`);
+      ctx.strokeStyle = g;
+      ctx.lineWidth   = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(m.x, m.y);
+      ctx.lineTo(ex, ey);
+      ctx.stroke();
+      m.x += Math.cos(m.angle) * m.speed;
+      m.y += Math.sin(m.angle) * m.speed;
+    });
+  }
+
+  function spawnMeteorObj() {
+    return {
+      x: Math.random() * W * 1.4,
+      y: Math.random() * H * .5,
+      len: randRange(80, 180),
+      speed: randRange(4, 9),
+      alpha: randRange(.2, .5),
+      angle: Math.PI / 5,
+      life: 0,
+      maxLife: randRange(60, 120),
+      delay: randRange(40, 220),
+    };
+  }
+
+  let frame = 0;
+  function loop() {
+    frame++;
+    drawBg();
+    drawGrid();
+    drawConnections();
+    drawParticles();
+    drawMeteors();
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('resize', () => { resize(); initParticles(110); });
   resize();
-  initNodes(90);
-  draw();
+  initParticles(110);
+  initMeteors();
+  loop();
 })();
 </script>
 
-<!-- ── FIREBASE ── -->
+<!-- ══ FIREBASE ══ -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -432,9 +634,7 @@ auth.onAuthStateChanged(async user => {
     const doc = await db.collection('users').doc(user.uid).get();
     window.location.href = (doc.exists && doc.data().role === 'admin')
       ? 'admin/index.html' : 'pages/dashboard.html';
-  } catch(e) {
-    window.location.href = 'pages/dashboard.html';
-  }
+  } catch(e) { window.location.href = 'pages/dashboard.html'; }
 });
 
 async function doLogin() {
@@ -443,7 +643,7 @@ async function doLogin() {
   if (!email || !pass) { showToast('Please fill all fields', 'error'); return; }
   const btn = document.getElementById('btn-login');
   btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in…';
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> LOGGING IN…';
   try {
     const cred    = await auth.signInWithEmailAndPassword(email, pass);
     const userDoc = await db.collection('users').doc(cred.user.uid).get();
@@ -452,8 +652,7 @@ async function doLogin() {
         uid: cred.user.uid,
         firstName: cred.user.displayName?.split(' ')[0] || '',
         lastName:  cred.user.displayName?.split(' ').slice(1).join(' ') || '',
-        email:     cred.user.email,
-        mobile:    '', role: 'student',
+        email: cred.user.email, mobile: '', role: 'student',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       window.location.href = 'pages/dashboard.html'; return;
@@ -462,7 +661,7 @@ async function doLogin() {
   } catch(e) {
     showToast(friendlyError(e.code, e.message), 'error');
     btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-right-to-bracket"></i> Login to Portal';
+    btn.innerHTML = '<i class="fas fa-right-to-bracket"></i> LOGIN TO PORTAL';
   }
 }
 
@@ -472,29 +671,25 @@ async function forgotPassword() {
   try {
     await auth.sendPasswordResetEmail(email);
     showToast('Password reset email sent!', 'success');
-  } catch(e) {
-    showToast(friendlyError(e.code, e.message), 'error');
-  }
+  } catch(e) { showToast(friendlyError(e.code, e.message), 'error'); }
 }
 
 function friendlyError(code, fallback) {
-  return ({
-    'auth/user-not-found':         'No account found with this email.',
-    'auth/wrong-password':         'Incorrect password. Please try again.',
-    'auth/invalid-email':          'Invalid email address.',
-    'auth/too-many-requests':      'Too many attempts. Please wait.',
-    'auth/network-request-failed': 'Network error. Check your connection.',
-  })[code] || fallback;
+  return ({ 'auth/user-not-found': 'No account found with this email.',
+            'auth/wrong-password': 'Incorrect password. Please try again.',
+            'auth/invalid-email':  'Invalid email address.',
+            'auth/too-many-requests': 'Too many attempts. Please wait.',
+            'auth/network-request-failed': 'Network error. Check your connection.' })[code] || fallback;
 }
 
-function showToast(msg, type='info') {
+function showToast(msg, type = 'info') {
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
-  const icon = type==='success'?'circle-check':type==='error'?'circle-xmark':'triangle-exclamation';
-  t.innerHTML = `<i class="fas fa-${icon}"></i> ${msg}`;
+  const ic = type==='success'?'circle-check':type==='error'?'circle-xmark':'triangle-exclamation';
+  t.innerHTML = `<i class="fas fa-${ic}"></i> ${msg}`;
   document.getElementById('toast-container').appendChild(t);
-  setTimeout(()=>t.classList.add('show'),10);
-  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); },4000);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 4200);
 }
 </script>
 </body>
