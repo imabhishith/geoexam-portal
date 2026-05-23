@@ -16,6 +16,18 @@ let adminDiscUnsubscribe = null;
 let adminEmojiOpen = false;
 const ADMIN_EMOJIS = ['😀','😂','🤔','👍','👎','🔥','✅','❌','❓','💡','📖','🎯','🏆','😅','🙏'];
 
+// ── Doubt Room Variables ──
+let adminDoubts = [];
+let adminDoubtUnsubscribe = null;
+let openDoubtId = null;   // currently expanded doubt for reply
+
+// ── Resource Library Variables ──
+let adminResources = [];
+let editingResourceId = null;
+
+// ── Notification Centre Variables ──
+let adminNotifications = [];
+
 // ── Auth Guard ──
 auth.onAuthStateChanged(async user => {
   if (!user) { window.location.href = '../index.html'; return; }
@@ -46,18 +58,15 @@ function showPanel(name) {
     dashboard:'Dashboard', qbank:'Question Bank', 'add-single':'Add Question',
     'add-bulk':'Bulk Upload PDF', exams:'Manage Exams', 'create-exam':'Create / Edit Exam',
     attempts:'All Attempts', flagged:'Flagged Attempts', users:'Users', revaluation:'Revaluation Centre',
-    discussion: 'Discussion'
+    discussion:'Discussion', doubts:'Doubt Solving Room', resources:'Resource Library',
+    notifications:'Notification Centre'
   };
   document.getElementById('panel-title').textContent = titles[name] || name;
-  
-  // Load data for specific panels
-  if (name === 'discussion') {
-    setTimeout(() => {
-      adminLoadDiscussion();
-    }, 100);
-  } else if (name === 'dashboard') {
-    loadDashboard();
-  }
+  if (name === 'discussion')   { setTimeout(adminLoadDiscussion, 100); }
+  else if (name === 'doubts')  { setTimeout(adminLoadDoubts, 100); }
+  else if (name === 'resources') { setTimeout(adminLoadResources, 100); }
+  else if (name === 'notifications') { setTimeout(adminLoadNotifications, 100); }
+  else if (name === 'dashboard') { loadDashboard(); }
 }
 
 // ── Dashboard ──
@@ -1763,85 +1772,553 @@ async function adminPostAnnouncement() {
   }
 }
 
+// ============================================================
+// ──────────────────────────────────────────────────────────
+//  DOUBT SOLVING ROOM — ADMIN PANEL
+// ──────────────────────────────────────────────────────────
+// ============================================================
+
+function adminLoadDoubts() {
+  try {
+    const statusFilter = document.getElementById('doubt-status-filter')?.value || '';
+    const topicFilter  = document.getElementById('doubt-topic-filter')?.value  || '';
+
+    if (adminDoubtUnsubscribe) { adminDoubtUnsubscribe(); adminDoubtUnsubscribe = null; }
+
+    let q = db.collection('doubts').orderBy('createdAt','desc').limit(100);
+    if (statusFilter) q = db.collection('doubts').where('status','==',statusFilter).orderBy('createdAt','desc').limit(100);
+
+    adminDoubtUnsubscribe = q.onSnapshot(snap => {
+      adminDoubts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      let filtered = adminDoubts;
+      if (topicFilter) filtered = filtered.filter(d => d.topic === topicFilter);
+      adminRenderDoubts(filtered);
+      // badge
+      const open = adminDoubts.filter(d => d.status === 'open').length;
+      const badge = document.getElementById('nav-doubts-badge');
+      if (badge) { badge.textContent = open; badge.style.display = open > 0 ? 'inline' : 'none'; }
+      // stats
+      const el = id => document.getElementById(id);
+      if (el('doubt-stat-total'))   el('doubt-stat-total').textContent   = adminDoubts.length;
+      if (el('doubt-stat-open'))    el('doubt-stat-open').textContent    = adminDoubts.filter(d=>d.status==='open').length;
+      if (el('doubt-stat-solved'))  el('doubt-stat-solved').textContent  = adminDoubts.filter(d=>d.status==='solved').length;
+      if (el('doubt-stat-replies')) el('doubt-stat-replies').textContent = adminDoubts.reduce((s,d)=>s+(d.replyCount||0),0);
+    }, err => {
+      console.error(err);
+      Utils.toast('Error loading doubts: '+err.message, 'error');
+    });
+  } catch(e) { Utils.toast('Error: '+e.message,'error'); }
+}
+
+function adminFilterDoubts() {
+  const q = document.getElementById('doubt-search')?.value.toLowerCase()||'';
+  const filtered = q
+    ? adminDoubts.filter(d => d.text?.toLowerCase().includes(q) || d.userName?.toLowerCase().includes(q))
+    : adminDoubts;
+  adminRenderDoubts(filtered);
+}
+
+function adminRenderDoubts(list) {
+  const el = document.getElementById('doubt-list');
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);"><i class="fas fa-question-circle" style="font-size:40px;opacity:.3;display:block;margin-bottom:12px;"></i>No doubts found.</div>';
+    return;
+  }
+  const TOPIC_COLOR = { 'gate-geology':'#dcfce7','csir-net':'#dbeafe','general':'#f3e8ff','numericals':'#fff7ed','theory':'#fef9c3','other':'#f1f5f9' };
+  el.innerHTML = list.map(d => {
+    const ts = d.createdAt?.toDate?.()?.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})||'—';
+    const solved = d.status === 'solved';
+    return `<div style="border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;${solved?'opacity:.85':''}">
+      <div style="padding:14px 16px;background:${solved?'#f0fdf4':'var(--surface)'};display:flex;gap:12px;align-items:flex-start;">
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:14px;">${(d.userName||'S')[0].toUpperCase()}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px;">
+            <strong style="font-size:14px;">${escapeHtml(d.userName||'Student')}</strong>
+            <span style="background:${TOPIC_COLOR[d.topic]||'#f1f5f9'};font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;">${d.topic||'general'}</span>
+            ${solved?'<span class="badge badge-success" style="font-size:10px;">✅ Solved</span>':'<span class="badge badge-warning" style="font-size:10px;">⏳ Open</span>'}
+            <span style="font-size:11px;color:var(--text3);margin-left:auto;">${ts}</span>
+          </div>
+          <div style="font-size:13px;color:var(--text);line-height:1.6;">${escapeHtml(d.text||'')}</div>
+          ${d.imageUrl?`<img src="${d.imageUrl}" style="max-height:120px;border-radius:6px;margin-top:8px;border:1px solid var(--border);" alt="doubt image">`:'' }
+          <div style="margin-top:8px;font-size:12px;color:var(--text2);"><i class="fas fa-reply"></i> ${d.replyCount||0} replies · <i class="fas fa-arrow-up"></i> ${d.upvotes||0} upvotes</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+          <button class="btn btn-primary btn-sm" onclick="adminOpenDoubtReply('${d.id}')"><i class="fas fa-reply"></i> Reply</button>
+          ${!solved?`<button class="btn btn-ghost btn-sm" style="color:var(--success)" onclick="adminMarkSolved('${d.id}')"><i class="fas fa-check"></i> Solve</button>`:''}
+          <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="adminDeleteDoubt('${d.id}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <div id="doubt-replies-${d.id}" style="display:none;border-top:1px solid var(--border);background:var(--bg);"></div>
+      <div id="doubt-reply-composer-${d.id}" style="display:none;border-top:1px solid var(--border);padding:12px 16px;background:var(--surface);">
+        <textarea class="form-control" id="doubt-reply-text-${d.id}" rows="3" placeholder="Write your answer…" style="resize:vertical;margin-bottom:8px;"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+          <button class="btn btn-ghost btn-sm" onclick="adminCloseDoubtReply('${d.id}')">Cancel</button>
+          <button class="btn btn-primary btn-sm" onclick="adminSubmitDoubtReply('${d.id}')"><i class="fas fa-paper-plane"></i> Post Answer</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function adminOpenDoubtReply(doubtId) {
+  // Load replies first
+  const repliesEl = document.getElementById(`doubt-replies-${doubtId}`);
+  const composerEl = document.getElementById(`doubt-reply-composer-${doubtId}`);
+  if (!repliesEl || !composerEl) return;
+
+  const isOpen = composerEl.style.display !== 'none';
+  // Toggle
+  if (isOpen) { repliesEl.style.display = 'none'; composerEl.style.display = 'none'; return; }
+
+  repliesEl.style.display = 'block';
+  composerEl.style.display = 'block';
+  repliesEl.innerHTML = '<div style="padding:12px 16px;color:var(--text3);font-size:13px;">Loading replies…</div>';
+
+  try {
+    const snap = await db.collection('doubts').doc(doubtId).collection('replies').orderBy('createdAt','asc').get();
+    if (snap.empty) {
+      repliesEl.innerHTML = '<div style="padding:12px 16px;color:var(--text3);font-size:13px;font-style:italic;">No replies yet. Be the first to answer!</div>';
+    } else {
+      repliesEl.innerHTML = snap.docs.map(r => {
+        const rd = r.data();
+        const rt = rd.createdAt?.toDate?.()?.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})||'—';
+        return `<div style="padding:10px 16px 10px 52px;border-bottom:1px solid var(--border);${rd.isAccepted?'background:#f0fdf4;':''}">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
+            <strong style="font-size:13px;color:${rd.isAdmin?'var(--primary)':''}">${escapeHtml(rd.userName||'Student')}</strong>
+            ${rd.isAdmin?'<span class="badge" style="background:#7c3aed;color:#fff;font-size:9px;">ADMIN</span>':''}
+            ${rd.isAccepted?'<span class="badge badge-success" style="font-size:9px;">✅ Best Answer</span>':''}
+            <span style="font-size:11px;color:var(--text3);margin-left:auto;">${rt}</span>
+            <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:11px;" onclick="adminAcceptReply('${doubtId}','${r.id}',${!rd.isAccepted})" title="${rd.isAccepted?'Unaccept':'Mark as best answer'}"><i class="fas fa-star" style="color:${rd.isAccepted?'#f59e0b':'var(--text3)'}"></i></button>
+            <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:11px;color:var(--danger)" onclick="adminDeleteReply('${doubtId}','${r.id}')"><i class="fas fa-trash"></i></button>
+          </div>
+          <div style="font-size:13px;color:var(--text);line-height:1.6;">${escapeHtml(rd.text||'')}</div>
+        </div>`;
+      }).join('');
+    }
+  } catch(e) {
+    repliesEl.innerHTML = `<div style="padding:12px 16px;color:var(--danger);font-size:13px;">Error: ${e.message}</div>`;
+  }
+
+  document.getElementById(`doubt-reply-text-${doubtId}`)?.focus();
+}
+
+function adminCloseDoubtReply(doubtId) {
+  document.getElementById(`doubt-replies-${doubtId}`).style.display = 'none';
+  document.getElementById(`doubt-reply-composer-${doubtId}`).style.display = 'none';
+}
+
+async function adminSubmitDoubtReply(doubtId) {
+  const text = document.getElementById(`doubt-reply-text-${doubtId}`)?.value.trim();
+  if (!text) { Utils.toast('Please write an answer.','error'); return; }
+  try {
+    const adminUser = auth.currentUser;
+    const ud = (await db.collection('users').doc(adminUser.uid).get()).data();
+    const name = `${ud?.firstName||'Admin'} ${ud?.lastName||''}`.trim();
+
+    await db.collection('doubts').doc(doubtId).collection('replies').add({
+      userId: adminUser.uid, userName: name, isAdmin: true,
+      text, isAccepted: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    await db.collection('doubts').doc(doubtId).update({
+      replyCount: firebase.firestore.FieldValue.increment(1)
+    });
+
+    // Send notification to doubt author
+    const doubt = adminDoubts.find(d => d.id === doubtId);
+    if (doubt?.userId) {
+      await adminSendNotifToUser(doubt.userId, {
+        title: 'Your doubt was answered! 🎯',
+        body: `${name} replied to your question: "${(doubt.text||'').substring(0,60)}…"`,
+        type: 'doubt', link: '../pages/doubt-room.html?id='+doubtId, icon: 'fa-reply'
+      });
+    }
+
+    document.getElementById(`doubt-reply-text-${doubtId}`).value = '';
+    // Refresh replies
+    adminOpenDoubtReply(doubtId);
+    adminOpenDoubtReply(doubtId); // toggle back open
+    Utils.toast('Answer posted!','success');
+  } catch(e) { Utils.toast('Error: '+e.message,'error'); }
+}
+
+async function adminAcceptReply(doubtId, replyId, accept) {
+  try {
+    // Unaccept all others first
+    if (accept) {
+      const allReplies = await db.collection('doubts').doc(doubtId).collection('replies').where('isAccepted','==',true).get();
+      await Promise.all(allReplies.docs.map(r => r.ref.update({isAccepted:false})));
+    }
+    await db.collection('doubts').doc(doubtId).collection('replies').doc(replyId).update({isAccepted: accept});
+    if (accept) await adminMarkSolved(doubtId);
+    adminOpenDoubtReply(doubtId); adminOpenDoubtReply(doubtId);
+    Utils.toast(accept ? 'Marked as best answer!' : 'Unmarked.', 'success');
+  } catch(e) { Utils.toast('Error: '+e.message,'error'); }
+}
+
+async function adminMarkSolved(doubtId) {
+  try {
+    await db.collection('doubts').doc(doubtId).update({ status: 'solved' });
+    Utils.toast('Doubt marked as solved!','success');
+  } catch(e) { Utils.toast('Error: '+e.message,'error'); }
+}
+
+async function adminDeleteDoubt(doubtId) {
+  if (!confirm('Delete this doubt and all its replies?')) return;
+  try {
+    // Delete sub-collection replies first
+    const replies = await db.collection('doubts').doc(doubtId).collection('replies').get();
+    await Promise.all(replies.docs.map(r => r.ref.delete()));
+    await db.collection('doubts').doc(doubtId).delete();
+    Utils.toast('Doubt deleted.','success');
+  } catch(e) { Utils.toast('Error: '+e.message,'error'); }
+}
+
+async function adminDeleteReply(doubtId, replyId) {
+  if (!confirm('Delete this reply?')) return;
+  try {
+    await db.collection('doubts').doc(doubtId).collection('replies').doc(replyId).delete();
+    await db.collection('doubts').doc(doubtId).update({ replyCount: firebase.firestore.FieldValue.increment(-1) });
+    adminOpenDoubtReply(doubtId); adminOpenDoubtReply(doubtId);
+    Utils.toast('Reply deleted.','success');
+  } catch(e) { Utils.toast('Error: '+e.message,'error'); }
+}
+
+// ============================================================
+// ──────────────────────────────────────────────────────────
+//  RESOURCE LIBRARY — ADMIN PANEL
+// ──────────────────────────────────────────────────────────
+// ============================================================
+
+const RESOURCE_TYPES = { pdf:'📄 PDF', video:'🎥 Video', notes:'📝 Notes', pyq:'📋 PYQ', link:'🔗 Link' };
+const RESOURCE_SUBJECTS = ['GATE Geology','CSIR-NET','General Geology','Geomorphology','Petrology','Mineralogy','Structural Geology','Stratigraphy','Economic Geology','Remote Sensing','Hydrogeology','Engineering Geology'];
+
+function adminLoadResources() {
+  const typeFilter = document.getElementById('res-type-filter')?.value || '';
+  const subjFilter = document.getElementById('res-subj-filter')?.value || '';
+
+  let q = db.collection('resources').orderBy('createdAt','desc').limit(200);
+
+  q.get().then(snap => {
+    adminResources = snap.docs.map(d => ({id:d.id,...d.data()}));
+    let filtered = adminResources;
+    if (typeFilter) filtered = filtered.filter(r => r.type === typeFilter);
+    if (subjFilter) filtered = filtered.filter(r => r.subject === subjFilter);
+    adminRenderResources(filtered);
+    // stats
+    const el = id => document.getElementById(id);
+    if (el('res-stat-total'))     el('res-stat-total').textContent     = adminResources.length;
+    if (el('res-stat-pdf'))       el('res-stat-pdf').textContent       = adminResources.filter(r=>r.type==='pdf').length;
+    if (el('res-stat-video'))     el('res-stat-video').textContent     = adminResources.filter(r=>r.type==='video').length;
+    if (el('res-stat-downloads')) el('res-stat-downloads').textContent = adminResources.reduce((s,r)=>s+(r.downloads||0),0);
+  }).catch(e => Utils.toast('Error loading resources: '+e.message,'error'));
+}
+
+function adminFilterResources() {
+  const q = document.getElementById('res-search')?.value.toLowerCase()||'';
+  const typeFilter = document.getElementById('res-type-filter')?.value||'';
+  const subjFilter = document.getElementById('res-subj-filter')?.value||'';
+  let filtered = adminResources;
+  if (q)         filtered = filtered.filter(r => r.title?.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q));
+  if (typeFilter) filtered = filtered.filter(r => r.type === typeFilter);
+  if (subjFilter) filtered = filtered.filter(r => r.subject === subjFilter);
+  adminRenderResources(filtered);
+}
+
+function adminRenderResources(list) {
+  const el = document.getElementById('res-list');
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);"><i class="fas fa-folder-open" style="font-size:40px;opacity:.3;display:block;margin-bottom:12px;"></i>No resources yet.</div>';
+    return;
+  }
+  const TYPE_COLORS = { pdf:'#fce7f3', video:'#dbeafe', notes:'#dcfce7', pyq:'#fef9c3', link:'#f3e8ff' };
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse;">
+    <thead><tr style="border-bottom:2px solid var(--border);font-size:12px;color:var(--text2);text-transform:uppercase;">
+      <th style="padding:10px 12px;text-align:left;">Title</th>
+      <th style="padding:10px 12px;text-align:left;">Type</th>
+      <th style="padding:10px 12px;text-align:left;">Subject</th>
+      <th style="padding:10px 12px;text-align:center;">Downloads</th>
+      <th style="padding:10px 12px;text-align:center;">Visible</th>
+      <th style="padding:10px 12px;text-align:right;">Actions</th>
+    </tr></thead>
+    <tbody>${list.map(r => {
+      const tc = TYPE_COLORS[r.type]||'#f1f5f9';
+      return `<tr style="border-bottom:1px solid var(--border);" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">
+        <td style="padding:12px;">
+          <div style="font-weight:700;font-size:13px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(r.title||'')}">${escapeHtml(r.title||'Untitled')}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(r.description||'')}</div>
+        </td>
+        <td style="padding:12px;"><span style="background:${tc};font-size:12px;padding:3px 8px;border-radius:8px;font-weight:600;">${RESOURCE_TYPES[r.type]||r.type}</span></td>
+        <td style="padding:12px;font-size:13px;">${escapeHtml(r.subject||'—')}</td>
+        <td style="padding:12px;text-align:center;font-weight:700;font-family:'Rajdhani';color:var(--primary);">${r.downloads||0}</td>
+        <td style="padding:12px;text-align:center;">
+          <label class="toggle" style="cursor:pointer;">
+            <input type="checkbox" ${r.visible!==false?'checked':''} onchange="adminToggleResourceVisible('${r.id}',this.checked)" style="width:16px;height:16px;">
+          </label>
+        </td>
+        <td style="padding:12px;text-align:right;">
+          <div style="display:flex;gap:4px;justify-content:flex-end;">
+            <a href="${r.url||'#'}" target="_blank" class="btn btn-ghost btn-sm" title="Open"><i class="fas fa-external-link-alt"></i></a>
+            <button class="btn btn-ghost btn-sm" onclick="adminEditResource('${r.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="adminDeleteResource('${r.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+function adminShowResourceForm(edit = false) {
+  document.getElementById('res-form-title').textContent = edit ? '✏️ Edit Resource' : '➕ Add New Resource';
+  document.getElementById('res-form-container').style.display = 'block';
+  if (!edit) {
+    ['res-f-title','res-f-description','res-f-url','res-f-tags'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('res-f-type').value = 'pdf';
+    document.getElementById('res-f-subject').value = RESOURCE_SUBJECTS[0];
+    document.getElementById('res-f-visible').checked = true;
+    editingResourceId = null;
+  }
+  document.getElementById('res-f-title').focus();
+}
+
+function adminCloseResourceForm() {
+  document.getElementById('res-form-container').style.display = 'none';
+  editingResourceId = null;
+}
+
+function adminEditResource(id) {
+  const r = adminResources.find(x => x.id === id);
+  if (!r) return;
+  editingResourceId = id;
+  document.getElementById('res-f-title').value       = r.title||'';
+  document.getElementById('res-f-description').value  = r.description||'';
+  document.getElementById('res-f-type').value          = r.type||'pdf';
+  document.getElementById('res-f-subject').value        = r.subject||'';
+  document.getElementById('res-f-url').value            = r.url||'';
+  document.getElementById('res-f-tags').value           = (r.tags||[]).join(', ');
+  document.getElementById('res-f-visible').checked      = r.visible !== false;
+  adminShowResourceForm(true);
+}
+
+async function adminSaveResource() {
+  const title       = document.getElementById('res-f-title').value.trim();
+  const description = document.getElementById('res-f-description').value.trim();
+  const type        = document.getElementById('res-f-type').value;
+  const subject     = document.getElementById('res-f-subject').value;
+  const url         = document.getElementById('res-f-url').value.trim();
+  const tagsRaw     = document.getElementById('res-f-tags').value;
+  const visible     = document.getElementById('res-f-visible').checked;
+  const tags        = tagsRaw.split(',').map(t=>t.trim()).filter(Boolean);
+
+  if (!title) { Utils.toast('Title is required.','error'); return; }
+  if (!url)   { Utils.toast('URL is required.','error'); return; }
+
+  const data = { title, description, type, subject, url, tags, visible,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+
+  try {
+    if (editingResourceId) {
+      await db.collection('resources').doc(editingResourceId).update(data);
+      Utils.toast('Resource updated!','success');
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      data.downloads = 0;
+      await db.collection('resources').add(data);
+      // Send global notification
+      await adminBroadcastNotif({
+        title: '📚 New Resource Added!',
+        body: `"${title}" has been added to the Resource Library.`,
+        type: 'resource', link: '../pages/resources.html', icon: 'fa-book'
+      });
+      Utils.toast('Resource added!','success');
+    }
+    adminCloseResourceForm();
+    adminLoadResources();
+  } catch(e) { Utils.toast('Error: '+e.message,'error'); }
+}
+
+async function adminToggleResourceVisible(id, visible) {
+  try {
+    await db.collection('resources').doc(id).update({ visible });
+    Utils.toast(visible ? 'Resource visible.' : 'Resource hidden.','success');
+  } catch(e) { Utils.toast('Error: '+e.message,'error'); }
+}
+
+async function adminDeleteResource(id) {
+  if (!confirm('Delete this resource?')) return;
+  try {
+    await db.collection('resources').doc(id).delete();
+    adminLoadResources();
+    Utils.toast('Resource deleted.','success');
+  } catch(e) { Utils.toast('Error: '+e.message,'error'); }
+}
+
+// ============================================================
+// ──────────────────────────────────────────────────────────
+//  NOTIFICATION CENTRE — ADMIN PANEL
+// ──────────────────────────────────────────────────────────
+// ============================================================
+
+function adminLoadNotifications() {
+  db.collection('notifications').orderBy('createdAt','desc').limit(100)
+    .get().then(snap => {
+      adminNotifications = snap.docs.map(d => ({id:d.id,...d.data()}));
+      adminRenderNotifications(adminNotifications);
+      const el = id => document.getElementById(id);
+      if (el('notif-stat-total'))    el('notif-stat-total').textContent    = adminNotifications.length;
+      if (el('notif-stat-broadcast')) el('notif-stat-broadcast').textContent = adminNotifications.filter(n=>n.global).length;
+      if (el('notif-stat-personal')) el('notif-stat-personal').textContent = adminNotifications.filter(n=>!n.global).length;
+    }).catch(e => Utils.toast('Error: '+e.message,'error'));
+}
+
+function adminRenderNotifications(list) {
+  const el = document.getElementById('notif-list');
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);"><i class="fas fa-bell-slash" style="font-size:40px;opacity:.3;display:block;margin-bottom:12px;"></i>No notifications sent yet.</div>';
+    return;
+  }
+  const TYPE_ICONS = { exam:'fa-file-alt', resource:'fa-book', doubt:'fa-question-circle', general:'fa-bell', system:'fa-cog' };
+  const TYPE_COLORS = { exam:'#dbeafe', resource:'#dcfce7', doubt:'#fce7f3', general:'#f3e8ff', system:'#fef9c3' };
+  el.innerHTML = list.map(n => {
+    const ts = n.createdAt?.toDate?.()?.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})||'—';
+    const icon = TYPE_ICONS[n.type]||'fa-bell';
+    const color = TYPE_COLORS[n.type]||'#f3e8ff';
+    return `<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-bottom:1px solid var(--border);">
+      <div style="width:38px;height:38px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="fas ${icon}" style="color:var(--primary);font-size:16px;"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+          <strong style="font-size:14px;">${escapeHtml(n.title||'')}</strong>
+          ${n.global?'<span class="badge badge-primary" style="font-size:10px;">📢 Broadcast</span>':'<span class="badge badge-muted" style="font-size:10px;">👤 Personal</span>'}
+          <span class="badge" style="background:${color};font-size:10px;">${n.type||'general'}</span>
+          <span style="font-size:11px;color:var(--text3);margin-left:auto;">${ts}</span>
+        </div>
+        <div style="font-size:13px;color:var(--text2);">${escapeHtml(n.body||'')}</div>
+        ${n.link?`<a href="${n.link}" style="font-size:12px;color:var(--primary);text-decoration:none;" target="_blank"><i class="fas fa-external-link-alt"></i> ${n.link}</a>`:''}
+      </div>
+      <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="adminDeleteNotif('${n.id}')"><i class="fas fa-trash"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function adminOpenNotifComposer() {
+  document.getElementById('notif-composer').style.display = 'block';
+  document.getElementById('notif-f-title').focus();
+}
+
+function adminCloseNotifComposer() {
+  document.getElementById('notif-composer').style.display = 'none';
+}
+
+async function adminSendNotification() {
+  const title   = document.getElementById('notif-f-title').value.trim();
+  const body    = document.getElementById('notif-f-body').value.trim();
+  const type    = document.getElementById('notif-f-type').value;
+  const link    = document.getElementById('notif-f-link').value.trim();
+  const targetAll = document.getElementById('notif-f-target').value === 'all';
+
+  if (!title) { Utils.toast('Title is required.','error'); return; }
+  if (!body)  { Utils.toast('Message body is required.','error'); return; }
+
+  try {
+    if (targetAll) {
+      await adminBroadcastNotif({ title, body, type, link, icon: 'fa-bell' });
+    } else {
+      const email = document.getElementById('notif-f-email').value.trim();
+      const userSnap = await db.collection('users').where('email','==',email).limit(1).get();
+      if (userSnap.empty) { Utils.toast('User not found with that email.','error'); return; }
+      const uid = userSnap.docs[0].id;
+      await adminSendNotifToUser(uid, { title, body, type, link, icon: 'fa-bell' });
+    }
+
+    ['notif-f-title','notif-f-body','notif-f-link','notif-f-email'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+    adminCloseNotifComposer();
+    adminLoadNotifications();
+    Utils.toast('Notification sent!','success');
+  } catch(e) { Utils.toast('Error: '+e.message,'error'); }
+}
+
+// Broadcast to all users
+async function adminBroadcastNotif({title, body, type='general', link='', icon='fa-bell'}) {
+  await db.collection('notifications').add({
+    title, body, type, link, icon, global: true,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+}
+
+// Send to one user
+async function adminSendNotifToUser(userId, {title, body, type='general', link='', icon='fa-bell'}) {
+  await db.collection('notifications').add({
+    title, body, type, link, icon, global: false,
+    targetUserId: userId,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+}
+
+async function adminDeleteNotif(id) {
+  if (!confirm('Delete this notification?')) return;
+  try {
+    await db.collection('notifications').doc(id).delete();
+    adminLoadNotifications();
+    Utils.toast('Notification deleted.','success');
+  } catch(e) { Utils.toast('Error: '+e.message,'error'); }
+}
+
+function adminToggleTargetField() {
+  const v = document.getElementById('notif-f-target')?.value;
+  const el = document.getElementById('notif-target-email');
+  if (el) el.style.display = v === 'user' ? 'block' : 'none';
+}
+
 // ── Emoji Picker for Admin Panel ──
 function initAdminEmojiPicker() {
   const emojiBtn = document.getElementById('admin-emoji-btn');
   if (!emojiBtn) return;
-  
   emojiBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     adminPickEmoji(this);
   });
 }
 
 function adminPickEmoji(btn) {
-  // Close existing picker
   const existing = document.getElementById('admin-emoji-picker');
-  if (existing) {
-    existing.remove();
-    adminEmojiOpen = false;
-    return;
-  }
-
+  if (existing) { existing.remove(); adminEmojiOpen = false; return; }
   adminEmojiOpen = true;
   const ep = document.createElement('div');
   ep.id = 'admin-emoji-picker';
-  ep.style.cssText = `
-    position: fixed;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    width: 200px;
-    z-index: 9999;
-  `;
-
+  ep.style.cssText = `position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:flex;flex-wrap:wrap;gap:4px;width:200px;z-index:9999;`;
   const rect = btn.getBoundingClientRect();
-  ep.style.left = rect.left + 'px';
-  ep.style.top = (rect.bottom + 8) + 'px';
-
+  ep.style.left = rect.left+'px'; ep.style.top = (rect.bottom+8)+'px';
   ADMIN_EMOJIS.forEach(emoji => {
     const span = document.createElement('span');
     span.textContent = emoji;
     span.style.cssText = 'font-size:18px;cursor:pointer;padding:4px;border-radius:6px;transition:background .1s;user-select:none;';
     span.onmouseenter = () => span.style.background = 'var(--bg2)';
     span.onmouseleave = () => span.style.background = '';
-    span.onclick = (e) => {
+    span.onclick = e => {
       e.stopPropagation();
-      const textarea = document.getElementById('ann-text');
-      if (textarea) {
-        textarea.value += emoji;
-        textarea.focus();
-      }
-      ep.remove();
-      adminEmojiOpen = false;
+      const ta = document.getElementById('ann-text');
+      if (ta) { ta.value += emoji; ta.focus(); }
+      ep.remove(); adminEmojiOpen = false;
     };
     ep.appendChild(span);
   });
-
   document.body.appendChild(ep);
-  
   setTimeout(() => {
-    document.addEventListener('click', function closeEmojiPicker(e) {
+    document.addEventListener('click', function closeEP(e) {
       if (ep && !ep.contains(e.target) && e.target !== btn) {
-        ep.remove();
-        adminEmojiOpen = false;
-        document.removeEventListener('click', closeEmojiPicker);
+        ep.remove(); adminEmojiOpen = false;
+        document.removeEventListener('click', closeEP);
       }
     });
   }, 100);
 }
 
-// Initialize emoji picker when page loads
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    initAdminEmojiPicker();
-  });
+  document.addEventListener('DOMContentLoaded', initAdminEmojiPicker);
 } else {
   initAdminEmojiPicker();
 }
