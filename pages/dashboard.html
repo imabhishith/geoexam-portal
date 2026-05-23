@@ -160,7 +160,7 @@
     <a href="resources.html" class="nav-link"><i class="fas fa-book"></i></a>
 
     <!-- Notification Bell -->
-    <button id="notif-bell-btn" onclick="toggleNotifPanel(event)"
+    <button id="notif-bell-btn" onclick="GxNotifications.toggle(event)"
       style="position:relative;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
              color:#fff;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;
              justify-content:center;cursor:pointer;transition:.2s;">
@@ -195,15 +195,6 @@
     </div>
   </div>
 </nav>
-
-<!-- Notification Panel -->
-<div class="notif-panel" id="notif-panel">
-  <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-    <h3 style="font-size:15px;font-weight:800;"><i class="fas fa-bell" style="color:var(--primary);"></i> Notifications</h3>
-    <button class="btn btn-ghost btn-sm" onclick="markAllNotifsRead()" style="font-size:12px;">Mark all read</button>
-  </div>
-  <div id="notif-list-panel" style="overflow-y:auto;max-height:430px;"></div>
-</div>
 
 <style>
   .dd-item { display:flex; align-items:center; gap:10px; padding:10px 16px; font-size:13px; color:var(--text); text-decoration:none; transition:background .15s; }
@@ -353,10 +344,10 @@
       <div class="community-widget">
         <div class="cw-header">
           <h3><i class="fas fa-bell" style="color:var(--primary);"></i> Notifications</h3>
-          <a href="#" onclick="toggleNotifPanel(event)" style="font-size:12px;color:var(--primary);text-decoration:none;">View all</a>
+          <a href="#" onclick="GxNotifications.toggle(event)" style="font-size:12px;color:var(--primary);text-decoration:none;">View all</a>
         </div>
         <div id="notif-widget-list">
-          <div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">Loading…</div>
+          <div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">Click 🔔 to view notifications.</div>
         </div>
       </div>
 
@@ -423,285 +414,7 @@ function toggleUserMenu() {
   const dd = document.getElementById('user-dropdown');
   dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
 }
-document.addEventListener('click', e => {
-  if (!document.getElementById('user-menu').contains(e.target))
-    document.getElementById('user-dropdown').style.display = 'none';
-});
 
-// ── Auth Guard ──
-auth.onAuthStateChanged(async user => {
-  if (!user) { window.location.href = '../index.html'; return; }
-  currentUser = user;
-  const doc = await db.collection('users').doc(user.uid).get();
-  if (doc.exists && doc.data().role === 'admin') {
-    window.location.href = '../admin/index.html'; return;
-  }
-  const data = doc.data() || {};
-  const firstName = data.firstName || user.displayName || 'Student';
-
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  document.getElementById('welcome-name').innerHTML =
-    `${greeting}, ${firstName}! <span style="font-size:26px;vertical-align:middle;">👋</span>`;
-  document.getElementById('hero-sub').textContent = 'Ready to push your rank higher today?';
-
-  // Avatar
-  document.getElementById('user-avatar').textContent = firstName[0].toUpperCase();
-  document.getElementById('dd-name').textContent = `${data.firstName||''} ${data.lastName||''}`.trim() || user.email;
-
-  // Load everything
-  loadExams();
-  loadAttempts();
-  loadStats();
-  loadNotifications();
-  loadRecentDoubts();
-  loadRecentResources();
-  loadFeatureCounts();
-});
-
-// ── Exams ──
-async function loadExams() {
-  const grid = document.getElementById('exams-grid');
-  try {
-    const snap = await db.collection('exams').where('published','==',true).orderBy('createdAt','desc').get();
-    if (snap.empty) {
-      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon"><i class="fas fa-inbox"></i></div><h3>No exams yet</h3><p>Check back soon!</p></div>`;
-      return;
-    }
-    document.getElementById('exam-count').textContent = `${snap.size} exam${snap.size!==1?'s':''}`;
-    let liveCount = 0;
-    grid.innerHTML = '';
-    snap.forEach(doc => {
-      const e = doc.data(), eid = doc.id;
-      const now = Date.now();
-      const startTs = e.startTime?.toMillis?.() || 0;
-      const endTs   = e.endTime?.toMillis?.() || Infinity;
-      let statusHtml, isLive = false, isEnded = false;
-      if (now >= startTs && now <= endTs) {
-        isLive = true; liveCount++;
-        statusHtml = `<span class="sbadge sbadge-live"><span class="live-dot"></span>Live</span>`;
-      } else if (now > endTs) {
-        isEnded = true;
-        statusHtml = `<span class="sbadge sbadge-ended">Ended</span>`;
-      } else {
-        statusHtml = `<span class="sbadge sbadge-upcoming">Upcoming</span>`;
-      }
-      let actionBtn;
-      if (isLive) {
-        actionBtn = `<button class="btn btn-primary btn-sm" onclick="startExam('${eid}')">Start Exam <i class="fas fa-arrow-right"></i></button>`;
-      } else if (isEnded) {
-        actionBtn = `<button class="btn btn-ghost btn-sm" disabled>Exam Ended</button>`;
-      } else {
-        const openDate = startTs ? new Date(startTs).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '';
-        actionBtn = `<button class="btn btn-ghost btn-sm" disabled>Opens ${openDate}</button>`;
-      }
-      grid.innerHTML += `<div class="exam-card">
-        <div class="exam-card-header">
-          <div class="exam-card-title"><h3>${e.title}</h3>${statusHtml}</div>
-          <div class="exam-meta-chips">
-            <span class="meta-chip"><i class="fas fa-clock"></i> ${e.durationMinutes} min</span>
-            <span class="meta-chip"><i class="fas fa-question-circle"></i> ${e.totalQuestions||0} Qs</span>
-            <span class="meta-chip"><i class="fas fa-tag"></i> ${e.subject||'GATE Geology'}</span>
-          </div>
-        </div>
-        <div class="exam-card-body">
-          <p class="exam-desc">${e.description||'Practice exam for competitive geology preparation.'}</p>
-          <div class="exam-actions">
-            ${actionBtn}
-            <button class="btn btn-outline btn-sm" onclick="window.location='exam-instructions.html?id=${eid}'">
-              <i class="fas fa-info-circle"></i> Details
-            </button>
-          </div>
-        </div>
-      </div>`;
-    });
-    const liveEl = document.getElementById('live-exam-count');
-    if (liveEl) liveEl.textContent = liveCount > 0 ? `${liveCount} Live Now 🔴` : `${snap.size} Available`;
-  } catch(e) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon"><i class="fas fa-exclamation-triangle"></i></div><h3>Error loading exams</h3><p>${e.message}</p></div>`;
-  }
-}
-
-// ── Attempts ──
-async function loadAttempts() {
-  const tbody = document.getElementById('attempts-tbody');
-  try {
-    const snap = await db.collection('attempts')
-      .where('userId','==',currentUser.uid).where('status','==','submitted')
-      .orderBy('submittedAt','desc').limit(5).get();
-    if (snap.empty) {
-      tbody.innerHTML = `<tr><td colspan="6" style="padding:32px;text-align:center;color:var(--text2);">
-        <i class="fas fa-inbox" style="font-size:28px;margin-bottom:8px;display:block;opacity:.4;"></i>No attempts yet — take your first exam!</td></tr>`;
-      return;
-    }
-    const recent = [];
-    tbody.innerHTML = '';
-    snap.forEach(doc => {
-      const a = doc.data(), aid = doc.id;
-      recent.push({...a, id: aid});
-      const date  = a.submittedAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})||'—';
-      const score = a.totalScore||0, max = a.maxScore||100;
-      const pct   = max > 0 ? (score/max*100) : 0;
-      const pillClass = pct >= 65 ? 'good' : pct >= 40 ? 'ok' : 'poor';
-      tbody.innerHTML += `<tr>
-        <td><strong style="font-size:14px;">${a.examTitle||'Exam'}</strong></td>
-        <td style="color:var(--text2);font-size:13px;">${date}</td>
-        <td><span class="score-pill ${pillClass}">${score.toFixed(2)} / ${max}</span><div style="font-size:11px;color:var(--text3);margin-top:3px;">${pct.toFixed(1)}%</div></td>
-        <td style="font-size:13px;">
-          <span style="color:var(--success);font-weight:600;"><i class="fas fa-check"></i> ${a.correct||0}</span> ·
-          <span style="color:var(--danger);font-weight:600;"><i class="fas fa-times"></i> ${a.wrong||0}</span> ·
-          <span style="color:var(--text2);"><i class="fas fa-minus"></i> ${a.skipped||0}</span>
-        </td>
-        <td>${a.rank?`<span style="font-weight:800;color:var(--primary);font-family:'Rajdhani';font-size:16px;">#${a.rank}</span>`:'<span style="color:var(--text3)">—</span>'}</td>
-        <td><div style="display:flex;gap:6px;">
-          <a href="result.html?id=${aid}" class="btn btn-primary btn-sm"><i class="fas fa-chart-bar"></i> Analysis</a>
-          <a href="ranklist.html?examId=${a.examId}" class="btn btn-ghost btn-sm"><i class="fas fa-trophy"></i></a>
-        </div></td>
-      </tr>`;
-    });
-    buildScoreTrend(recent.reverse());
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text2);">Could not load attempts.</td></tr>`;
-  }
-}
-
-// ── Score Trend ──
-function buildScoreTrend(attempts) {
-  if (attempts.length < 2) return;
-  document.getElementById('progress-section').style.display = 'block';
-  const card = document.getElementById('progress-card');
-  card.innerHTML = `<div style="font-size:13px;color:var(--text2);margin-bottom:16px;font-weight:600;">Your last ${attempts.length} attempts — keep improving!</div>` +
-    attempts.map(a => {
-      const pct   = a.maxScore > 0 ? Math.min((a.totalScore/a.maxScore*100),100) : 0;
-      const date  = a.submittedAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short'})||'';
-      const color = pct >= 65 ? '#15803d' : pct >= 40 ? '#ca8a04' : '#c0392b';
-      return `<div class="progress-bar-wrap">
-        <div class="pb-label"><span>${a.examTitle||'Exam'} <span style="font-weight:400;color:var(--text3);font-size:12px;">${date}</span></span><span style="color:${color}">${pct.toFixed(1)}%</span></div>
-        <div class="pb-track"><div class="pb-fill" style="width:0%;background:${color}" data-target="${pct}"></div></div>
-      </div>`;
-    }).join('');
-  setTimeout(() => { card.querySelectorAll('.pb-fill').forEach(el => el.style.width = el.dataset.target+'%'); }, 100);
-}
-
-// ── Stats ──
-async function loadStats() {
-  try {
-    const snap = await db.collection('attempts').where('userId','==',currentUser.uid).where('status','==','submitted').get();
-    if (snap.empty) return;
-    let best=0, totalScore=0, count=0, totalQ=0, totalCorrect=0;
-    snap.forEach(d => {
-      const a = d.data(), s = a.totalScore||0;
-      totalScore+=s; count++; if(s>best) best=s;
-      totalQ += (a.correct||0)+(a.wrong||0)+(a.skipped||0);
-      totalCorrect += (a.correct||0);
-    });
-    document.getElementById('stat-attempts').textContent  = count;
-    document.getElementById('stat-best').textContent      = best.toFixed(1);
-    document.getElementById('stat-avg').textContent       = (totalScore/count).toFixed(1);
-    document.getElementById('stat-accuracy').textContent  = totalQ>0 ? ((totalCorrect/totalQ)*100).toFixed(0)+'%' : '—';
-    const dates = snap.docs.map(d=>d.data().submittedAt?.toDate?.()).filter(Boolean).map(d=>d.toDateString());
-    const unique = [...new Set(dates)];
-    if (unique.length >= 2) { document.getElementById('hero-streak').style.display='flex'; document.getElementById('streak-count').textContent=unique.length; }
-  } catch(e) {}
-}
-
-// ── Feature Counts (live data for hero cards) ──
-async function loadFeatureCounts() {
-  try {
-    const [doubtSnap, resSnap] = await Promise.all([
-      db.collection('doubts').where('status','==','open').get(),
-      db.collection('resources').get()
-    ]);
-    const openEl = document.getElementById('open-doubts-count');
-    if (openEl) openEl.textContent = doubtSnap.size > 0 ? `${doubtSnap.size} open doubts` : 'Ask a Doubt';
-    if (doubtSnap.size > 0) {
-      const badge = document.getElementById('doubt-badge-fc');
-      if (badge) { badge.textContent = doubtSnap.size; badge.style.display='inline'; }
-    }
-    const resEl = document.getElementById('res-count-fc');
-    if (resEl) resEl.textContent = resSnap.size > 0 ? `${resSnap.size} resources available` : 'Browse Resources';
-  } catch(e) {}
-}
-
-// ── Notifications ──
-let notifs = [];
-async function loadNotifications() {
-  try {
-    const snap = await db.collection('notifications').orderBy('createdAt','desc').limit(20).get();
-    notifs = snap.docs
-      .filter(d => { const nd=d.data(); return nd.global || nd.targetUserId===currentUser.uid; })
-      .map(d => ({id:d.id,...d.data()}));
-    const lastSeen = parseInt(localStorage.getItem('notifs_last_seen')||'0');
-    const unread = notifs.filter(n => (n.createdAt?.seconds||0) > lastSeen).length;
-    const badge = document.getElementById('notif-badge');
-    if (badge && unread>0) { badge.textContent=unread; badge.style.display='flex'; }
-    renderNotifWidget(notifs.slice(0,4));
-    renderNotifPanel(notifs);
-  } catch(e) {}
-}
-
-const TYPE_ICONS_N  = {exam:'fa-file-alt',resource:'fa-book',doubt:'fa-lightbulb',general:'fa-bell',system:'fa-cog'};
-const TYPE_COLORS_N = {exam:'#dbeafe',resource:'#dcfce7',doubt:'#fef9c3',general:'#f3e8ff',system:'#f1f5f9'};
-
-function renderNotifWidget(list) {
-  const el = document.getElementById('notif-widget-list');
-  if (!list.length) { el.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;font-style:italic;">No notifications yet.</div>'; return; }
-  el.innerHTML = list.map(n => {
-    const ts = n.createdAt?.toDate?.()?.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})||'';
-    const icon = TYPE_ICONS_N[n.type]||'fa-bell';
-    const color = TYPE_COLORS_N[n.type]||'#f3e8ff';
-    return `<div class="cw-item" ${n.link?`onclick="window.location='${n.link}'"`:''}>
-      <div class="notif-dot" style="background:${color};"><i class="fas ${icon}" style="color:var(--primary);font-size:13px;"></i></div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(n.title||'')}</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(n.body||'')}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:3px;">${ts}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderNotifPanel(list) {
-  const el = document.getElementById('notif-list-panel');
-  const lastSeen = parseInt(localStorage.getItem('notifs_last_seen')||'0');
-  if (!list.length) { el.innerHTML='<div style="padding:28px;text-align:center;color:var(--text3);">No notifications.</div>'; return; }
-  el.innerHTML = list.map(n => {
-    const ts = n.createdAt?.toDate?.()?.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})||'';
-    const icon = TYPE_ICONS_N[n.type]||'fa-bell';
-    const color = TYPE_COLORS_N[n.type]||'#f3e8ff';
-    const isUnread = (n.createdAt?.seconds||0) > lastSeen;
-    return `<div class="notif-item ${isUnread?'unread':''}" ${n.link?`onclick="window.location='${n.link}'"`:''}>
-      <div class="notif-dot" style="background:${color};"><i class="fas ${icon}" style="color:var(--primary);font-size:13px;"></i></div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;">${esc(n.title||'')}</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:2px;">${esc(n.body||'')}</div>
-        ${n.link?`<div style="font-size:11px;color:var(--primary);margin-top:2px;">${esc(n.link)}</div>`:''}
-        <div style="font-size:11px;color:var(--text3);margin-top:4px;">${ts}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function toggleNotifPanel(e) {
-  if (e) e.stopPropagation();
-  const p = document.getElementById('notif-panel');
-  const open = p.style.display === 'flex';
-  p.style.display = open ? 'none' : 'flex';
-  p.style.flexDirection = 'column';
-}
-
-function markAllNotifsRead() {
-  localStorage.setItem('notifs_last_seen', Math.floor(Date.now()/1000));
-  document.getElementById('notif-badge').style.display = 'none';
-  renderNotifPanel(notifs); // re-render without unread highlights
-  Utils.toast('All notifications marked as read.','success');
-}
-
-document.addEventListener('click', e => {
-  const p = document.getElementById('notif-panel');
-  const btn = document.getElementById('notif-bell-btn');
-  if (p && p.style.display==='flex' && !p.contains(e.target) && !btn.contains(e.target)) p.style.display='none';
-});
 
 // ── Recent Doubts Widget ──
 async function loadRecentDoubts() {
@@ -756,5 +469,6 @@ function esc(s) { if(!s)return''; return s.replace(/&/g,'&amp;').replace(/</g,'&
 function startExam(examId) { window.location.href = `exam-instructions.html?id=${examId}`; }
 async function doLogout() { await auth.signOut(); window.location.href = '../index.html'; }
 </script>
+<script src="../js/notifications.js"></script>
 </body>
 </html>

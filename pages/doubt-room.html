@@ -50,22 +50,13 @@
     <a href="discussion.html" class="nav-link"><i class="fas fa-comments"></i> Discussion</a>
     <a href="doubt-room.html" class="nav-link active"><i class="fas fa-lightbulb"></i> Doubts</a>
     <a href="resources.html" class="nav-link"><i class="fas fa-book"></i> Resources</a>
-    <button class="btn btn-ghost btn-sm" id="notif-bell-btn" onclick="toggleNotifPanel()" style="color:rgba(255,255,255,.8);position:relative;">
+    <button class="btn btn-ghost btn-sm" id="notif-bell-btn" onclick="GxNotifications.toggle(event)" style="color:rgba(255,255,255,.8);position:relative;">
       <i class="fas fa-bell"></i>
       <span id="notif-bell-badge" style="display:none;position:absolute;top:2px;right:2px;background:var(--danger);color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;font-weight:700;"></span>
     </button>
     <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,.8)">Logout</button>
   </div>
 </nav>
-
-<!-- Notification Panel -->
-<div id="notif-panel" style="display:none;position:fixed;top:64px;right:16px;width:340px;max-height:480px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:1000;overflow:hidden;flex-direction:column;">
-  <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-    <h3 style="font-size:15px;font-weight:700;"><i class="fas fa-bell"></i> Notifications</h3>
-    <button class="btn btn-ghost btn-sm" onclick="markAllNotifsRead()">Mark all read</button>
-  </div>
-  <div id="notif-list" style="overflow-y:auto;max-height:400px;"></div>
-</div>
 
 <div class="page-wrap">
   <!-- Hero -->
@@ -154,7 +145,7 @@ auth.onAuthStateChanged(async user => {
   const ud = (await db.collection('users').doc(user.uid).get()).data();
   currentUserData = ud;
   loadDoubts();
-  loadNotifications();
+  GxNotifications.init(user);
 });
 
 function loadDoubts() {
@@ -374,5 +365,6 @@ document.addEventListener('click', e => {
   if (panel && !panel.contains(e.target) && !btn.contains(e.target)) panel.style.display='none';
 });
 </script>
+<script src="../js/notifications.js"></script>
 </body>
 </html>

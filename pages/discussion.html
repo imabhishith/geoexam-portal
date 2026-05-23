@@ -464,10 +464,25 @@
     <div><h1>GeoExam Portal</h1><span>GATE Geology · CSIR-NET · CBT Platform</span></div>
   </div>
   <div class="navbar-nav">
-    <a href="dashboard.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
-    <a href="my-results.html" class="nav-link">My Results</a>
-    <a href="ranklist.html" class="nav-link">Ranklist</a>
+    <a href="dashboard.html"  class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
     <a href="discussion.html" class="nav-link active"><i class="fas fa-comments"></i> Discussion</a>
+    <a href="doubt-room.html" class="nav-link"><i class="fas fa-lightbulb"></i> Doubts</a>
+    <a href="resources.html"  class="nav-link"><i class="fas fa-book"></i> Resources</a>
+    <a href="my-results.html" class="nav-link">My Results</a>
+
+    <!-- Notification Bell -->
+    <button id="notif-bell-btn" onclick="GxNotifications.toggle(event)"
+      style="position:relative;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+             color:#fff;border-radius:8px;width:36px;height:36px;cursor:pointer;
+             display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0;">
+      <i class="fas fa-bell" style="font-size:15px;"></i>
+      <span id="notif-badge"
+        style="display:none;position:absolute;top:-4px;right:-4px;
+               background:#ef4444;color:#fff;font-size:9px;min-width:17px;height:17px;
+               border-radius:9px;align-items:center;justify-content:center;
+               font-weight:800;padding:0 3px;border:2px solid #1a3c6e;">0</span>
+    </button>
+
     <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,.8)">Logout</button>
   </div>
 </nav>
@@ -648,6 +663,9 @@ auth.onAuthStateChanged(async user => {
     currentUserData = ud.exists ? ud.data() : {};
     isAdmin = currentUserData.role === 'admin';
   } catch(e) {}
+
+  // ── Notifications ──
+  GxNotifications.init(user);
 
   // Update presence
   updatePresence(true);
@@ -1118,5 +1136,6 @@ async function doLogout() {
   window.location.href = '../index.html';
 }
 </script>
+<script src="../js/notifications.js"></script>
 </body>
 </html>

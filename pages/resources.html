@@ -52,22 +52,13 @@
     <a href="dashboard.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
     <a href="doubt-room.html" class="nav-link"><i class="fas fa-lightbulb"></i> Doubts</a>
     <a href="resources.html" class="nav-link active"><i class="fas fa-book"></i> Resources</a>
-    <button class="btn btn-ghost btn-sm" id="notif-bell-btn" onclick="toggleNotifPanel()" style="color:rgba(255,255,255,.8);position:relative;">
+    <button class="btn btn-ghost btn-sm" id="notif-bell-btn" onclick="GxNotifications.toggle(event)" style="color:rgba(255,255,255,.8);position:relative;">
       <i class="fas fa-bell"></i>
       <span id="notif-bell-badge" style="display:none;position:absolute;top:2px;right:2px;background:var(--danger);color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;font-weight:700;"></span>
     </button>
     <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,.8)">Logout</button>
   </div>
 </nav>
-
-<!-- Notification Panel -->
-<div id="notif-panel" style="display:none;position:fixed;top:64px;right:16px;width:340px;max-height:480px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:1000;overflow:hidden;flex-direction:column;">
-  <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-    <h3 style="font-size:15px;font-weight:700;"><i class="fas fa-bell"></i> Notifications</h3>
-    <button class="btn btn-ghost btn-sm" onclick="markAllNotifsRead()">Mark all read</button>
-  </div>
-  <div id="notif-list" style="overflow-y:auto;max-height:400px;"></div>
-</div>
 
 <div class="page-wrap">
   <!-- Hero -->
@@ -130,7 +121,7 @@ auth.onAuthStateChanged(async user => {
   if (!user) { window.location.href='../index.html'; return; }
   currentUser = user;
   loadResources();
-  loadNotifications();
+  GxNotifications.init(user);
 });
 
 async function loadResources() {
@@ -207,41 +198,9 @@ function copyLink(url) {
   navigator.clipboard.writeText(url).then(()=>Utils.toast('Link copied!','success')).catch(()=>Utils.toast('Could not copy.','error'));
 }
 
-// ── Notifications ──
-let notifs=[];
-async function loadNotifications() {
-  const lastSeen = parseInt(localStorage.getItem('notifs_last_seen')||'0');
-  const snap = await db.collection('notifications').orderBy('createdAt','desc').limit(30).get().catch(()=>null);
-  if (!snap) return;
-  notifs = snap.docs.filter(d=>{const nd=d.data();return nd.global||nd.targetUserId===currentUser.uid;}).map(d=>({id:d.id,...d.data()}));
-  const unread = notifs.filter(n=>(n.createdAt?.seconds||0)>lastSeen).length;
-  const badge = document.getElementById('notif-bell-badge');
-  if (badge&&unread>0){badge.textContent=unread;badge.style.display='flex';}
-  renderNotifList();
-}
-function renderNotifList() {
-  const el=document.getElementById('notif-list');
-  if (!notifs.length){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">No notifications.</div>';return;}
-  const ICONS={exam:'fa-file-alt',resource:'fa-book',doubt:'fa-lightbulb',general:'fa-bell',system:'fa-cog'};
-  el.innerHTML=notifs.map(n=>{
-    const ts=n.createdAt?.toDate?.()?.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})||'';
-    return `<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;">
-      <div style="width:34px;height:34px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas ${ICONS[n.type]||'fa-bell'}" style="color:var(--primary);font-size:14px;"></i></div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:2px;">${esc(n.title||'')}</div>
-        <div style="font-size:12px;color:var(--text2);">${esc(n.body||'')}</div>
-        ${n.link?`<a href="${n.link}" style="font-size:11px;color:var(--primary);">View →</a>`:''}
-        <div style="font-size:11px;color:var(--text3);margin-top:4px;">${ts}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-function toggleNotifPanel(){const p=document.getElementById('notif-panel');p.style.display=p.style.display==='flex'?'none':'flex';p.style.flexDirection='column';}
-function markAllNotifsRead(){localStorage.setItem('notifs_last_seen',Math.floor(Date.now()/1000));document.getElementById('notif-bell-badge').style.display='none';Utils.toast('All read.','success');}
-document.addEventListener('click',e=>{const p=document.getElementById('notif-panel'),b=document.getElementById('notif-bell-btn');if(p&&!p.contains(e.target)&&!b.contains(e.target))p.style.display='none';});
-
 function esc(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 async function doLogout(){await auth.signOut();window.location.href='../index.html';}
 </script>
+<script src="../js/notifications.js"></script>
 </body>
 </html>
