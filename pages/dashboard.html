@@ -7,140 +7,105 @@
   <title>Dashboard — GeoExam Portal</title>
   <link rel="stylesheet" href="../css/global.css">
   <style>
-    /* ── Layout ── */
-    .page-content { max-width: 1160px; margin: 0 auto; padding: 28px 20px; }
+    .page-content { max-width:1160px; margin:0 auto; padding:28px 20px; }
 
-    /* ── Welcome Hero ── */
-    .hero {
-      background: linear-gradient(135deg, #0f2545 0%, #1a3c6e 55%, #2563ab 100%);
-      border-radius: 18px; padding: 32px 36px; margin-bottom: 28px;
-      display: flex; justify-content: space-between; align-items: center;
-      position: relative; overflow: hidden;
-    }
-    .hero::before { content:''; position:absolute; right:-40px; top:-40px; width:260px; height:260px; border-radius:50%; background:rgba(255,255,255,0.04); pointer-events:none; }
-    .hero::after  { content:''; position:absolute; right:60px; bottom:-60px; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,0.06); pointer-events:none; }
-    .hero-left h2 { font-size:30px; color:#fff; font-weight:800; margin-bottom:6px; }
-    .hero-left p  { color:rgba(255,255,255,.72); font-size:15px; margin-bottom:16px; }
+    /* Hero */
+    .hero { background:linear-gradient(135deg,#0f2545 0%,#1a3c6e 55%,#2563ab 100%); border-radius:18px; padding:32px 36px; margin-bottom:28px; display:flex; justify-content:space-between; align-items:center; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; right:-40px; top:-40px; width:260px; height:260px; border-radius:50%; background:rgba(255,255,255,.04); pointer-events:none; }
+    .hero::after  { content:''; position:absolute; right:60px; bottom:-60px; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,.06); pointer-events:none; }
+    .hero-left h2 { font-size:28px; color:#fff; font-weight:800; margin-bottom:6px; }
+    .hero-left p  { color:rgba(255,255,255,.72); font-size:14px; margin-bottom:16px; }
     .hero-tags { display:flex; gap:8px; flex-wrap:wrap; }
     .hero-tag { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.9); padding:5px 13px; border-radius:20px; font-size:12px; font-weight:600; display:flex; align-items:center; gap:5px; }
-    .hero-icon { font-size:72px; opacity:.18; position:relative; z-index:1; color:#fff; }
+    .hero-icon { font-size:72px; opacity:.15; color:#fff; flex-shrink:0; }
 
-    /* ── Stats Row ── */
+    /* Stats */
     .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
-    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 18px; display:flex; align-items:center; gap:14px; transition:box-shadow .2s, transform .2s; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 16px; display:flex; align-items:center; gap:14px; transition:box-shadow .2s,transform .2s; }
     .stat-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
-    .stat-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-    .stat-icon.blue   { background:#dbeafe; color:#1d4ed8; }
-    .stat-icon.gold   { background:#fef9c3; color:#ca8a04; }
-    .stat-icon.green  { background:#dcfce7; color:#15803d; }
-    .stat-icon.purple { background:#f3e8ff; color:#7c3aed; }
-    .stat-icon.rose   { background:#fce7f3; color:#be185d; }
-    .stat-icon.teal   { background:#ccfbf1; color:#0d9488; }
-    .stat-text .num { font-size:28px; font-weight:800; font-family:'Rajdhani'; color:var(--primary); line-height:1; }
-    .stat-text .lbl { font-size:12px; color:var(--text2); font-weight:600; margin-top:3px; }
+    .stat-icon { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
+    .si-blue   { background:#dbeafe; color:#1d4ed8; }
+    .si-gold   { background:#fef9c3; color:#ca8a04; }
+    .si-green  { background:#dcfce7; color:#15803d; }
+    .si-purple { background:#f3e8ff; color:#7c3aed; }
+    .stat-num { font-size:26px; font-weight:800; font-family:'Rajdhani',sans-serif; color:var(--primary); line-height:1; }
+    .stat-lbl { font-size:12px; color:var(--text2); font-weight:600; margin-top:3px; }
 
-    /* ── Section Header ── */
-    .section-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-    .section-hd h2 { font-size:20px; font-weight:800; color:var(--primary); display:flex; align-items:center; gap:8px; }
-    .section-hd h2::before { content:''; display:inline-block; width:4px; height:20px; background:var(--accent); border-radius:4px; }
+    /* Section header */
+    .section-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .section-hd h2 { font-size:18px; font-weight:800; color:var(--primary); display:flex; align-items:center; gap:8px; }
 
-    /* ── Feature Hub Grid ── */
+    /* Feature hub */
     .feature-hub { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px; }
-    .feature-card {
-      border-radius:16px; padding:22px; text-decoration:none; color:inherit;
-      display:flex; flex-direction:column; gap:12px;
-      transition:box-shadow .25s, transform .25s; position:relative; overflow:hidden;
-      border:1px solid transparent;
-    }
-    .feature-card:hover { box-shadow:0 8px 28px rgba(0,0,0,.12); transform:translateY(-3px); text-decoration:none; }
-    .feature-card::after { content:''; position:absolute; bottom:-20px; right:-20px; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,.12); }
-    .fc-icon { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; background:rgba(255,255,255,.22); color:#fff; flex-shrink:0; }
-    .fc-title { font-size:16px; font-weight:800; color:#fff; }
+    .feature-card { border-radius:16px; padding:20px; text-decoration:none; color:inherit; display:flex; flex-direction:column; gap:10px; transition:box-shadow .25s,transform .25s; position:relative; overflow:hidden; border:1px solid transparent; }
+    .feature-card:hover { box-shadow:0 8px 28px rgba(0,0,0,.14); transform:translateY(-3px); text-decoration:none; }
+    .feature-card::after { content:''; position:absolute; bottom:-20px; right:-20px; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,.1); }
+    .fc-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; background:rgba(255,255,255,.2); color:#fff; flex-shrink:0; }
+    .fc-title { font-size:15px; font-weight:800; color:#fff; }
     .fc-desc  { font-size:12px; color:rgba(255,255,255,.8); line-height:1.5; }
     .fc-arrow { font-size:11px; color:rgba(255,255,255,.7); margin-top:auto; display:flex; align-items:center; gap:6px; font-weight:600; }
-    .fc-badge { position:absolute; top:14px; right:14px; background:rgba(255,255,255,.25); color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; }
+    .fc-indigo  { background:linear-gradient(135deg,#4f46e5,#7c3aed); }
+    .fc-emerald { background:linear-gradient(135deg,#059669,#0891b2); }
+    .fc-sky     { background:linear-gradient(135deg,#0284c7,#0891b2); }
+    .fc-rose    { background:linear-gradient(135deg,#be185d,#9333ea); }
+    .fc-amber   { background:linear-gradient(135deg,#d97706,#dc2626); }
+    .fc-slate   { background:linear-gradient(135deg,#334155,#475569); }
 
-    /* Feature card color themes */
-    .fc-indigo  { background:linear-gradient(135deg,#4f46e5,#7c3aed); border-color:#4f46e5; }
-    .fc-emerald { background:linear-gradient(135deg,#059669,#0891b2); border-color:#059669; }
-    .fc-amber   { background:linear-gradient(135deg,#d97706,#dc2626); border-color:#d97706; }
-    .fc-sky     { background:linear-gradient(135deg,#0284c7,#0891b2); border-color:#0284c7; }
-    .fc-rose    { background:linear-gradient(135deg,#be185d,#9333ea); border-color:#be185d; }
-    .fc-slate   { background:linear-gradient(135deg,#334155,#475569); border-color:#334155; }
+    /* Two-column layout */
+    .two-col { display:grid; grid-template-columns:1fr 300px; gap:24px; margin-bottom:28px; }
 
-    /* ── Quick Links (secondary) ── */
-    .quick-links { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px; }
-    .quick-link-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:box-shadow .2s, transform .2s; text-decoration:none; color:inherit; }
-    .quick-link-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); text-decoration:none; }
-    .ql-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
-    .ql-text strong { display:block; font-size:14px; font-weight:700; color:var(--text); }
-    .ql-text span   { font-size:12px; color:var(--text2); }
-
-    /* ── Exam Cards ── */
-    .exam-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:18px; }
-    .exam-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; transition:box-shadow .25s, transform .25s; }
-    .exam-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-3px); }
-    .exam-card-header { padding:18px 20px 12px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,#f8fafc 0%,#f0f4f8 100%); }
-    .exam-card-title { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px; }
-    .exam-card-title h3 { font-size:17px; color:var(--primary); font-weight:700; line-height:1.3; }
-    .exam-card-body { padding:16px 20px; }
-    .exam-meta-chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
-    .meta-chip { display:flex; align-items:center; gap:4px; font-size:12px; color:var(--text2); background:var(--bg); border:1px solid var(--border); padding:3px 9px; border-radius:20px; font-weight:500; }
-    .exam-desc { font-size:13px; color:var(--text2); margin-bottom:14px; line-height:1.55; }
+    /* Exam cards */
+    .exam-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
+    .exam-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:box-shadow .2s,transform .2s; }
+    .exam-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
+    .exam-card-header { padding:16px 18px 12px; border-bottom:1px solid var(--border); background:#f8fafc; }
+    .exam-card-title { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px; }
+    .exam-card-title h3 { font-size:15px; color:var(--primary); font-weight:700; line-height:1.3; }
+    .exam-card-body { padding:14px 18px; }
+    .meta-chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+    .meta-chip { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text2); background:var(--bg); border:1px solid var(--border); padding:3px 8px; border-radius:20px; }
+    .exam-desc { font-size:13px; color:var(--text2); margin-bottom:12px; line-height:1.5; }
     .exam-actions { display:flex; gap:8px; }
-    .sbadge { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; flex-shrink:0; }
+    .sbadge { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; flex-shrink:0; }
     .sbadge-live     { background:#dcfce7; color:#15803d; }
     .sbadge-upcoming { background:#dbeafe; color:#1d4ed8; }
-    .sbadge-ended    { background:var(--bg2); color:var(--text2); }
-    .live-dot { display:inline-block; width:7px; height:7px; background:#22c55e; border-radius:50%; margin-right:4px; animation:pulse-dot 1.4s ease-in-out infinite; }
-    @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.5;transform:scale(1.5);} }
+    .sbadge-ended    { background:#f1f5f9; color:var(--text2); }
+    .live-dot { display:inline-block; width:6px; height:6px; background:#22c55e; border-radius:50%; margin-right:4px; animation:pdot 1.4s ease-in-out infinite; }
+    @keyframes pdot { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.4;transform:scale(1.6);} }
 
-    /* ── Attempts Table ── */
-    .attempts-wrap { overflow-x:auto; }
-    .attempts-table { width:100%; border-collapse:collapse; font-size:13px; }
-    .attempts-table th { background:#f1f5f9; color:var(--text2); font-size:11px; text-transform:uppercase; letter-spacing:.06em; font-weight:700; padding:10px 16px; text-align:left; border-bottom:2px solid var(--border); }
-    .attempts-table td { padding:12px 16px; border-bottom:1px solid var(--border); vertical-align:middle; }
-    .attempts-table tr:last-child td { border-bottom:none; }
-    .attempts-table tr:hover td { background:#f8fafc; }
-    .score-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px; font-weight:700; font-size:13px; }
-    .score-pill.good { background:#dcfce7; color:#15803d; }
-    .score-pill.ok   { background:#fef9c3; color:#92400e; }
-    .score-pill.poor { background:#fee2e2; color:#991b1b; }
-
-    /* ── Progress Timeline ── */
-    .progress-section { margin-bottom:28px; }
-    .progress-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px 24px; }
-    .progress-bar-wrap { margin-bottom:16px; }
-    .pb-label { display:flex; justify-content:space-between; font-size:13px; font-weight:600; color:var(--text2); margin-bottom:6px; }
-    .pb-track { height:10px; background:var(--bg2); border-radius:10px; overflow:hidden; }
-    .pb-fill  { height:100%; border-radius:10px; transition:width .8s cubic-bezier(.25,.8,.25,1); }
-
-    /* ── Notification Panel ── */
-    .notif-panel { display:none; position:fixed; top:64px; right:16px; width:360px; max-height:500px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:0 8px 32px rgba(0,0,0,.14); z-index:1000; overflow:hidden; flex-direction:column; }
-    .notif-item { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; gap:10px; align-items:flex-start; transition:background .15s; cursor:pointer; }
-    .notif-item:hover { background:var(--bg); }
-    .notif-item.unread { background:#eff6ff; border-left:3px solid var(--primary); }
-    .notif-dot { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-
-    /* ── Community Sidebar ── */
-    .two-col { display:grid; grid-template-columns:1fr 320px; gap:24px; margin-bottom:28px; }
-    .community-widget { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
-    .cw-header { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-    .cw-header h3 { font-size:14px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:6px; }
-    .cw-item { padding:12px 18px; border-bottom:1px solid var(--border); font-size:13px; display:flex; gap:10px; align-items:flex-start; transition:background .15s; }
+    /* Community widgets */
+    .cw-box { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:16px; }
+    .cw-head { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .cw-head h3 { font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px; }
+    .cw-item { padding:11px 16px; border-bottom:1px solid var(--border); display:flex; gap:10px; align-items:flex-start; transition:background .15s; cursor:pointer; }
     .cw-item:hover { background:var(--bg); }
     .cw-item:last-child { border-bottom:none; }
 
-    /* ── Empty State ── */
-    .empty-state { text-align:center; padding:52px 24px; color:var(--text2); }
-    .empty-state .icon { font-size:52px; margin-bottom:14px; opacity:.5; }
-    .empty-state h3 { font-size:18px; color:var(--text); margin-bottom:8px; }
-    .empty-state p { font-size:14px; }
+    /* Attempts table */
+    .attempts-wrap { overflow-x:auto; }
+    .attempts-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .attempts-table th { background:#f1f5f9; color:var(--text2); font-size:11px; text-transform:uppercase; letter-spacing:.05em; font-weight:700; padding:10px 14px; text-align:left; border-bottom:2px solid var(--border); }
+    .attempts-table td { padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    .attempts-table tr:last-child td { border-bottom:none; }
+    .attempts-table tr:hover td { background:#f8fafc; }
+    .score-pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-weight:700; font-size:12px; }
+    .sp-good { background:#dcfce7; color:#15803d; }
+    .sp-ok   { background:#fef9c3; color:#92400e; }
+    .sp-poor { background:#fee2e2; color:#991b1b; }
 
-    /* ── Responsive ── */
+    /* Progress bars */
+    .pb-wrap { margin-bottom:14px; }
+    .pb-label { display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:var(--text2); margin-bottom:5px; }
+    .pb-track { height:9px; background:var(--bg2); border-radius:9px; overflow:hidden; }
+    .pb-fill  { height:100%; border-radius:9px; transition:width .9s cubic-bezier(.25,.8,.25,1); }
+
+    /* User dropdown */
+    .dd-item { display:flex; align-items:center; gap:10px; padding:10px 16px; font-size:13px; color:var(--text); text-decoration:none; transition:background .15s; cursor:pointer; }
+    .dd-item:hover { background:var(--bg); text-decoration:none; }
+
     @media(max-width:1000px) { .two-col { grid-template-columns:1fr; } .feature-hub { grid-template-columns:repeat(2,1fr); } }
-    @media(max-width:700px)  { .stats-row { grid-template-columns:repeat(2,1fr); } .quick-links { grid-template-columns:repeat(2,1fr); } .feature-hub { grid-template-columns:1fr; } }
-    @media(max-width:500px)  { .hero { flex-direction:column; gap:16px; } .hero-icon { display:none; } }
+    @media(max-width:650px)  { .stats-row { grid-template-columns:repeat(2,1fr); } .feature-hub { grid-template-columns:1fr; } }
+    @media(max-width:480px)  { .hero { flex-direction:column; } .hero-icon { display:none; } }
   </style>
 </head>
 <body>
@@ -151,248 +116,174 @@
     <span style="font-size:26px;"><i class="fas fa-gem"></i></span>
     <div><h1>GeoExam Portal</h1><span>GATE Geology · CSIR-NET · CBT Platform</span></div>
   </div>
-  <div class="navbar-nav" style="gap:4px;">
-    <a href="dashboard.html" class="nav-link active">Dashboard</a>
+  <div class="navbar-nav" style="gap:6px;">
+    <a href="dashboard.html"  class="nav-link active">Dashboard</a>
     <a href="my-results.html" class="nav-link">My Results</a>
-    <a href="ranklist.html" class="nav-link">Ranklist</a>
-    <a href="discussion.html" class="nav-link"><i class="fas fa-comments"></i></a>
-    <a href="doubt-room.html" class="nav-link"><i class="fas fa-lightbulb"></i></a>
-    <a href="resources.html" class="nav-link"><i class="fas fa-book"></i></a>
+    <a href="ranklist.html"   class="nav-link">Ranklist</a>
+    <a href="discussion.html" class="nav-link" title="Discussion"><i class="fas fa-comments"></i></a>
+    <a href="doubt-room.html" class="nav-link" title="Doubt Room"><i class="fas fa-lightbulb"></i></a>
+    <a href="resources.html"  class="nav-link" title="Resources"><i class="fas fa-book"></i></a>
 
     <!-- Notification Bell -->
     <button id="notif-bell-btn" onclick="GxNotifications.toggle(event)"
-      style="position:relative;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
-             color:#fff;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;
-             justify-content:center;cursor:pointer;transition:.2s;">
-      <i class="fas fa-bell" style="font-size:15px;"></i>
-      <span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;
-            background:#ef4444;color:#fff;font-size:9px;min-width:17px;height:17px;border-radius:9px;
-            display:none;align-items:center;justify-content:center;font-weight:800;padding:0 3px;
-            border:2px solid var(--primary);">0</span>
+      style="position:relative;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+             color:#fff;border-radius:8px;width:36px;height:36px;cursor:pointer;
+             display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0;">
+      <i class="fas fa-bell" style="font-size:14px;"></i>
+      <span id="notif-badge"
+        style="display:none;position:absolute;top:-4px;right:-4px;
+               background:#ef4444;color:#fff;font-size:9px;min-width:17px;height:17px;
+               border-radius:9px;align-items:center;justify-content:center;
+               font-weight:800;padding:0 3px;border:2px solid #1a3c6e;">0</span>
     </button>
 
-    <!-- User Menu -->
-    <div id="user-menu" style="position:relative;">
+    <!-- User avatar + dropdown -->
+    <div id="user-menu-wrap" style="position:relative;">
       <div id="user-avatar" onclick="toggleUserMenu()"
         style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);
                border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;
-               justify-content:center;font-size:16px;font-weight:700;color:#fff;cursor:pointer;">?</div>
-      <div id="user-dropdown" style="display:none;position:absolute;right:0;top:44px;
-           background:var(--surface);border:1px solid var(--border);border-radius:12px;
-           box-shadow:var(--shadow-lg);min-width:200px;z-index:200;overflow:hidden;">
-        <div id="dd-name" style="padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);">Loading…</div>
-        <a href="my-results.html"   class="dd-item"><i class="fas fa-chart-bar"   style="color:#1d4ed8;width:16px;"></i> My Results</a>
-        <a href="ranklist.html"     class="dd-item"><i class="fas fa-trophy"       style="color:#ca8a04;width:16px;"></i> Ranklist</a>
-        <a href="discussion.html"   class="dd-item"><i class="fas fa-comments"     style="color:#7c3aed;width:16px;"></i> Discussion</a>
-        <a href="doubt-room.html"   class="dd-item"><i class="fas fa-lightbulb"    style="color:#d97706;width:16px;"></i> Doubt Room</a>
-        <a href="resources.html"    class="dd-item"><i class="fas fa-book"         style="color:#059669;width:16px;"></i> Resources</a>
+               justify-content:center;font-size:15px;font-weight:800;color:#fff;cursor:pointer;flex-shrink:0;">?</div>
+      <div id="user-dropdown"
+        style="display:none;position:absolute;right:0;top:44px;background:var(--surface);
+               border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);
+               min-width:190px;z-index:500;overflow:hidden;">
+        <div id="dd-name" style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);">…</div>
+        <a href="my-results.html"   class="dd-item"><i class="fas fa-chart-bar"  style="color:#1d4ed8;width:16px;"></i> My Results</a>
+        <a href="ranklist.html"     class="dd-item"><i class="fas fa-trophy"      style="color:#ca8a04;width:16px;"></i> Ranklist</a>
+        <a href="discussion.html"   class="dd-item"><i class="fas fa-comments"    style="color:#7c3aed;width:16px;"></i> Discussion</a>
+        <a href="doubt-room.html"   class="dd-item"><i class="fas fa-lightbulb"   style="color:#d97706;width:16px;"></i> Doubt Room</a>
+        <a href="resources.html"    class="dd-item"><i class="fas fa-book"        style="color:#059669;width:16px;"></i> Resources</a>
         <div style="border-top:1px solid var(--border);">
-          <div onclick="doLogout()" class="dd-item" style="color:var(--danger);cursor:pointer;">
-            <i class="fas fa-sign-out-alt" style="width:16px;"></i> Logout
-          </div>
+          <div onclick="doLogout()" class="dd-item" style="color:var(--danger);"><i class="fas fa-sign-out-alt" style="width:16px;"></i> Logout</div>
         </div>
       </div>
     </div>
   </div>
 </nav>
 
-<style>
-  .dd-item { display:flex; align-items:center; gap:10px; padding:10px 16px; font-size:13px; color:var(--text); text-decoration:none; transition:background .15s; }
-  .dd-item:hover { background:var(--bg); text-decoration:none; }
-</style>
-
 <div class="page-content">
 
-  <!-- ── Hero ── -->
+  <!-- Hero -->
   <div class="hero">
     <div class="hero-left">
       <h2 id="welcome-name">Welcome back! 👋</h2>
-      <p id="hero-sub">Ready to push your rank higher today?</p>
+      <p>Ready to push your rank higher today?</p>
       <div class="hero-tags">
         <span class="hero-tag"><i class="fas fa-crosshairs"></i> GATE Geology</span>
         <span class="hero-tag"><i class="fas fa-atom"></i> CSIR-NET</span>
         <span class="hero-tag"><i class="fas fa-calendar-alt"></i> 8 Years PYQs</span>
         <span class="hero-tag" id="hero-streak" style="display:none;">
-          <i class="fas fa-fire" style="color:#f59e0b"></i> <span id="streak-count">0</span> Day Streak 🔥
+          <i class="fas fa-fire" style="color:#f59e0b;"></i>
+          <span id="streak-count">0</span> Day Streak 🔥
         </span>
       </div>
     </div>
     <div class="hero-icon"><i class="fas fa-gem"></i></div>
   </div>
 
-  <!-- ── Stats Row ── -->
+  <!-- Stats -->
   <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-icon blue"><i class="fas fa-file-alt"></i></div>
-      <div class="stat-text"><div class="num" id="stat-attempts">—</div><div class="lbl">Exams Attempted</div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon gold"><i class="fas fa-star"></i></div>
-      <div class="stat-text"><div class="num" id="stat-best">—</div><div class="lbl">Best Score</div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon green"><i class="fas fa-chart-line"></i></div>
-      <div class="stat-text"><div class="num" id="stat-avg">—</div><div class="lbl">Average Score</div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon purple"><i class="fas fa-bullseye"></i></div>
-      <div class="stat-text"><div class="num" id="stat-accuracy">—</div><div class="lbl">Avg Accuracy</div></div>
-    </div>
+    <div class="stat-card"><div class="stat-icon si-blue"><i class="fas fa-file-alt"></i></div><div><div class="stat-num" id="stat-attempts">—</div><div class="stat-lbl">Exams Attempted</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-gold"><i class="fas fa-star"></i></div><div><div class="stat-num" id="stat-best">—</div><div class="stat-lbl">Best Score</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-green"><i class="fas fa-chart-line"></i></div><div><div class="stat-num" id="stat-avg">—</div><div class="stat-lbl">Average Score</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-purple"><i class="fas fa-bullseye"></i></div><div><div class="stat-num" id="stat-accuracy">—</div><div class="stat-lbl">Avg Accuracy</div></div></div>
   </div>
 
-  <!-- ── Feature Hub ── -->
-  <div class="section-hd">
-    <h2><i class="fas fa-th-large" style="color:var(--accent)"></i> Portal Features</h2>
-  </div>
-  <div class="feature-hub" style="margin-bottom:28px;">
-
+  <!-- Feature Hub -->
+  <div class="section-hd"><h2><i class="fas fa-th-large"></i> Portal Features</h2></div>
+  <div class="feature-hub">
     <a href="doubt-room.html" class="feature-card fc-indigo">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div class="fc-icon"><i class="fas fa-lightbulb"></i></div>
-        <div>
-          <div class="fc-title">Doubt Solving Room</div>
-          <div class="fc-desc">Post your geology doubts and get expert answers from mentors</div>
-        </div>
-      </div>
+      <div style="display:flex;align-items:center;gap:12px;"><div class="fc-icon"><i class="fas fa-lightbulb"></i></div><div><div class="fc-title">Doubt Solving Room</div><div class="fc-desc">Post doubts and get expert answers</div></div></div>
       <div class="fc-arrow"><i class="fas fa-arrow-right"></i> <span id="open-doubts-count">Open Doubts</span></div>
-      <span class="fc-badge" id="doubt-badge-fc" style="display:none;">New</span>
     </a>
-
     <a href="resources.html" class="feature-card fc-emerald">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div class="fc-icon"><i class="fas fa-book-open"></i></div>
-        <div>
-          <div class="fc-title">Resource Library</div>
-          <div class="fc-desc">PDFs, videos, notes and PYQs — all your study material</div>
-        </div>
-      </div>
+      <div style="display:flex;align-items:center;gap:12px;"><div class="fc-icon"><i class="fas fa-book-open"></i></div><div><div class="fc-title">Resource Library</div><div class="fc-desc">PDFs, videos, notes and PYQs</div></div></div>
       <div class="fc-arrow"><i class="fas fa-arrow-right"></i> <span id="res-count-fc">Browse Resources</span></div>
     </a>
-
     <a href="discussion.html" class="feature-card fc-sky">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div class="fc-icon"><i class="fas fa-comments"></i></div>
-        <div>
-          <div class="fc-title">Discussion Forum</div>
-          <div class="fc-desc">Chat with peers in subject channels — general, GATE, CSIR-NET</div>
-        </div>
-      </div>
-      <div class="fc-arrow"><i class="fas fa-arrow-right"></i> Join the Discussion</div>
+      <div style="display:flex;align-items:center;gap:12px;"><div class="fc-icon"><i class="fas fa-comments"></i></div><div><div class="fc-title">Discussion Forum</div><div class="fc-desc">Chat in GATE, CSIR-NET channels</div></div></div>
+      <div class="fc-arrow"><i class="fas fa-arrow-right"></i> Join Discussion</div>
     </a>
-
     <a href="my-results.html" class="feature-card fc-rose">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div class="fc-icon"><i class="fas fa-chart-bar"></i></div>
-        <div>
-          <div class="fc-title">My Results</div>
-          <div class="fc-desc">Deep dive into your performance — score trends, accuracy charts</div>
-        </div>
-      </div>
+      <div style="display:flex;align-items:center;gap:12px;"><div class="fc-icon"><i class="fas fa-chart-bar"></i></div><div><div class="fc-title">My Results</div><div class="fc-desc">Score trends and accuracy charts</div></div></div>
       <div class="fc-arrow"><i class="fas fa-arrow-right"></i> View Analysis</div>
     </a>
-
     <a href="ranklist.html" class="feature-card fc-amber">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div class="fc-icon"><i class="fas fa-trophy"></i></div>
-        <div>
-          <div class="fc-title">Ranklist</div>
-          <div class="fc-desc">See where you stand among all aspirants on every exam</div>
-        </div>
-      </div>
+      <div style="display:flex;align-items:center;gap:12px;"><div class="fc-icon"><i class="fas fa-trophy"></i></div><div><div class="fc-title">Ranklist</div><div class="fc-desc">See your rank among all aspirants</div></div></div>
       <div class="fc-arrow"><i class="fas fa-arrow-right"></i> Check Your Rank</div>
     </a>
-
-    <a href="#available-exams" class="feature-card fc-slate">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div class="fc-icon"><i class="fas fa-play-circle"></i></div>
-        <div>
-          <div class="fc-title">Live Exams</div>
-          <div class="fc-desc">Full-length CBT mock tests with GATE/CSIR-NET pattern questions</div>
-        </div>
-      </div>
+    <a href="#exams-section" class="feature-card fc-slate">
+      <div style="display:flex;align-items:center;gap:12px;"><div class="fc-icon"><i class="fas fa-play-circle"></i></div><div><div class="fc-title">Live Exams</div><div class="fc-desc">Full-length CBT mock tests</div></div></div>
       <div class="fc-arrow"><i class="fas fa-arrow-right"></i> <span id="live-exam-count">See Available Exams</span></div>
     </a>
-
   </div>
 
-  <!-- ── Score Progress ── -->
-  <div class="progress-section" id="progress-section" style="display:none;">
-    <div class="section-hd">
-      <h2><i class="fas fa-chart-line" style="color:var(--accent)"></i> Score Trend</h2>
-    </div>
-    <div class="progress-card" id="progress-card"></div>
+  <!-- Score Trend (hidden until data loads) -->
+  <div id="progress-section" style="display:none;margin-bottom:28px;">
+    <div class="section-hd"><h2><i class="fas fa-chart-line"></i> Score Trend</h2></div>
+    <div class="card" style="padding:20px;" id="progress-card"></div>
   </div>
 
-  <!-- ── Main Two-Column: Exams + Community ── -->
-  <div class="two-col" id="available-exams">
-
-    <!-- Left: Exam Grid -->
+  <!-- Exams + Sidebar -->
+  <div class="two-col" id="exams-section">
     <div>
       <div class="section-hd">
-        <h2><i class="fas fa-clipboard-list" style="color:var(--accent)"></i> Available Exams</h2>
-        <span id="exam-count" style="font-size:12px;color:var(--text2);font-weight:600;background:var(--bg2);padding:3px 10px;border-radius:20px;"></span>
+        <h2><i class="fas fa-clipboard-list"></i> Available Exams</h2>
+        <span id="exam-count" style="font-size:12px;color:var(--text2);background:var(--bg2);padding:3px 10px;border-radius:20px;font-weight:600;"></span>
       </div>
       <div id="exams-grid" class="exam-grid">
-        <div class="loading-screen" style="grid-column:1/-1;"><div class="spinner"></div><p>Loading exams…</p></div>
+        <div class="loading-screen" style="grid-column:1/-1;min-height:140px;"><div class="spinner"></div><p>Loading exams…</p></div>
       </div>
     </div>
 
-    <!-- Right: Community Widgets -->
-    <div style="display:flex;flex-direction:column;gap:16px;">
-
-      <!-- Recent Notifications -->
-      <div class="community-widget">
-        <div class="cw-header">
+    <div>
+      <!-- Notifications widget -->
+      <div class="cw-box">
+        <div class="cw-head">
           <h3><i class="fas fa-bell" style="color:var(--primary);"></i> Notifications</h3>
           <a href="#" onclick="GxNotifications.toggle(event)" style="font-size:12px;color:var(--primary);text-decoration:none;">View all</a>
         </div>
         <div id="notif-widget-list">
-          <div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">Click 🔔 to view notifications.</div>
+          <div style="padding:18px;text-align:center;color:var(--text3);font-size:13px;">Click 🔔 to view</div>
         </div>
       </div>
 
-      <!-- Recent Doubts -->
-      <div class="community-widget">
-        <div class="cw-header">
+      <!-- Recent Doubts widget -->
+      <div class="cw-box">
+        <div class="cw-head">
           <h3><i class="fas fa-lightbulb" style="color:#d97706;"></i> Recent Doubts</h3>
           <a href="doubt-room.html" style="font-size:12px;color:var(--primary);text-decoration:none;">Answer →</a>
         </div>
-        <div id="recent-doubts-widget">
-          <div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">Loading…</div>
+        <div id="doubts-widget">
+          <div style="padding:18px;text-align:center;color:var(--text3);font-size:13px;">Loading…</div>
         </div>
       </div>
 
-      <!-- New Resources -->
-      <div class="community-widget">
-        <div class="cw-header">
+      <!-- New Resources widget -->
+      <div class="cw-box">
+        <div class="cw-head">
           <h3><i class="fas fa-book" style="color:#059669;"></i> New Resources</h3>
           <a href="resources.html" style="font-size:12px;color:var(--primary);text-decoration:none;">Browse →</a>
         </div>
-        <div id="recent-resources-widget">
-          <div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">Loading…</div>
+        <div id="resources-widget">
+          <div style="padding:18px;text-align:center;color:var(--text3);font-size:13px;">Loading…</div>
         </div>
       </div>
-
     </div>
   </div>
 
-  <!-- ── Recent Attempts ── -->
-  <div class="mt-3">
+  <!-- Recent Attempts -->
+  <div style="margin-bottom:28px;">
     <div class="section-hd">
-      <h2><i class="fas fa-history" style="color:var(--accent)"></i> Recent Attempts</h2>
+      <h2><i class="fas fa-history"></i> Recent Attempts</h2>
       <a href="my-results.html" class="btn btn-outline btn-sm">View All <i class="fas fa-arrow-right"></i></a>
     </div>
     <div class="card">
       <div class="attempts-wrap">
         <table class="attempts-table">
-          <thead>
-            <tr>
-              <th>Exam</th><th>Date</th><th>Score</th>
-              <th>Correct / Wrong / Skip</th><th>Rank</th><th>Actions</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Exam</th><th>Date</th><th>Score</th><th>Correct / Wrong / Skip</th><th>Rank</th><th>Actions</th></tr></thead>
           <tbody id="attempts-tbody">
-            <tr><td colspan="6" class="text-center" style="padding:28px;color:var(--text2);">Loading…</td></tr>
+            <tr><td colspan="6" style="padding:28px;text-align:center;color:var(--text2);">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -409,31 +300,244 @@
 <script>
 let currentUser = null;
 
-// ── User Dropdown ──
+// ── User dropdown ──
 function toggleUserMenu() {
   const dd = document.getElementById('user-dropdown');
   dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
 }
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('user-menu-wrap');
+  if (wrap && !wrap.contains(e.target))
+    document.getElementById('user-dropdown').style.display = 'none';
+});
 
+// ── Auth guard ──
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = '../index.html'; return; }
+  currentUser = user;
 
-// ── Recent Doubts Widget ──
-async function loadRecentDoubts() {
-  const el = document.getElementById('recent-doubts-widget');
+  // Check for admin redirect
+  try {
+    const ud = await db.collection('users').doc(user.uid).get();
+    const data = ud.exists ? ud.data() : {};
+    if (data.role === 'admin') { window.location.href = '../admin/index.html'; return; }
+
+    const firstName = data.firstName || 'Student';
+    const hour = new Date().getHours();
+    const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('welcome-name').textContent = `${greet}, ${firstName}! 👋`;
+    document.getElementById('user-avatar').textContent  = firstName[0].toUpperCase();
+    document.getElementById('dd-name').textContent = `${data.firstName||''} ${data.lastName||''}`.trim() || user.email;
+  } catch(e) {}
+
+  // Initialise notifications (notifications.js)
+  GxNotifications.init(user);
+
+  // Load everything in parallel
+  loadExams();
+  loadAttempts();
+  loadStats();
+  loadFeatureCounts();
+  loadDoubtsWidget();
+  loadResourcesWidget();
+});
+
+// ── Load Exams ──
+async function loadExams() {
+  const grid = document.getElementById('exams-grid');
+  try {
+    const snap = await db.collection('exams').where('published','==',true).orderBy('createdAt','desc').get();
+    if (snap.empty) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text2);"><i class="fas fa-inbox" style="font-size:40px;opacity:.3;display:block;margin-bottom:12px;"></i>No exams published yet.</div>';
+      return;
+    }
+    document.getElementById('exam-count').textContent = `${snap.size} exam${snap.size!==1?'s':''}`;
+    let liveCount = 0;
+    grid.innerHTML = '';
+    snap.forEach(doc => {
+      const e = doc.data(), eid = doc.id;
+      const now = Date.now();
+      const startMs = e.startTime?.toMillis?.() || 0;
+      const endMs   = e.endTime?.toMillis?.()   || Infinity;
+      let badgeHtml, actionBtn;
+
+      if (now >= startMs && now <= endMs) {
+        liveCount++;
+        badgeHtml = `<span class="sbadge sbadge-live"><span class="live-dot"></span>Live</span>`;
+        actionBtn = `<button class="btn btn-primary btn-sm" onclick="window.location='exam-instructions.html?id=${eid}'">Start Exam <i class="fas fa-arrow-right"></i></button>`;
+      } else if (now > endMs) {
+        badgeHtml = `<span class="sbadge sbadge-ended">Ended</span>`;
+        actionBtn = `<button class="btn btn-ghost btn-sm" disabled>Exam Ended</button>`;
+      } else {
+        const opens = startMs ? new Date(startMs).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '';
+        badgeHtml = `<span class="sbadge sbadge-upcoming">Upcoming</span>`;
+        actionBtn = `<button class="btn btn-ghost btn-sm" disabled>Opens ${opens}</button>`;
+      }
+
+      grid.innerHTML += `
+        <div class="exam-card">
+          <div class="exam-card-header">
+            <div class="exam-card-title"><h3>${esc(e.title||'')}</h3>${badgeHtml}</div>
+            <div class="meta-chips">
+              <span class="meta-chip"><i class="fas fa-clock"></i> ${e.durationMinutes||0} min</span>
+              <span class="meta-chip"><i class="fas fa-question-circle"></i> ${e.totalQuestions||0} Qs</span>
+              <span class="meta-chip"><i class="fas fa-tag"></i> ${esc(e.subject||'GATE Geology')}</span>
+            </div>
+          </div>
+          <div class="exam-card-body">
+            <p class="exam-desc">${esc(e.description||'Practice exam for competitive geology preparation.')}</p>
+            <div class="exam-actions">
+              ${actionBtn}
+              <button class="btn btn-outline btn-sm" onclick="window.location='exam-instructions.html?id=${eid}'">
+                <i class="fas fa-info-circle"></i> Details
+              </button>
+            </div>
+          </div>
+        </div>`;
+    });
+
+    const liveEl = document.getElementById('live-exam-count');
+    if (liveEl) liveEl.textContent = liveCount > 0 ? `${liveCount} Live Now 🔴` : `${snap.size} Available`;
+  } catch(e) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--danger);">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+// ── Load Attempts (table + trend) ──
+async function loadAttempts() {
+  const tbody = document.getElementById('attempts-tbody');
+  try {
+    const snap = await db.collection('attempts')
+      .where('userId','==',currentUser.uid)
+      .where('status','==','submitted')
+      .orderBy('submittedAt','desc')
+      .limit(5).get();
+
+    if (snap.empty) {
+      tbody.innerHTML = `<tr><td colspan="6" style="padding:32px;text-align:center;color:var(--text2);"><i class="fas fa-inbox" style="font-size:28px;display:block;margin-bottom:8px;opacity:.3;"></i>No attempts yet — take your first exam!</td></tr>`;
+      return;
+    }
+    const recent = [];
+    tbody.innerHTML = '';
+    snap.forEach(doc => {
+      const a = doc.data(), aid = doc.id;
+      recent.push({...a, id: aid});
+      const date  = a.submittedAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})||'—';
+      const score = a.totalScore||0, max = a.maxScore||100;
+      const pct   = max > 0 ? (score/max*100) : 0;
+      const pillCls = pct >= 65 ? 'sp-good' : pct >= 40 ? 'sp-ok' : 'sp-poor';
+      tbody.innerHTML += `<tr>
+        <td><strong style="font-size:13px;">${esc(a.examTitle||'Exam')}</strong></td>
+        <td style="font-size:12px;color:var(--text2);">${date}</td>
+        <td>
+          <span class="score-pill ${pillCls}">${score.toFixed(2)} / ${max}</span>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">${pct.toFixed(1)}%</div>
+        </td>
+        <td style="font-size:12px;">
+          <span style="color:var(--success);font-weight:600;"><i class="fas fa-check"></i> ${a.correct||0}</span> &nbsp;·&nbsp;
+          <span style="color:var(--danger);font-weight:600;"><i class="fas fa-times"></i> ${a.wrong||0}</span> &nbsp;·&nbsp;
+          <span style="color:var(--text2);"><i class="fas fa-minus"></i> ${a.skipped||0}</span>
+        </td>
+        <td>${a.rank ? `<span style="font-weight:800;color:var(--primary);font-family:'Rajdhani',sans-serif;font-size:16px;">#${a.rank}</span>` : '<span style="color:var(--text3);">—</span>'}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <a href="result.html?id=${aid}" class="btn btn-primary btn-sm"><i class="fas fa-chart-bar"></i> Analysis</a>
+            <a href="ranklist.html?examId=${esc(a.examId||'')}" class="btn btn-ghost btn-sm" title="Ranklist"><i class="fas fa-trophy"></i></a>
+          </div>
+        </td>
+      </tr>`;
+    });
+    buildScoreTrend(recent.reverse());
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:20px;">Could not load attempts: ${esc(e.message)}</td></tr>`;
+  }
+}
+
+// ── Score Trend bars ──
+function buildScoreTrend(list) {
+  if (list.length < 2) return;
+  document.getElementById('progress-section').style.display = 'block';
+  const card = document.getElementById('progress-card');
+  card.innerHTML = `<div style="font-size:13px;color:var(--text2);margin-bottom:14px;font-weight:600;">Your last ${list.length} attempts:</div>` +
+    list.map(a => {
+      const pct   = a.maxScore > 0 ? Math.min((a.totalScore/a.maxScore)*100, 100) : 0;
+      const date  = a.submittedAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short'})||'';
+      const color = pct >= 65 ? '#15803d' : pct >= 40 ? '#ca8a04' : '#c0392b';
+      return `<div class="pb-wrap">
+        <div class="pb-label">
+          <span>${esc(a.examTitle||'Exam')} <span style="font-weight:400;color:var(--text3);font-size:11px;">${date}</span></span>
+          <span style="color:${color};font-weight:700;">${pct.toFixed(1)}%</span>
+        </div>
+        <div class="pb-track"><div class="pb-fill" style="width:0%;background:${color};" data-target="${pct}"></div></div>
+      </div>`;
+    }).join('');
+  setTimeout(() => {
+    card.querySelectorAll('.pb-fill').forEach(el => el.style.width = el.dataset.target + '%');
+  }, 100);
+}
+
+// ── Stats ──
+async function loadStats() {
+  try {
+    const snap = await db.collection('attempts')
+      .where('userId','==',currentUser.uid)
+      .where('status','==','submitted').get();
+    if (snap.empty) return;
+    let best=0, totalScore=0, count=0, totalQ=0, totalCorrect=0;
+    snap.forEach(d => {
+      const a = d.data(), s = a.totalScore||0;
+      totalScore += s; count++;
+      if (s > best) best = s;
+      totalQ       += (a.correct||0)+(a.wrong||0)+(a.skipped||0);
+      totalCorrect += (a.correct||0);
+    });
+    document.getElementById('stat-attempts').textContent = count;
+    document.getElementById('stat-best').textContent     = best.toFixed(1);
+    document.getElementById('stat-avg').textContent      = (totalScore/count).toFixed(1);
+    document.getElementById('stat-accuracy').textContent = totalQ > 0 ? ((totalCorrect/totalQ)*100).toFixed(0)+'%' : '—';
+
+    // Streak
+    const dates = snap.docs.map(d => d.data().submittedAt?.toDate?.()).filter(Boolean).map(d => d.toDateString());
+    const unique = [...new Set(dates)];
+    if (unique.length >= 2) {
+      document.getElementById('hero-streak').style.display = 'flex';
+      document.getElementById('streak-count').textContent  = unique.length;
+    }
+  } catch(e) {}
+}
+
+// ── Feature card live counts ──
+async function loadFeatureCounts() {
+  try {
+    const [dSnap, rSnap] = await Promise.all([
+      db.collection('doubts').where('status','==','open').get(),
+      db.collection('resources').get()
+    ]);
+    const openEl = document.getElementById('open-doubts-count');
+    if (openEl) openEl.textContent = dSnap.size > 0 ? `${dSnap.size} open doubts` : 'Ask a Doubt';
+    const resEl = document.getElementById('res-count-fc');
+    if (resEl) resEl.textContent = rSnap.size > 0 ? `${rSnap.size} resources available` : 'Browse Resources';
+  } catch(e) {}
+}
+
+// ── Recent Doubts sidebar widget ──
+async function loadDoubtsWidget() {
+  const el = document.getElementById('doubts-widget');
   try {
     const snap = await db.collection('doubts').orderBy('createdAt','desc').limit(4).get();
     if (snap.empty) { el.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;font-style:italic;">No doubts yet. Be first to ask!</div>'; return; }
-    const TOPIC_COLORS = {'gate-geology':'#dcfce7','csir-net':'#dbeafe','general':'#f3e8ff','numericals':'#fff7ed','theory':'#fef9c3','other':'#f1f5f9'};
+    const TC = {'gate-geology':'#dcfce7','csir-net':'#dbeafe','general':'#f3e8ff','numericals':'#fff7ed','theory':'#fef9c3','other':'#f1f5f9'};
     el.innerHTML = snap.docs.map(d => {
       const dd = d.data();
       const ts = dd.createdAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short'})||'';
       const solved = dd.status === 'solved';
-      return `<div class="cw-item" onclick="window.location='doubt-room.html'" style="cursor:pointer;">
-        <div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;">${(dd.userName||'S')[0].toUpperCase()}</div>
+      return `<div class="cw-item" onclick="window.location='doubt-room.html'">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;">${(dd.userName||'S')[0].toUpperCase()}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(dd.text||'')}</div>
-          <div style="display:flex;gap:6px;align-items:center;margin-top:4px;">
-            <span style="background:${TOPIC_COLORS[dd.topic]||'#f1f5f9'};font-size:10px;padding:1px 7px;border-radius:8px;font-weight:600;">${dd.topic||'general'}</span>
-            ${solved?'<span style="color:var(--success);font-size:10px;font-weight:700;">✅ Solved</span>':'<span style="color:var(--warning);font-size:10px;font-weight:700;">⏳ Open</span>'}
+          <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(dd.text||'')}</div>
+          <div style="display:flex;gap:5px;align-items:center;margin-top:3px;">
+            <span style="background:${TC[dd.topic]||'#f1f5f9'};font-size:10px;padding:1px 6px;border-radius:8px;font-weight:600;">${dd.topic||'general'}</span>
+            ${solved?'<span style="color:var(--success);font-size:10px;">✅</span>':'<span style="color:var(--warning);font-size:10px;">⏳</span>'}
             <span style="font-size:11px;color:var(--text3);margin-left:auto;">${ts}</span>
           </div>
         </div>
@@ -442,31 +546,30 @@ async function loadRecentDoubts() {
   } catch(e) { el.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;">Could not load doubts.</div>'; }
 }
 
-// ── Recent Resources Widget ──
-async function loadRecentResources() {
-  const el = document.getElementById('recent-resources-widget');
+// ── New Resources sidebar widget ──
+async function loadResourcesWidget() {
+  const el = document.getElementById('resources-widget');
   try {
     const snap = await db.collection('resources').orderBy('createdAt','desc').limit(4).get();
-    if (snap.empty) { el.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;font-style:italic;">No resources added yet.</div>'; return; }
-    const TYPE_EMOJIS = {pdf:'📄',video:'🎥',notes:'📝',pyq:'📋',link:'🔗'};
-    const TYPE_BG = {pdf:'#fff1f2',video:'#eff6ff',notes:'#f0fdf4',pyq:'#fffbeb',link:'#f5f3ff'};
+    if (snap.empty) { el.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;font-style:italic;">No resources yet.</div>'; return; }
+    const TE = {pdf:'📄',video:'🎥',notes:'📝',pyq:'📋',link:'🔗'};
+    const TB = {pdf:'#fff1f2',video:'#eff6ff',notes:'#f0fdf4',pyq:'#fffbeb',link:'#f5f3ff'};
     el.innerHTML = snap.docs.map(d => {
-      const rd = d.data();
-      const ts = rd.createdAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short'})||'';
-      return `<div class="cw-item" onclick="window.open('${rd.url||'#'}','_blank');db.collection('resources').doc('${d.id}').update({downloads:firebase.firestore.FieldValue.increment(1)}).catch(()=>{})" style="cursor:pointer;">
-        <div style="width:36px;height:36px;border-radius:10px;background:${TYPE_BG[rd.type]||'#f3f4f6'};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${TYPE_EMOJIS[rd.type]||'📁'}</div>
+      const r = d.data(), rid = d.id;
+      const ts = r.createdAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short'})||'';
+      return `<div class="cw-item" onclick="window.open('${r.url||'#'}','_blank');db.collection('resources').doc('${rid}').update({downloads:firebase.firestore.FieldValue.increment(1)}).catch(()=>{});">
+        <div style="width:34px;height:34px;border-radius:8px;background:${TB[r.type]||'#f3f4f6'};display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">${TE[r.type]||'📁'}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(rd.title||'Resource')}</div>
-          <div style="font-size:12px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(rd.subject||'')} · ${ts}</div>
+          <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(r.title||'Resource')}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">${esc(r.subject||'')}${r.subject&&ts?' · ':''}${ts}</div>
         </div>
-        <i class="fas fa-external-link-alt" style="font-size:12px;color:var(--text3);flex-shrink:0;"></i>
+        <i class="fas fa-external-link-alt" style="font-size:11px;color:var(--text3);flex-shrink:0;"></i>
       </div>`;
     }).join('');
   } catch(e) { el.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;">Could not load resources.</div>'; }
 }
 
-function esc(s) { if(!s)return''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function startExam(examId) { window.location.href = `exam-instructions.html?id=${examId}`; }
+function esc(s) { if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 async function doLogout() { await auth.signOut(); window.location.href = '../index.html'; }
 </script>
 <script src="../js/notifications.js"></script>
