@@ -65,7 +65,7 @@ function showPanel(name) {
   if (name === 'discussion')   { setTimeout(adminLoadDiscussion, 100); }
   else if (name === 'doubts')  { setTimeout(adminLoadDoubts, 100); }
   else if (name === 'resources') { setTimeout(adminLoadResources, 100); }
-  else if (name === 'notifications') { setTimeout(adminLoadNotifications, 100); }
+  else if (name === 'notifications') { setTimeout(() => { adminLoadNotifications(); loadAutoNotifSettings(); }, 100); }
   else if (name === 'dashboard') { loadDashboard(); }
 }
 
@@ -628,6 +628,18 @@ async function loadExams() {
 async function togglePublish(eid, state) {
   await db.collection('exams').doc(eid).update({ published: state });
   Utils.toast(state ? 'Exam published!' : 'Exam unpublished', 'success');
+  if (state) {
+    try {
+      const examDoc = await db.collection('exams').doc(eid).get();
+      const examTitle = examDoc.exists ? (examDoc.data().title || 'New Exam') : 'New Exam';
+      await autoNotifIfEnabled('exam', {
+        title: 'New Exam Available!',
+        body: `"${examTitle}" is now live. Attempt it before the window closes!`,
+        link: '../pages/exams.html',
+        type: 'exam',
+      });
+    } catch(e) { console.warn('Auto-notif failed:', e); }
+  }
   loadExams();
 }
 
@@ -1472,6 +1484,19 @@ async function revaluateAll() {
   Utils.toast(`Bulk revaluation complete! ${successCount}/${done} updated.`, 'success');
   btn.disabled = false;
   btn.innerHTML = '<i class="fas fa-sync-alt"></i> Revaluate All Attempts';
+
+  // Auto-notif for revaluation
+  if (successCount > 0) {
+    try {
+      const exam = revalExams.find(e => e.id === revalSelectedExamId);
+      await autoNotifIfEnabled('revaluation', {
+        title: 'Exam Results Updated!',
+        body: `Scores for "${exam?.title || 'an exam'}" have been revaluated. Check your updated result!`,
+        link: '../pages/my-results.html',
+        type: 'system',
+      });
+    } catch(e) { console.warn('Auto-notif reval failed:', e); }
+  }
 }
 
 function renderRevalLog() {
@@ -1959,8 +1984,23 @@ async function adminAcceptReply(doubtId, replyId, accept) {
 
 async function adminMarkSolved(doubtId) {
   try {
+    const doubtDoc = await db.collection('doubts').doc(doubtId).get();
     await db.collection('doubts').doc(doubtId).update({ status: 'solved' });
     Utils.toast('Doubt marked as solved!','success');
+    // Send personal notification to the doubt author
+    if (doubtDoc.exists) {
+      const d = doubtDoc.data();
+      const authorId = d.userId || d.authorId;
+      if (authorId) {
+        await autoNotifIfEnabled('doubt', {
+          title: 'Your Doubt Has Been Solved!',
+          body: `Your doubt "${(d.title||d.question||'').substring(0,80)}" has been answered and marked as solved.`,
+          link: '../pages/doubt-room.html',
+          type: 'doubt',
+          targetUserId: authorId,   // personal — only to author
+        });
+      }
+    }
   } catch(e) { Utils.toast('Error: '+e.message,'error'); }
 }
 
@@ -2125,11 +2165,12 @@ async function adminSaveResource() {
       data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       data.downloads = 0;
       await db.collection('resources').add(data);
-      // Send global notification
-      await adminBroadcastNotif({
-        title: '📚 New Resource Added!',
-        body: `"${title}" has been added to the Resource Library.`,
-        type: 'resource', link: '../pages/resources.html', icon: 'fa-book'
+      // Auto-notif for new resource
+      await autoNotifIfEnabled('resource', {
+        title: 'New Resource Added!',
+        body: `"${title}" has been added to the Resource Library. Check it out!`,
+        type: 'resource',
+        link: '../pages/resources.html',
       });
       Utils.toast('Resource added!','success');
     }
@@ -2256,6 +2297,130 @@ async function adminSendNotifToUser(userId, {title, body, type='general', link='
     targetUserId: userId,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
   });
+}
+
+// ── Auto-notification settings (stored in Firestore: settings/autoNotif) ──
+let _autoNotifSettings = null;
+
+async function loadAutoNotifSettings() {
+  try {
+    const doc = await db.collection('settings').doc('autoNotif').get();
+    _autoNotifSettings = doc.exists ? doc.data() : _defaultAutoNotifSettings();
+  } catch(e) {
+    _autoNotifSettings = _defaultAutoNotifSettings();
+  }
+  _applyAutoNotifSettingsUI();
+}
+
+function _defaultAutoNotifSettings() {
+  return {
+    exam:        { site: true,  email: true  },
+    resource:    { site: true,  email: true  },
+    doubt:       { site: true,  email: true  },
+    revaluation: { site: true,  email: true  },
+  };
+}
+
+async function saveAutoNotifSettings() {
+  const s = {
+    exam:        { site: _togVal('an-exam-site'),        email: _togVal('an-exam-email')        },
+    resource:    { site: _togVal('an-resource-site'),    email: _togVal('an-resource-email')    },
+    doubt:       { site: _togVal('an-doubt-site'),       email: _togVal('an-doubt-email')       },
+    revaluation: { site: _togVal('an-reval-site'),       email: _togVal('an-reval-email')       },
+  };
+  try {
+    await db.collection('settings').doc('autoNotif').set(s);
+    _autoNotifSettings = s;
+    Utils.toast('Auto-notification settings saved!', 'success');
+  } catch(e) { Utils.toast('Error saving settings: ' + e.message, 'error'); }
+}
+
+function _togVal(id) {
+  const el = document.getElementById(id);
+  return el ? el.checked : false;
+}
+
+function _applyAutoNotifSettingsUI() {
+  const s = _autoNotifSettings || _defaultAutoNotifSettings();
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+  set('an-exam-site',        s.exam?.site);
+  set('an-exam-email',       s.exam?.email);
+  set('an-resource-site',    s.resource?.site);
+  set('an-resource-email',   s.resource?.email);
+  set('an-doubt-site',       s.doubt?.site);
+  set('an-doubt-email',      s.doubt?.email);
+  set('an-reval-site',       s.revaluation?.site);
+  set('an-reval-email',      s.revaluation?.email);
+}
+
+// ── Core: check settings then fire site notif + email ──
+async function autoNotifIfEnabled(triggerKey, { title, body, type, link, targetUserId }) {
+  const s = _autoNotifSettings || _defaultAutoNotifSettings();
+  const cfg = s[triggerKey] || { site: false, email: false };
+
+  // Site notification
+  if (cfg.site) {
+    if (targetUserId) {
+      // Personal (e.g. doubt solved)
+      await adminSendNotifToUser(targetUserId, { title, body, type, link });
+    } else {
+      // Broadcast
+      await adminBroadcastNotif({ title, body, type, link });
+    }
+  }
+
+  // Email notification
+  if (cfg.email) {
+    if (targetUserId) {
+      // Send to that user only
+      try {
+        const ud = await db.collection('users').doc(targetUserId).get();
+        if (ud.exists) {
+          const u = ud.data();
+          const toEmail = u.email || '';
+          const toName  = `${u.firstName||''} ${u.lastName||''}`.trim() || 'Student';
+          if (toEmail) await _sendEmail(toEmail, toName, title, body, link);
+        }
+      } catch(e) { console.warn('Email send failed:', e); }
+    } else {
+      // Broadcast email — fetch all users and send
+      try {
+        const usersSnap = await db.collection('users').get();
+        const sends = [];
+        usersSnap.forEach(ud => {
+          const u = ud.data();
+          const emailNotifOff = u.emailNotif === false;
+          if (u.email && !emailNotifOff) {
+            const name = `${u.firstName||''} ${u.lastName||''}`.trim() || 'Student';
+            sends.push(_sendEmail(u.email, name, title, body, link));
+          }
+        });
+        await Promise.allSettled(sends);
+      } catch(e) { console.warn('Broadcast email failed:', e); }
+    }
+  }
+}
+
+// ── Email via EmailJS ──
+// SETUP: Add EmailJS SDK to admin/index.html and fill in your IDs below.
+// https://www.emailjs.com/ → Create account → Email Templates → Get Service ID
+const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // ← Replace
+const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // ← Replace
+const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // ← Replace
+
+async function _sendEmail(toEmail, toName, subject, message, link) {
+  if (typeof emailjs === 'undefined') {
+    console.warn('EmailJS not loaded. Add <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script> to admin/index.html');
+    return;
+  }
+  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email:   toEmail,
+    to_name:    toName,
+    subject:    subject,
+    message:    message,
+    action_url: link ? `https://geoexam.app${link.replace('..','').replace('.html','')}` : '',
+    portal_name: 'GeoExam Portal',
+  }, EMAILJS_PUBLIC_KEY);
 }
 
 async function adminDeleteNotif(id) {
