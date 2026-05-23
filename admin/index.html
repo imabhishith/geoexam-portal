@@ -774,6 +774,16 @@
         <span class="icon"><i class="fas fa-comments"></i></span> Discussion
         <span id="nav-discussion-badge" style="background:var(--accent);color:#fff;display:none;margin-left:auto;font-size:10px;padding:1px 7px;border-radius:20px;font-weight:800;">0</span>
       </button>
+      <button class="admin-nav-link" onclick="showPanel('doubts')" data-panel="doubts">
+        <span class="icon"><i class="fas fa-lightbulb"></i></span> Doubt Room
+        <span id="nav-doubts-badge" style="background:var(--accent);color:#fff;display:none;margin-left:auto;font-size:10px;padding:1px 7px;border-radius:20px;font-weight:800;">0</span>
+      </button>
+      <button class="admin-nav-link" onclick="showPanel('resources')" data-panel="resources">
+        <span class="icon"><i class="fas fa-book-open"></i></span> Resources
+      </button>
+      <button class="admin-nav-link" onclick="showPanel('notifications')" data-panel="notifications">
+        <span class="icon"><i class="fas fa-bell"></i></span> Notifications
+      </button>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Tools</div>
@@ -1301,6 +1311,240 @@
     </div>
     <!-- ── END DISCUSSION ── -->
 
+    <!-- ══════════════════════════════════════════════════════
+         DOUBT SOLVING ROOM PANEL
+    ══════════════════════════════════════════════════════ -->
+    <div class="admin-panel" id="panel-doubts">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;">
+            <span style="background:#d97706;color:#fff;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;"><i class="fas fa-lightbulb"></i></span>
+            Doubt Solving Room
+          </div>
+          <div style="font-size:12px;color:var(--gray-600);margin-top:3px;">Answer student doubts, mark solved, manage replies.</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <select class="form-control" id="doubt-status-filter" style="width:150px;" onchange="adminLoadDoubts()">
+            <option value="">All Status</option>
+            <option value="open">⏳ Open</option>
+            <option value="solved">✅ Solved</option>
+          </select>
+          <select class="form-control" id="doubt-topic-filter" style="width:160px;" onchange="adminLoadDoubts()">
+            <option value="">All Topics</option>
+            <option value="gate-geology">GATE Geology</option>
+            <option value="csir-net">CSIR-NET</option>
+            <option value="general">General</option>
+            <option value="numericals">Numericals</option>
+            <option value="theory">Theory</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="admin-stats">
+        <div class="admin-stat"><div class="ico" style="background:#fef3c7;color:#d97706;"><i class="fas fa-question-circle"></i></div><div><div class="num" id="doubt-stat-total">—</div><div class="lbl">Total Doubts</div></div></div>
+        <div class="admin-stat"><div class="ico" style="background:#fff3cd;color:#b45309;"><i class="fas fa-clock"></i></div><div><div class="num" id="doubt-stat-open">—</div><div class="lbl">Open</div></div></div>
+        <div class="admin-stat"><div class="ico" style="background:#e8f5e9;color:var(--green);"><i class="fas fa-check-circle"></i></div><div><div class="num" id="doubt-stat-solved">—</div><div class="lbl">Solved</div></div></div>
+        <div class="admin-stat"><div class="ico" style="background:#e3f0ff;color:var(--blue);"><i class="fas fa-reply"></i></div><div><div class="num" id="doubt-stat-replies">—</div><div class="lbl">Total Replies</div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Student Doubts</h3>
+          <div style="display:flex;gap:8px;">
+            <input type="text" class="form-control" id="doubt-search" placeholder="Search doubts…" style="width:220px;" oninput="adminFilterDoubts()">
+            <button class="btn btn-ghost btn-sm" onclick="adminLoadDoubts()"><i class="fas fa-sync-alt"></i></button>
+          </div>
+        </div>
+        <div id="doubt-list" style="max-height:640px;overflow-y:auto;padding:16px;scrollbar-width:thin;scrollbar-color:var(--accent2) transparent;">
+          <div style="text-align:center;padding:48px;color:var(--gray-600);">
+            <i class="fas fa-lightbulb" style="font-size:36px;opacity:.2;margin-bottom:12px;display:block;"></i>
+            Click Doubt Room in the sidebar to load doubts.
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ── END DOUBTS ── -->
+
+    <!-- ══════════════════════════════════════════════════════
+         RESOURCE LIBRARY PANEL
+    ══════════════════════════════════════════════════════ -->
+    <div class="admin-panel" id="panel-resources">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;">
+            <span style="background:var(--green);color:#fff;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;"><i class="fas fa-book-open"></i></span>
+            Resource Library
+          </div>
+          <div style="font-size:12px;color:var(--gray-600);margin-top:3px;">Manage PDFs, videos, notes and PYQs for students.</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="adminShowResourceForm(false)">
+          <i class="fas fa-plus"></i> Add Resource
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="admin-stats">
+        <div class="admin-stat"><div class="ico" style="background:#e8f5e9;color:var(--green);"><i class="fas fa-folder-open"></i></div><div><div class="num" id="res-stat-total">—</div><div class="lbl">Total Resources</div></div></div>
+        <div class="admin-stat"><div class="ico" style="background:#fce4ec;color:#c62828;"><i class="fas fa-file-pdf"></i></div><div><div class="num" id="res-stat-pdf">—</div><div class="lbl">PDFs</div></div></div>
+        <div class="admin-stat"><div class="ico" style="background:#e3f0ff;color:var(--blue);"><i class="fas fa-video"></i></div><div><div class="num" id="res-stat-video">—</div><div class="lbl">Videos</div></div></div>
+        <div class="admin-stat"><div class="ico" style="background:#f3e5f5;color:var(--purple);"><i class="fas fa-download"></i></div><div><div class="num" id="res-stat-downloads">—</div><div class="lbl">Downloads</div></div></div>
+      </div>
+
+      <!-- Add/Edit Form (hidden by default) -->
+      <div class="card" id="res-form-container" style="display:none;margin-bottom:16px;border:2px solid var(--blue);">
+        <div class="card-header" style="background:linear-gradient(135deg,var(--navy),var(--blue));border:none;">
+          <h3 id="res-form-title" style="color:#fff;">➕ Add New Resource</h3>
+          <button class="btn btn-ghost btn-sm" onclick="adminCloseResourceForm()" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.2);"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="card-body">
+          <div class="grid-2" style="margin-bottom:12px;">
+            <div><label class="form-label">Title *</label><input type="text" class="form-control" id="res-f-title" placeholder="e.g. GATE 2023 PYQ PDF"></div>
+            <div>
+              <label class="form-label">Resource Type *</label>
+              <select class="form-control" id="res-f-type">
+                <option value="pdf">📄 PDF</option>
+                <option value="video">🎥 Video</option>
+                <option value="notes">📝 Notes</option>
+                <option value="pyq">📋 PYQ</option>
+                <option value="link">🔗 Link</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Subject</label>
+              <select class="form-control" id="res-f-subject">
+                <option>GATE Geology</option><option>CSIR-NET</option><option>General Geology</option>
+                <option>Geomorphology</option><option>Petrology</option><option>Mineralogy</option>
+                <option>Structural Geology</option><option>Stratigraphy</option><option>Economic Geology</option>
+                <option>Remote Sensing</option><option>Hydrogeology</option><option>Engineering Geology</option>
+              </select>
+            </div>
+            <div><label class="form-label">URL / Link *</label><input type="url" class="form-control" id="res-f-url" placeholder="https://drive.google.com/…"></div>
+          </div>
+          <div style="margin-bottom:12px;"><label class="form-label">Description</label><textarea class="form-control" id="res-f-description" rows="2" placeholder="Brief description for students…" style="resize:vertical;"></textarea></div>
+          <div class="grid-2" style="align-items:end;">
+            <div><label class="form-label">Tags (comma-separated)</label><input type="text" class="form-control" id="res-f-tags" placeholder="petrology, igneous, 2023"></div>
+            <div style="padding-bottom:4px;"><label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;"><input type="checkbox" id="res-f-visible" checked> Visible to students</label></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+            <button class="btn btn-ghost btn-sm" onclick="adminCloseResourceForm()">Cancel</button>
+            <button class="btn btn-primary" onclick="adminSaveResource()"><i class="fas fa-save"></i> Save Resource</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter + List -->
+      <div class="card">
+        <div class="card-header">
+          <h3>All Resources</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" class="form-control" id="res-search" placeholder="Search…" style="width:170px;" oninput="adminFilterResources()">
+            <select class="form-control" id="res-type-filter" style="width:120px;" onchange="adminFilterResources()">
+              <option value="">All Types</option>
+              <option value="pdf">📄 PDF</option><option value="video">🎥 Video</option>
+              <option value="notes">📝 Notes</option><option value="pyq">📋 PYQ</option><option value="link">🔗 Link</option>
+            </select>
+            <select class="form-control" id="res-subj-filter" style="width:155px;" onchange="adminFilterResources()">
+              <option value="">All Subjects</option>
+              <option>GATE Geology</option><option>CSIR-NET</option><option>General Geology</option>
+              <option>Petrology</option><option>Mineralogy</option><option>Structural Geology</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="adminLoadResources()"><i class="fas fa-sync-alt"></i></button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <div id="res-list" style="min-height:180px;">
+            <div style="text-align:center;padding:48px;color:var(--gray-600);">
+              <i class="fas fa-book" style="font-size:36px;opacity:.2;margin-bottom:12px;display:block;"></i>
+              Click Resources in the sidebar to load.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ── END RESOURCES ── -->
+
+    <!-- ══════════════════════════════════════════════════════
+         NOTIFICATION CENTRE PANEL
+    ══════════════════════════════════════════════════════ -->
+    <div class="admin-panel" id="panel-notifications">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;">
+            <span style="background:var(--blue);color:#fff;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;"><i class="fas fa-bell"></i></span>
+            Notification Centre
+          </div>
+          <div style="font-size:12px;color:var(--gray-600);margin-top:3px;">Send notifications to all or specific students.</div>
+        </div>
+        <button class="btn btn-accent btn-sm" onclick="adminOpenNotifComposer()">
+          <i class="fas fa-paper-plane"></i> Send Notification
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="admin-stats" style="grid-template-columns:repeat(3,1fr);">
+        <div class="admin-stat"><div class="ico" style="background:#e3f0ff;color:var(--blue);"><i class="fas fa-bell"></i></div><div><div class="num" id="notif-stat-total">—</div><div class="lbl">Total Sent</div></div></div>
+        <div class="admin-stat"><div class="ico" style="background:#e8f5e9;color:var(--green);"><i class="fas fa-broadcast-tower"></i></div><div><div class="num" id="notif-stat-broadcast">—</div><div class="lbl">Broadcasts</div></div></div>
+        <div class="admin-stat"><div class="ico" style="background:#f3e5f5;color:var(--purple);"><i class="fas fa-user"></i></div><div><div class="num" id="notif-stat-personal">—</div><div class="lbl">Personal</div></div></div>
+      </div>
+
+      <!-- Composer (hidden) -->
+      <div class="announce-composer" id="notif-composer" style="display:none;margin-bottom:16px;">
+        <div class="announce-composer-header">
+          <h3><i class="fas fa-paper-plane"></i> Compose Notification</h3>
+          <button class="btn btn-ghost btn-sm" onclick="adminCloseNotifComposer()" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.2);"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="announce-composer-body">
+          <div class="grid-2" style="margin-bottom:12px;">
+            <div><label class="form-label">Title *</label><input type="text" class="form-control" id="notif-f-title" placeholder="e.g. New Exam Published!"></div>
+            <div>
+              <label class="form-label">Type</label>
+              <select class="form-control" id="notif-f-type">
+                <option value="general">📢 General</option>
+                <option value="exam">📝 Exam</option>
+                <option value="resource">📚 Resource</option>
+                <option value="doubt">💡 Doubt</option>
+                <option value="system">⚙️ System</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Send To</label>
+              <select class="form-control" id="notif-f-target" onchange="adminToggleTargetField()">
+                <option value="all">📢 All Students (Broadcast)</option>
+                <option value="user">👤 Specific Student</option>
+              </select>
+            </div>
+            <div><label class="form-label">Link (optional)</label><input type="text" class="form-control" id="notif-f-link" placeholder="../pages/resources.html"></div>
+          </div>
+          <div id="notif-target-email" style="display:none;margin-bottom:12px;">
+            <label class="form-label">Student Email</label>
+            <input type="email" class="form-control" id="notif-f-email" placeholder="student@example.com">
+          </div>
+          <div style="margin-bottom:12px;"><label class="form-label">Message *</label><textarea class="form-control" id="notif-f-body" rows="3" placeholder="Write your message…" style="resize:vertical;"></textarea></div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="adminCloseNotifComposer()">Cancel</button>
+            <button class="btn btn-primary" onclick="adminSendNotification()"><i class="fas fa-paper-plane"></i> Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Sent Notifications</h3>
+          <button class="btn btn-ghost btn-sm" onclick="adminLoadNotifications()"><i class="fas fa-sync-alt"></i></button>
+        </div>
+        <div id="notif-list" style="max-height:560px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--accent2) transparent;">
+          <div style="text-align:center;padding:48px;color:var(--gray-600);">
+            <i class="fas fa-bell" style="font-size:36px;opacity:.2;margin-bottom:12px;display:block;"></i>
+            Click Notifications in the sidebar to load history.
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ── END NOTIFICATIONS ── -->
+
   </div><!-- admin-content -->
 </div><!-- admin-main -->
 
@@ -1327,17 +1571,20 @@
 <script src="../js/firebase-config.js"></script>
 <script>
 const PANEL_LABELS = {
-  'dashboard':    ['Overview',   'Dashboard'],
-  'qbank':        ['Questions',  'Question Bank'],
-  'add-single':   ['Questions',  'Add Question'],
-  'add-bulk':     ['Questions',  'Bulk Upload PDF'],
-  'exams':        ['Exams',      'Manage Exams'],
-  'create-exam':  ['Exams',      'Create / Edit Exam'],
-  'attempts':     ['Analytics',  'All Attempts'],
-  'flagged':      ['Analytics',  'Flagged Attempts'],
-  'users':        ['Analytics',  'Users'],
-  'revaluation':  ['Tools',      'Revaluation Centre'],
-  'discussion':   ['Community',  'Discussion Moderation'],
+  'dashboard':      ['Overview',   'Dashboard'],
+  'qbank':          ['Questions',  'Question Bank'],
+  'add-single':     ['Questions',  'Add Question'],
+  'add-bulk':       ['Questions',  'Bulk Upload PDF'],
+  'exams':          ['Exams',      'Manage Exams'],
+  'create-exam':    ['Exams',      'Create / Edit Exam'],
+  'attempts':       ['Analytics',  'All Attempts'],
+  'flagged':        ['Analytics',  'Flagged Attempts'],
+  'users':          ['Analytics',  'Users'],
+  'revaluation':    ['Tools',      'Revaluation Centre'],
+  'discussion':     ['Community',  'Discussion Moderation'],
+  'doubts':         ['Community',  'Doubt Solving Room'],
+  'resources':      ['Community',  'Resource Library'],
+  'notifications':  ['Community',  'Notification Centre'],
 };
 window.addEventListener('load', () => {
   const origSP = window.showPanel;
