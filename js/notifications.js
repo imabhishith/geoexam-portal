@@ -100,15 +100,16 @@
     if (!_user) return;
 
     try {
+      // No orderBy here — Firestore requires a composite index when you
+      // combine where() + orderBy() on different fields. We sort client-side
+      // instead, which works fine for the small result sets we fetch.
       const [globalSnap, personalSnap] = await Promise.all([
         db.collection('notifications')
           .where('global', '==', true)
-          .orderBy('createdAt', 'desc')
           .limit(30)
           .get(),
         db.collection('notifications')
           .where('targetUserId', '==', _user.uid)
-          .orderBy('createdAt', 'desc')
           .limit(10)
           .get(),
       ]);
