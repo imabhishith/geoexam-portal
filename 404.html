@@ -2,30 +2,209 @@
 <html lang="en">
 <head>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Page Not Found — GeoExam Portal</title>
-<link rel="stylesheet" href="css/global.css">
-<style>
-  body { display:flex; align-items:center; justify-content:center; min-height:100vh;
-         background: linear-gradient(135deg,#0f2545 0%,#1a3c6e 50%,#2563ab 100%); }
-  .wrap { text-align:center; color:#fff; padding:32px; max-width:480px; }
-  .code { font-size:120px; font-family:'Rajdhani',sans-serif; font-weight:800;
-          color:rgba(255,255,255,.15); line-height:1; margin-bottom:8px; }
-  h2   { font-size:32px; margin-bottom:12px; }
-  p    { opacity:.75; font-size:15px; margin-bottom:28px; }
-  .links { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
-</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found — GeoExam Portal</title>
+  <link rel="stylesheet" href="css/global.css">
+  <style>
+    :root {
+      --navy:    #0a2540;
+      --navy2:   #0e3460;
+      --blue:    #1565c0;
+      --accent:  #e65100;
+      --accent2: #f57c00;
+      --font:    'Noto Sans','Segoe UI',Arial,sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--navy);
+    }
+
+    /* subtle static gradient — no animation */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 15% 20%, rgba(21,101,192,.18) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 85% 80%, rgba(14,52,96,.6) 0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    /* faint static grid */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 80px 80px;
+      pointer-events: none;
+    }
+
+    /* ── WRAP ── */
+    .wrap {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      color: #fff;
+      padding: 40px 24px;
+      max-width: 520px;
+      animation: fadeIn .5s ease both;
+    }
+    @keyframes fadeIn {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── LOGO ROW ── */
+    .portal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      padding: 7px 16px;
+      margin-bottom: 40px;
+    }
+    .portal-badge i { color: var(--accent2); font-size: 15px; }
+    .portal-badge span {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px; font-weight: 700;
+      color: rgba(255,255,255,.85);
+      letter-spacing: .04em;
+    }
+
+    /* ── CODE ── */
+    .code-block {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    .code-num {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 130px;
+      font-weight: 700;
+      line-height: 1;
+      color: transparent;
+      -webkit-text-stroke: 2px rgba(255,255,255,.12);
+      letter-spacing: .02em;
+      user-select: none;
+    }
+    /* orange accent on the "0" middle */
+    .code-num .mid { -webkit-text-stroke: 2px rgba(245,124,0,.35); }
+
+    /* ── DIVIDER LINE ── */
+    .accent-line {
+      width: 60px; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      margin: 0 auto 22px;
+    }
+
+    /* ── HEADING ── */
+    h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 34px; font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+      letter-spacing: .01em;
+    }
+
+    p {
+      font-size: 14.5px;
+      color: rgba(255,255,255,.55);
+      line-height: 1.65;
+      margin-bottom: 36px;
+      max-width: 380px;
+      margin-left: auto; margin-right: auto;
+    }
+
+    /* ── BUTTONS ── */
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 24px;
+      border-radius: 9px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px; font-weight: 700;
+      letter-spacing: .04em;
+      text-decoration: none;
+      transition: filter .2s, transform .15s, box-shadow .2s;
+      cursor: pointer;
+    }
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(230,81,0,.35);
+    }
+    .btn-primary:hover { filter: brightness(1.08); box-shadow: 0 6px 20px rgba(230,81,0,.45); }
+
+    .btn-outline {
+      background: rgba(255,255,255,.07);
+      color: rgba(255,255,255,.8);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: none;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+    /* ── BOTTOM NOTE ── */
+    .bottom-note {
+      margin-top: 40px;
+      font-size: 12px;
+      color: rgba(255,255,255,.25);
+    }
+    .bottom-note span { color: var(--accent2); opacity: .6; }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="code">404</div>
-  <h2>Page Not Found</h2>
-  <p>The page you're looking for doesn't exist or you may not have permission to view it.</p>
-  <div class="links">
-    <a href="index.html"         class="btn btn-primary btn-lg">Go to Login</a>
-    <a href="pages/dashboard.html" class="btn btn-outline btn-lg" style="color:#fff;border-color:rgba(255,255,255,.4)">Dashboard</a>
+  <div class="wrap">
+
+    <div class="portal-badge">
+      <i class="fas fa-gem"></i>
+      <span>GeoExam Portal</span>
+    </div>
+
+    <div class="code-block">
+      <div class="code-num">4<span class="mid">0</span>4</div>
+    </div>
+
+    <div class="accent-line"></div>
+
+    <h2>Page Not Found</h2>
+    <p>The page you're looking for doesn't exist or you may not have permission to view it. Check the URL or navigate back to safety.</p>
+
+    <div class="btn-row">
+      <a href="index.html" class="btn btn-primary">
+        <i class="fas fa-right-to-bracket"></i> Go to Login
+      </a>
+      <a href="pages/dashboard.html" class="btn btn-outline">
+        <i class="fas fa-gauge"></i> Dashboard
+      </a>
+    </div>
+
+    <div class="bottom-note">
+      GeoExam Portal &nbsp;·&nbsp; GATE &amp; CSIR-NET Geology &nbsp;<span>●</span>&nbsp; CBT Platform
+    </div>
+
   </div>
-</div>
 </body>
 </html>
