@@ -6,7 +6,25 @@
   <title>Resource Library — GeoExam Portal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="../css/global.css">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <style>
+    :root { --navy:#0a2540; --navy2:#0e3460; --accent:#e65100; --accent2:#f57c00; --hdr-h:56px; --radius:8px; }
+    .navbar { position:sticky;top:0;z-index:200;height:var(--hdr-h);background:var(--navy);border-bottom:3px solid var(--accent2);display:flex;align-items:stretch;padding:0; }
+    .nav-logo { background:var(--accent);width:var(--hdr-h);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff; }
+    .nav-brand { display:flex;flex-direction:column;justify-content:center;padding:0 18px;border-right:1px solid rgba(255,255,255,.1); }
+    .nav-brand h1 { font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:#fff;margin:0;line-height:1.1; }
+    .nav-brand span { font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.05em;text-transform:uppercase; }
+    .nav-links { display:flex;align-items:stretch;flex:1;padding:0 8px; }
+    .nav-link { display:flex;align-items:center;gap:6px;padding:0 14px;color:rgba(255,255,255,.6);font-size:12.5px;font-weight:600;text-decoration:none;letter-spacing:.01em;transition:color .15s;white-space:nowrap; }
+    .nav-link:hover,.nav-link:focus,.nav-link:active { color:#fff;text-decoration:none;background:none !important;box-shadow:none !important;border-bottom:none !important;outline:none !important; }
+    .nav-link.active { color:#fff; }
+    .nav-link i { font-size:13px; }
+    .nav-right { display:flex;align-items:center;gap:8px;padding:0 14px;margin-left:auto; }
+    .nav-icon-btn { width:34px;height:34px;border-radius:var(--radius);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:background .15s,color .15s;position:relative; }
+    .nav-icon-btn:hover { background:rgba(255,255,255,.18);color:#fff; }
+    .nav-badge { position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;font-weight:800;padding:0 3px;border:2px solid var(--navy); }
+    @media(max-width:480px){ .nav-link span{display:none;} .nav-link{padding:0 10px;} }
+
     body { background: var(--bg); }
     .page-wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px; }
     .hero { background: linear-gradient(135deg,#059669 0%,#0891b2 100%); color:#fff; border-radius: var(--radius-lg); padding: 28px; margin-bottom: 24px; }
@@ -44,19 +62,26 @@
 </head>
 <body>
 <nav class="navbar">
-  <div class="navbar-brand">
-    <span style="font-size:26px;"><i class="fas fa-gem"></i></span>
-    <div><h1>GeoExam Portal</h1><span>GATE · CSIR-NET Geology</span></div>
+  <div class="nav-logo"><i class="fas fa-gem"></i></div>
+  <div class="nav-brand">
+    <h1>GeoExam Portal</h1>
+    <span>GATE Geology · CSIR-NET · CBT Platform</span>
   </div>
-  <div class="navbar-nav">
-    <a href="dashboard.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
-    <a href="doubt-room.html" class="nav-link"><i class="fas fa-lightbulb"></i> Doubts</a>
-    <a href="resources.html" class="nav-link active"><i class="fas fa-book"></i> Resources</a>
-    <button class="btn btn-ghost btn-sm" id="notif-bell-btn" onclick="GxNotifications.toggle(event)" style="color:rgba(255,255,255,.8);position:relative;">
+  <div class="nav-links">
+    <a href="dashboard.html"  class="nav-link"><i class="fas fa-th-large"></i><span>Dashboard</span></a>
+    <a href="exams.html"      class="nav-link"><i class="fas fa-play-circle"></i><span>Exams</span></a>
+    <a href="my-results.html" class="nav-link"><i class="fas fa-chart-bar"></i><span>My Results</span></a>
+    <a href="ranklist.html"   class="nav-link"><i class="fas fa-trophy"></i><span>Ranklist</span></a>
+    <a href="discussion.html" class="nav-link"><i class="fas fa-comments"></i><span>Discussion</span></a>
+    <a href="doubt-room.html" class="nav-link"><i class="fas fa-lightbulb"></i><span>Doubts</span></a>
+    <a href="resources.html"  class="nav-link active"><i class="fas fa-book"></i><span>Resources</span></a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-icon-btn" id="notif-bell-btn" onclick="GxNotifications.toggle(event)">
       <i class="fas fa-bell"></i>
-      <span id="notif-bell-badge" style="display:none;position:absolute;top:2px;right:2px;background:var(--danger);color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;font-weight:700;"></span>
+      <span class="nav-badge" id="notif-bell-badge"></span>
     </button>
-    <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,.8)">Logout</button>
+    <button class="nav-icon-btn" onclick="doLogout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
   </div>
 </nav>
 
@@ -74,19 +99,19 @@
   <!-- Stats -->
   <div class="stats-row">
     <div class="stat-card"><div class="num" id="stat-total">—</div><div class="lbl">Total Resources</div></div>
-    <div class="stat-card"><div class="num" id="stat-pdf" style="color:#dc2626;">—</div><div class="lbl">📄 PDFs</div></div>
-    <div class="stat-card"><div class="num" id="stat-video" style="color:#2563eb;">—</div><div class="lbl">🎥 Videos</div></div>
-    <div class="stat-card"><div class="num" id="stat-pyq" style="color:#d97706;">—</div><div class="lbl">📋 PYQs</div></div>
+    <div class="stat-card"><div class="num" id="stat-pdf" style="color:#dc2626;">—</div><div class="lbl"><i class="fas fa-file-pdf" style="color:#dc2626;"></i> PDFs</div></div>
+    <div class="stat-card"><div class="num" id="stat-video" style="color:#2563eb;">—</div><div class="lbl"><i class="fas fa-video" style="color:#2563eb;"></i> Videos</div></div>
+    <div class="stat-card"><div class="num" id="stat-pyq" style="color:#d97706;">—</div><div class="lbl"><i class="fas fa-clipboard-list" style="color:#d97706;"></i> PYQs</div></div>
   </div>
 
   <!-- Type Tabs -->
   <div class="type-tabs">
-    <div class="type-tab t-all active" onclick="setType(this,'')">🔍 All</div>
-    <div class="type-tab t-pdf" onclick="setType(this,'pdf')">📄 PDFs</div>
-    <div class="type-tab t-video" onclick="setType(this,'video')">🎥 Videos</div>
-    <div class="type-tab t-notes" onclick="setType(this,'notes')">📝 Notes</div>
-    <div class="type-tab t-pyq" onclick="setType(this,'pyq')">📋 PYQs</div>
-    <div class="type-tab t-link" onclick="setType(this,'link')">🔗 Links</div>
+    <div class="type-tab t-all active" onclick="setType(this,'')"><i class="fas fa-th"></i> All</div>
+    <div class="type-tab t-pdf" onclick="setType(this,'pdf')"><i class="fas fa-file-pdf"></i> PDFs</div>
+    <div class="type-tab t-video" onclick="setType(this,'video')"><i class="fas fa-video"></i> Videos</div>
+    <div class="type-tab t-notes" onclick="setType(this,'notes')"><i class="fas fa-sticky-note"></i> Notes</div>
+    <div class="type-tab t-pyq" onclick="setType(this,'pyq')"><i class="fas fa-clipboard-list"></i> PYQs</div>
+    <div class="type-tab t-link" onclick="setType(this,'link')"><i class="fas fa-link"></i> Links</div>
   </div>
 
   <!-- Subject Filter -->
@@ -113,7 +138,7 @@
 <script src="../js/firebase-config.js"></script>
 <script>
 let currentUser=null, allResources=[], activeType='';
-const TYPE_EMOJIS  = {pdf:'📄',video:'🎥',notes:'📝',pyq:'📋',link:'🔗'};
+const TYPE_ICONS   = {pdf:'<i class="fas fa-file-pdf"></i>',video:'<i class="fas fa-video"></i>',notes:'<i class="fas fa-sticky-note"></i>',pyq:'<i class="fas fa-clipboard-list"></i>',link:'<i class="fas fa-link"></i>'};
 const TYPE_BG      = {pdf:'#fff1f2',video:'#eff6ff',notes:'#f0fdf4',pyq:'#fffbeb',link:'#f5f3ff'};
 const TYPE_ACCENT  = {pdf:'#dc2626',video:'#2563eb',notes:'#059669',pyq:'#d97706',link:'#7c3aed'};
 
@@ -163,12 +188,12 @@ function renderResources(list) {
     return;
   }
   grid.innerHTML = list.map(r => {
-    const emoji  = TYPE_EMOJIS[r.type]||'📁';
+    const icon   = TYPE_ICONS[r.type]||'<i class="fas fa-folder"></i>';
     const bg     = TYPE_BG[r.type]||'#f3f4f6';
     const accent = TYPE_ACCENT[r.type]||'var(--primary)';
     const tags   = (r.tags||[]).slice(0,3).map(t=>`<span style="background:var(--bg2);font-size:11px;padding:1px 7px;border-radius:8px;color:var(--text2);">${esc(t)}</span>`).join(' ');
     return `<div class="res-card">
-      <div class="res-card-thumb" style="background:${bg};">${emoji}</div>
+      <div class="res-card-thumb" style="background:${bg};color:${accent};font-size:32px;">${icon}</div>
       <div class="res-card-body">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
           <span style="background:${bg};color:${accent};font-size:10px;padding:2px 8px;border-radius:8px;font-weight:700;">${(r.type||'link').toUpperCase()}</span>
