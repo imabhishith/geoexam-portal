@@ -3,11 +3,10 @@
 <head>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GeoExam Portal — Sign Up</title>
-  <link rel="stylesheet" href="css/global.css">
   <style>
     :root {
       --navy:    #0a2540;
@@ -15,381 +14,486 @@
       --blue:    #1565c0;
       --accent:  #e65100;
       --accent2: #f57c00;
-      --font:    'Noto Sans','Segoe UI',Arial,sans-serif;
+      --font:    'Noto Sans', 'Segoe UI', sans-serif;
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html, body { height: 100%; }
     body {
       font-family: var(--font);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       background: var(--navy);
-      overflow-x: hidden;
-      overflow-y: auto;
+      display: flex;
+      overflow: hidden;
       position: relative;
     }
 
     #bg-canvas {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       width: 100%; height: 100%;
       z-index: 0;
     }
 
-    .glow-orb {
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 1;
-      filter: blur(80px);
-      animation: orbFloat 14s ease-in-out infinite;
-    }
-    .glow-orb.orb1 {
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(21,101,192,.3) 0%, transparent 70%);
-      top: -100px; right: -100px;
-      animation-delay: 0s;
-    }
-    .glow-orb.orb2 {
-      width: 380px; height: 380px;
-      background: radial-gradient(circle, rgba(230,81,0,.22) 0%, transparent 70%);
-      bottom: -80px; left: -80px;
-      animation-delay: -7s;
-    }
-    @keyframes orbFloat {
-      0%,100% { transform: translate(0,0); }
-      50%      { transform: translate(25px,-30px); }
+    /* ══════════════════════════════════════
+       SPLIT LAYOUT
+    ══════════════════════════════════════ */
+    .split {
+      position: relative; z-index: 10;
+      display: flex; width: 100%; height: 100vh;
     }
 
-    .auth-wrapper {
+    /* ── LEFT: branding (narrower on signup, form is heavier) ── */
+    .left-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 50px;
       position: relative;
-      z-index: 10;
-      width: 100%;
-      max-width: 500px;
-      padding: 24px 16px;
-      animation: slideUp .6s cubic-bezier(.22,.61,.36,1) both;
+      overflow: hidden;
     }
-    @keyframes slideUp {
-      from { opacity:0; transform: translateY(30px); }
-      to   { opacity:1; transform: translateY(0); }
+    .left-panel::before {
+      content: '';
+      position: absolute; right: 0; top: 8%; bottom: 8%;
+      width: 1px;
+      background: linear-gradient(180deg, transparent, rgba(245,124,0,.45), transparent);
     }
 
-    /* ── LOGO ── */
-    .auth-logo {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .logo-ring {
-      width: 72px; height: 72px;
-      margin: 0 auto 12px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--blue) 0%, var(--navy2) 100%);
-      border: 2px solid var(--accent2);
+    .brand-gem {
+      width: 68px; height: 68px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
       display: flex; align-items: center; justify-content: center;
       font-size: 30px; color: #fff;
-      box-shadow: 0 0 0 6px rgba(245,124,0,.12), 0 8px 28px rgba(0,0,0,.4);
-      position: relative;
+      margin-bottom: 24px;
+      box-shadow: 0 0 0 8px rgba(245,124,0,.1), 0 10px 36px rgba(230,81,0,.4);
+      animation: gemGlow 3s ease-in-out infinite;
     }
-    .logo-ring::after {
-      content: '';
-      position: absolute; inset: -6px;
-      border-radius: 50%;
-      border: 1px solid rgba(245,124,0,.22);
-      animation: ringPulse 2.8s ease-in-out infinite;
+    @keyframes gemGlow {
+      0%,100% { box-shadow: 0 0 0 8px rgba(245,124,0,.1), 0 10px 36px rgba(230,81,0,.4); }
+      50%      { box-shadow: 0 0 0 14px rgba(245,124,0,.07), 0 14px 46px rgba(230,81,0,.55); }
     }
-    @keyframes ringPulse {
-      0%,100% { transform:scale(1);   opacity:.6; }
-      50%      { transform:scale(1.1); opacity:0;  }
-    }
-    .auth-logo h1 {
+
+    .brand-name {
       font-family: 'Rajdhani', sans-serif;
-      font-size: 28px; font-weight: 700; color: #fff;
-      letter-spacing: .02em; margin-bottom: 4px;
+      font-size: 44px; font-weight: 700;
+      color: #fff; line-height: 1;
+      letter-spacing: .01em;
     }
-    .auth-logo h1 span { color: var(--accent2); }
-    .auth-logo p {
-      font-size: 12px;
-      color: rgba(255,255,255,.5);
-      letter-spacing: .06em;
+    .brand-name span { color: var(--accent2); }
+    .brand-sub {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px; font-weight: 600;
+      color: rgba(255,255,255,.45);
+      margin-bottom: 8px;
+    }
+    .brand-tagline {
+      font-size: 12.5px;
+      color: rgba(255,255,255,.4);
+      letter-spacing: .09em;
       text-transform: uppercase;
+      margin-bottom: 36px;
     }
 
-    /* ── CARD ── */
-    .auth-card {
-      background: rgba(255,255,255,.96);
-      backdrop-filter: blur(12px);
-      border-radius: 18px;
-      padding: 30px 30px 26px;
-      box-shadow: 0 24px 64px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.08);
-      border-top: 3px solid var(--accent2);
+    .perks { display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px; }
+    .perk {
+      display: flex; align-items: flex-start; gap: 13px;
     }
-    .card-title {
+    .perk-num {
+      width: 28px; height: 28px; flex-shrink: 0;
+      border-radius: 7px;
+      background: rgba(245,124,0,.15);
+      border: 1px solid rgba(245,124,0,.3);
+      display: flex; align-items: center; justify-content: center;
       font-family: 'Rajdhani', sans-serif;
-      font-size: 22px; font-weight: 700;
-      color: var(--navy);
-      margin-bottom: 4px;
-      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 700;
+      color: var(--accent2);
     }
-    .card-title i { color: var(--accent); font-size: 18px; }
-    .card-sub {
-      font-size: 13px; color: #6b7280;
-      margin-bottom: 18px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #e5e7eb;
+    .perk-text { font-size: 13px; color: rgba(255,255,255,.65); line-height: 1.5; padding-top: 3px; }
+    .perk-text strong { color: #fff; font-weight: 600; }
+
+    /* stats row */
+    .stat-row { display: flex; gap: 24px; }
+    .stat-item { text-align: center; }
+    .stat-item .num {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 30px; font-weight: 700;
+      color: var(--accent2); line-height: 1;
+    }
+    .stat-item .lbl { font-size: 11px; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; }
+
+    /* ── RIGHT: form panel ── */
+    .right-panel {
+      width: 460px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 38px;
+      background: rgba(8,20,42,.5);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border-left: 1px solid rgba(255,255,255,.07);
+      overflow-y: auto;
     }
 
-    /* ── PROGRESS ── */
-    .progress-wrap { margin-bottom: 18px; }
-    .progress-label {
-      font-size: 11.5px; color: #6b7280;
-      margin-bottom: 6px;
-      display: flex; justify-content: space-between;
-      align-items: center;
+    .form-box {
+      width: 100%;
+      padding: 4px 0;
+      animation: slideIn .55s cubic-bezier(.22,.61,.36,1) both;
     }
-    .progress-label span:last-child { font-weight: 600; color: var(--accent); }
-    .progress-bar {
-      height: 4px;
-      background: #e5e7eb;
-      border-radius: 4px;
-      overflow: hidden;
+    @keyframes slideIn {
+      from { opacity:0; transform:translateX(28px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+
+    .form-header { margin-bottom: 20px; }
+    .form-header-bar {
+      width: 36px; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px; margin-bottom: 12px;
+    }
+    .form-header h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 24px; font-weight: 700;
+      color: #fff; margin-bottom: 4px;
+    }
+    .form-header p { font-size: 12.5px; color: rgba(255,255,255,.4); }
+
+    /* progress */
+    .progress-wrap { margin-bottom: 18px; }
+    .progress-meta {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: rgba(255,255,255,.4);
+      margin-bottom: 7px;
+    }
+    .progress-meta span:last-child { color: var(--accent2); font-weight: 600; }
+    .progress-track {
+      height: 3px; background: rgba(255,255,255,.1);
+      border-radius: 3px; overflow: hidden;
     }
     .progress-fill {
       height: 100%;
       background: linear-gradient(90deg, var(--blue), var(--accent2));
-      border-radius: 4px;
+      border-radius: 3px;
       transition: width .4s ease;
     }
 
-    /* ── GRID ── */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    /* grid */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
 
-    /* ── FORM ── */
-    .form-group { margin-bottom: 15px; }
+    /* form fields */
+    .form-group { margin-bottom: 13px; }
     .form-group label {
       display: flex; align-items: center; gap: 6px;
-      font-size: 12.5px; font-weight: 600;
-      color: #374151; margin-bottom: 6px;
+      font-size: 11px; font-weight: 600;
+      color: rgba(255,255,255,.5);
+      letter-spacing: .05em; text-transform: uppercase;
+      margin-bottom: 7px;
     }
-    .form-group label i { color: var(--blue); font-size: 11px; }
+    .form-group label i { color: var(--accent2); font-size: 10px; }
+
     .form-control {
-      width: 100%; padding: 11px 14px;
-      border: 1.5px solid #d1d5db;
-      border-radius: 9px; font-size: 14px;
-      font-family: var(--font);
-      background: #fafafa;
-      outline: none;
-      transition: border .2s, box-shadow .2s, background .2s;
+      width: 100%;
+      padding: 11px 15px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 10px;
+      font-size: 13.5px; font-family: var(--font);
+      color: #fff; outline: none;
+      transition: border .2s, background .2s, box-shadow .2s;
     }
+    .form-control::placeholder { color: rgba(255,255,255,.22); }
     .form-control:focus {
-      border-color: var(--blue);
-      background: #fff;
-      box-shadow: 0 0 0 3px rgba(21,101,192,.12);
+      border-color: rgba(245,124,0,.5);
+      background: rgba(255,255,255,.1);
+      box-shadow: 0 0 0 3px rgba(245,124,0,.09);
     }
 
-    /* ── BUTTON ── */
-    .btn-primary {
+    .btn-signup {
       width: 100%; padding: 13px;
+      margin-top: 4px;
       background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
       color: #fff; border: none; border-radius: 10px;
-      font-size: 15px; font-weight: 700;
       font-family: 'Rajdhani', sans-serif;
-      letter-spacing: .04em;
+      font-size: 16px; font-weight: 700;
+      letter-spacing: .06em;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      box-shadow: 0 6px 24px rgba(230,81,0,.4);
       transition: filter .2s, transform .15s, box-shadow .2s;
-      box-shadow: 0 4px 18px rgba(230,81,0,.35);
+      position: relative; overflow: hidden;
     }
-    .btn-primary:hover:not(:disabled) {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 22px rgba(230,81,0,.45);
+    .btn-signup::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.15), transparent);
+      opacity: 0; transition: opacity .2s;
     }
-    .btn-primary:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .btn-signup:hover::before { opacity: 1; }
+    .btn-signup:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(230,81,0,.5);
+    }
+    .btn-signup:disabled { opacity: .55; cursor: not-allowed; transform: none; }
 
-    .login-link {
-      text-align: center; font-size: 13.5px;
-      color: #6b7280; margin-top: 16px;
+    .login-row {
+      text-align: center; margin-top: 16px;
+      font-size: 13px; color: rgba(255,255,255,.38);
     }
-    .login-link a {
-      color: var(--accent); font-weight: 700; text-decoration: none;
+    .login-row a {
+      color: var(--accent2); font-weight: 700;
+      text-decoration: none;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px; letter-spacing: .03em;
     }
-    .login-link a:hover { text-decoration: underline; }
+    .login-row a:hover { text-decoration: underline; }
 
-    /* ── TOAST ── */
-    .toast-container {
-      position: fixed; top: 20px; right: 20px;
-      z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+    /* toast */
+    .toast-container { position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px; }
+    .toast { background:rgba(15,25,45,.95);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);
+             color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;opacity:0;
+             transform:translateX(40px);transition:all .3s;max-width:340px;
+             display:flex;align-items:flex-start;gap:9px;box-shadow:0 8px 24px rgba(0,0,0,.4); }
+    .toast.show { opacity:1;transform:translateX(0); }
+    .toast-success { border-left:3px solid #34d399; }
+    .toast-error   { border-left:3px solid #f87171; }
+    .toast-warning { border-left:3px solid var(--accent2); }
+
+    @media (max-width: 860px) {
+      html, body { overflow: auto; }
+      .split { flex-direction: column; height: auto; min-height: 100vh; }
+      .left-panel { padding: 44px 24px 28px; }
+      .left-panel::before { display: none; }
+      .brand-name { font-size: 34px; }
+      .right-panel { width: 100%; padding: 28px 22px 48px; border-left: none; border-top: 1px solid rgba(255,255,255,.07); }
     }
-    .toast {
-      background: #1f2937; color: #fff;
-      padding: 12px 18px; border-radius: 9px;
-      font-size: 13.5px; opacity: 0;
-      transform: translateX(40px);
-      transition: all .3s; max-width: 340px;
-      display: flex; align-items: flex-start; gap: 9px;
-      box-shadow: 0 4px 18px rgba(0,0,0,.3);
-    }
-    .toast.show { opacity: 1; transform: translateX(0); }
-    .toast-success { background: #065f46; }
-    .toast-error   { background: #7f1d1d; }
-    .toast-warning { background: #78350f; }
   </style>
 </head>
 <body>
 
 <canvas id="bg-canvas"></canvas>
-<div class="glow-orb orb1"></div>
-<div class="glow-orb orb2"></div>
 <div id="toast-container" class="toast-container"></div>
 
-<div class="auth-wrapper">
-  <!-- Logo -->
-  <div class="auth-logo">
-    <div class="logo-ring"><i class="fas fa-gem"></i></div>
-    <h1>Geo<span>Exam</span> Portal</h1>
-    <p>GATE Geology &nbsp;·&nbsp; CSIR-NET Geology &nbsp;·&nbsp; CBT Platform</p>
+<div class="split">
+
+  <!-- ══ LEFT ══ -->
+  <div class="left-panel">
+    <div class="brand-gem"><i class="fas fa-gem"></i></div>
+    <div class="brand-name">Geo<span>Exam</span></div>
+    <div class="brand-sub">Portal</div>
+    <div class="brand-tagline">GATE Geology &nbsp;·&nbsp; CSIR-NET &nbsp;·&nbsp; CBT Platform</div>
+
+    <div class="perks">
+      <div class="perk">
+        <div class="perk-num">01</div>
+        <div class="perk-text"><strong>Free Registration</strong> — Sign up instantly and start practising today</div>
+      </div>
+      <div class="perk">
+        <div class="perk-num">02</div>
+        <div class="perk-text"><strong>GATE & CSIR-NET Mocks</strong> — Full-length CBT with real exam pattern</div>
+      </div>
+      <div class="perk">
+        <div class="perk-num">03</div>
+        <div class="perk-text"><strong>Detailed Analytics</strong> — Know your weak topics, track accuracy & rank</div>
+      </div>
+      <div class="perk">
+        <div class="perk-num">04</div>
+        <div class="perk-text"><strong>8 Years of PYQs</strong> — Solved previous year questions with explanations</div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-item"><div class="num">8+</div><div class="lbl">Years PYQs</div></div>
+      <div class="stat-item"><div class="num">100%</div><div class="lbl">Free to Join</div></div>
+      <div class="stat-item"><div class="num">CBT</div><div class="lbl">Platform</div></div>
+    </div>
   </div>
 
-  <!-- Card -->
-  <div class="auth-card">
-    <div class="card-title"><i class="fas fa-user-plus"></i> Create your account</div>
-    <p class="card-sub">Fill in the details below to get started — it's free.</p>
+  <!-- ══ RIGHT ══ -->
+  <div class="right-panel">
+    <div class="form-box">
 
-    <div class="progress-wrap">
-      <div class="progress-label">
-        <span id="progress-text">Step 1 of 2 — Personal Details</span>
-        <span id="progress-pct">50%</span>
+      <div class="form-header">
+        <div class="form-header-bar"></div>
+        <h2><i class="fas fa-user-plus" style="color:var(--accent2);margin-right:8px;font-size:20px;"></i>Create Account</h2>
+        <p>Join GeoExam Portal — it's completely free</p>
       </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progress-fill" style="width:50%"></div>
-      </div>
-    </div>
 
-    <div class="grid-2">
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span id="progress-text">Step 1 of 2 — Personal Details</span>
+          <span id="progress-pct">50%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill" style="width:50%"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label><i class="fas fa-user"></i> First Name</label>
+          <input type="text" id="signup-fname" class="form-control" placeholder="First Name">
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-user"></i> Last Name</label>
+          <input type="text" id="signup-lname" class="form-control" placeholder="Last Name">
+        </div>
+      </div>
+
       <div class="form-group">
-        <label><i class="fas fa-user"></i> First Name</label>
-        <input type="text" id="signup-fname" class="form-control" placeholder="First Name">
+        <label><i class="fas fa-envelope"></i> Email Address</label>
+        <input type="email" id="signup-email" class="form-control" placeholder="yourname@example.com">
       </div>
       <div class="form-group">
-        <label><i class="fas fa-user"></i> Last Name</label>
-        <input type="text" id="signup-lname" class="form-control" placeholder="Last Name">
+        <label><i class="fas fa-mobile-screen"></i> Mobile Number</label>
+        <input type="tel" id="signup-mobile" class="form-control" placeholder="10-digit mobile number">
       </div>
-    </div>
+      <div class="form-group">
+        <label><i class="fas fa-lock"></i> Password</label>
+        <input type="password" id="signup-password" class="form-control" placeholder="Minimum 8 characters">
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-lock"></i> Confirm Password</label>
+        <input type="password" id="signup-confirm" class="form-control" placeholder="Re-enter your password">
+      </div>
 
-    <div class="form-group">
-      <label><i class="fas fa-envelope"></i> Email Address</label>
-      <input type="email" id="signup-email" class="form-control" placeholder="yourname@example.com">
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-mobile-screen"></i> Mobile Number</label>
-      <input type="tel" id="signup-mobile" class="form-control" placeholder="10-digit mobile number">
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-lock"></i> Password</label>
-      <input type="password" id="signup-password" class="form-control" placeholder="Minimum 8 characters">
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-lock"></i> Confirm Password</label>
-      <input type="password" id="signup-confirm" class="form-control" placeholder="Re-enter your password">
-    </div>
+      <button class="btn-signup" onclick="doSignup()" id="btn-signup">
+        <i class="fas fa-user-plus"></i> CREATE MY ACCOUNT
+      </button>
 
-    <button class="btn-primary" onclick="doSignup()" id="btn-signup">
-      <i class="fas fa-user-plus"></i> Create Account
-    </button>
+      <div class="login-row">
+        Already have an account? &nbsp;<a href="login.html"><i class="fas fa-right-to-bracket"></i> Login</a>
+      </div>
 
-    <div class="login-link">
-      <i class="fas fa-arrow-left"></i> Already have an account?
-      <a href="login.html">Login here</a>
     </div>
   </div>
+
 </div>
 
-<!-- ── ANIMATED BACKGROUND ── -->
+<!-- ══ CANVAS ANIMATION ══ -->
 <script>
-(function(){
+(function () {
   const canvas = document.getElementById('bg-canvas');
-  const ctx    = canvas.getContext('2d');
-  let W, H, nodes;
+  const ctx = canvas.getContext('2d');
+  let W, H, particles, meteors;
 
-  function resize(){
+  function randRange(a, b) { return a + Math.random() * (b - a); }
+
+  function resize() {
     W = canvas.width  = window.innerWidth;
     H = canvas.height = window.innerHeight;
   }
 
-  function initNodes(n){
-    nodes = [];
-    for(let i=0;i<n;i++){
+  function initParticles(n) {
+    particles = [];
+    for (let i = 0; i < n; i++) {
       const t = Math.random();
-      nodes.push({
-        x:  Math.random()*W, y:  Math.random()*H,
-        r:  1.2 + Math.random()*2.6,
-        vx: (Math.random()-.5)*.38, vy: (Math.random()-.5)*.38,
-        c:  t<.5?0:t<.82?1:2,
-        a:  .4+Math.random()*.55,
-        pulse: Math.random()*Math.PI*2,
-        pSpeed: .012+Math.random()*.025
+      particles.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: randRange(1.1, 3),
+        vx: randRange(-.28, .28), vy: randRange(-.28, .28),
+        color: t < .52 ? [21,101,192] : t < .80 ? [245,124,0] : [255,255,255],
+        alpha: randRange(.38, .9),
+        pulse: Math.random() * Math.PI * 2,
+        ps: randRange(.01, .026),
       });
     }
   }
 
-  const NC = ['rgba(21,101,192,','rgba(245,124,0,','rgba(255,255,255,'];
+  function spawnMeteorObj() {
+    return { x: Math.random()*W*1.5, y: Math.random()*H*.55,
+             len: randRange(70,170), speed: randRange(4,8),
+             alpha: randRange(.18,.48), angle: Math.PI/5,
+             life: 0, maxLife: randRange(55,115), delay: randRange(30,200) };
+  }
 
-  function draw(){
-    ctx.clearRect(0,0,W,H);
+  function initMeteors() {
+    meteors = Array.from({length: 5}, () => spawnMeteorObj());
+  }
 
+  function draw() {
     const bg = ctx.createLinearGradient(0,0,W,H);
-    bg.addColorStop(0,  '#0a2540');
-    bg.addColorStop(.5, '#0e3460');
-    bg.addColorStop(1,  '#0d1f3c');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0,0,W,H);
+    bg.addColorStop(0,  '#070f1e');
+    bg.addColorStop(.4, '#0a2540');
+    bg.addColorStop(.8, '#0d2e58');
+    bg.addColorStop(1,  '#07101f');
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+    // aurora-like glow — top right blue
+    const ag = ctx.createRadialGradient(W*.8, H*.1, 0, W*.8, H*.1, W*.5);
+    ag.addColorStop(0, 'rgba(21,101,192,.16)'); ag.addColorStop(1, 'transparent');
+    ctx.fillStyle = ag; ctx.fillRect(0,0,W,H);
+
+    // glow — bottom left orange
+    const og = ctx.createRadialGradient(W*.1, H*.85, 0, W*.1, H*.85, W*.42);
+    og.addColorStop(0, 'rgba(230,81,0,.12)'); og.addColorStop(1, 'transparent');
+    ctx.fillStyle = og; ctx.fillRect(0,0,W,H);
+
+    // centre subtle glow
+    const cg = ctx.createRadialGradient(W*.5, H*.5, 0, W*.5, H*.5, W*.38);
+    cg.addColorStop(0, 'rgba(14,52,96,.25)'); cg.addColorStop(1, 'transparent');
+    ctx.fillStyle = cg; ctx.fillRect(0,0,W,H);
 
     // grid
-    ctx.strokeStyle='rgba(255,255,255,.022)'; ctx.lineWidth=.6;
-    for(let x=0;x<W;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-    for(let y=0;y<H;y+=80){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    ctx.strokeStyle='rgba(255,255,255,.02)'; ctx.lineWidth=.6;
+    for(let x=0;x<W;x+=72){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=72){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
 
-    // lines
-    for(let i=0;i<nodes.length;i++){
-      for(let j=i+1;j<nodes.length;j++){
-        const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
-        const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<155){
-          const al=(1-d/155)*.2;
-          const oc=(nodes[i].c===1||nodes[j].c===1);
-          ctx.strokeStyle=(oc?'rgba(245,124,0,':'rgba(21,101,192,')+al+')';
-          ctx.lineWidth=.8;
-          ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y); ctx.stroke();
+    // connections
+    for(let i=0;i<particles.length;i++) {
+      for(let j=i+1;j<particles.length;j++) {
+        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+        const d=Math.hypot(dx,dy);
+        if(d<145){
+          const al=(1-d/145)*.17;
+          const c=(particles[i].color===particles[j].color&&particles[i].color[0]===245)?[245,124,0]:[21,101,192];
+          ctx.strokeStyle=`rgba(${c[0]},${c[1]},${c[2]},${al})`;
+          ctx.lineWidth=.75; ctx.beginPath();
+          ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.stroke();
         }
       }
     }
 
-    // nodes
-    nodes.forEach(n=>{
-      n.pulse+=n.pSpeed;
-      const pa=n.a*(.75+.25*Math.sin(n.pulse));
-      const cr=NC[n.c];
-      const g=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r*5);
-      g.addColorStop(0,cr+pa*.38+')'); g.addColorStop(1,cr+'0)');
-      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(n.x,n.y,n.r*5,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle=cr+pa+')'; ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2); ctx.fill();
-      n.x+=n.vx; n.y+=n.vy;
-      if(n.x<-20)n.x=W+20; if(n.x>W+20)n.x=-20;
-      if(n.y<-20)n.y=H+20; if(n.y>H+20)n.y=-20;
+    // particles
+    particles.forEach(p=>{
+      p.pulse+=p.ps;
+      const a=p.alpha*(.72+.28*Math.sin(p.pulse));
+      const c=p.color;
+      const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*6);
+      g.addColorStop(0,`rgba(${c[0]},${c[1]},${c[2]},${a*.3})`);
+      g.addColorStop(1,`rgba(${c[0]},${c[1]},${c[2]},0)`);
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,p.r*6,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=`rgba(${c[0]},${c[1]},${c[2]},${a})`; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<-20)p.x=W+20; if(p.x>W+20)p.x=-20;
+      if(p.y<-20)p.y=H+20; if(p.y>H+20)p.y=-20;
+    });
+
+    // meteors
+    meteors.forEach((m,idx)=>{
+      if(m.delay>0){m.delay--;return;}
+      m.life++;
+      if(m.life>m.maxLife){meteors[idx]=spawnMeteorObj();return;}
+      const prog=m.life/m.maxLife;
+      const al=m.alpha*Math.sin(prog*Math.PI);
+      const ex=m.x+Math.cos(m.angle)*m.len, ey=m.y+Math.sin(m.angle)*m.len;
+      const g=ctx.createLinearGradient(m.x,m.y,ex,ey);
+      g.addColorStop(0,`rgba(255,255,255,0)`);
+      g.addColorStop(.4,`rgba(255,200,130,${al})`);
+      g.addColorStop(1,`rgba(255,255,255,${al*.65})`);
+      ctx.strokeStyle=g; ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.moveTo(m.x,m.y); ctx.lineTo(ex,ey); ctx.stroke();
+      m.x+=Math.cos(m.angle)*m.speed; m.y+=Math.sin(m.angle)*m.speed;
     });
 
     requestAnimationFrame(draw);
   }
 
-  window.addEventListener('resize',()=>{resize();initNodes(95);});
-  resize(); initNodes(95); draw();
+  window.addEventListener('resize',()=>{resize();initParticles(105);});
+  resize(); initParticles(105); initMeteors(); draw();
 })();
 </script>
 
-<!-- ── FIREBASE ── -->
+<!-- ══ FIREBASE ══ -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -409,7 +513,7 @@ async function doSignup() {
 
   const btn = document.getElementById('btn-signup');
   btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account…';
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CREATING ACCOUNT…';
   setProgress('Step 1 of 2 — Creating account…', 50);
 
   let cred;
@@ -419,7 +523,7 @@ async function doSignup() {
   } catch(authErr) {
     showToast(friendlyError(authErr.code, authErr.message), 'error');
     btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+    btn.innerHTML = '<i class="fas fa-user-plus"></i> CREATE MY ACCOUNT';
     setProgress('Step 1 of 2 — Personal Details', 50);
     return;
   }
@@ -433,20 +537,20 @@ async function doSignup() {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     showToast('Account created! Redirecting…', 'success');
-    setTimeout(()=>{ window.location.href='pages/dashboard.html'; }, 1500);
+    setTimeout(() => { window.location.href = 'pages/dashboard.html'; }, 1500);
   } catch(fsErr) {
     showToast('Account created but profile save failed: ' + friendlyError(fsErr.code, fsErr.message), 'error', 8000);
     btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-rotate-right"></i> Retry Save Profile';
+    btn.innerHTML = '<i class="fas fa-rotate-right"></i> RETRY SAVE PROFILE';
     setProgress('Step 2 of 2 — Save failed', 75);
-    btn.onclick = ()=>retryFirestoreWrite(cred.user, {fname,lname,email,mobile});
+    btn.onclick = () => retryFirestoreWrite(cred.user, {fname,lname,email,mobile});
   }
 }
 
 async function retryFirestoreWrite(user, {fname,lname,email,mobile}) {
   const btn = document.getElementById('btn-signup');
   btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Retrying…';
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> RETRYING…';
   try {
     await user.getIdToken(true);
     await db.collection('users').doc(user.uid).set({
@@ -455,18 +559,18 @@ async function retryFirestoreWrite(user, {fname,lname,email,mobile}) {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     showToast('Profile saved! Redirecting…','success');
-    setTimeout(()=>{ window.location.href='pages/dashboard.html'; },1500);
+    setTimeout(() => { window.location.href='pages/dashboard.html'; }, 1500);
   } catch(e) {
     showToast('Still failing: '+friendlyError(e.code,e.message),'error',8000);
     btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-rotate-right"></i> Retry Save Profile';
+    btn.innerHTML = '<i class="fas fa-rotate-right"></i> RETRY SAVE PROFILE';
   }
 }
 
 function setProgress(text, pct) {
   document.getElementById('progress-text').textContent = text;
-  document.getElementById('progress-pct').textContent  = pct+'%';
-  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-pct').textContent  = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
 }
 
 function friendlyError(code, fallback) {
@@ -483,11 +587,11 @@ function friendlyError(code, fallback) {
 function showToast(msg, type='info', duration=4000) {
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
-  const icon = type==='success'?'circle-check':type==='error'?'circle-xmark':'triangle-exclamation';
-  t.innerHTML = `<i class="fas fa-${icon}" style="flex-shrink:0;margin-top:2px;"></i><span>${msg}</span>`;
+  const ic = type==='success'?'circle-check':type==='error'?'circle-xmark':'triangle-exclamation';
+  t.innerHTML = `<i class="fas fa-${ic}" style="flex-shrink:0;margin-top:1px;"></i><span>${msg}</span>`;
   document.getElementById('toast-container').appendChild(t);
   setTimeout(()=>t.classList.add('show'),10);
-  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); },duration);
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); }, duration);
 }
 </script>
 </body>
