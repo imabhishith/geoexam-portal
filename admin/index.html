@@ -9,6 +9,27 @@
   <title>Admin Portal — GeoExam</title>
   <link rel="stylesheet" href="../css/global.css">
   <style>
+    /* ── GX Toggle Switch ── */
+    .gx-toggle { position:relative; display:inline-block; width:42px; height:24px; }
+    .gx-toggle input { opacity:0; width:0; height:0; }
+    .gx-toggle-slider {
+      position:absolute; cursor:pointer; inset:0;
+      background:#dadce0; border-radius:24px;
+      transition:.25s;
+    }
+    .gx-toggle-slider:before {
+      content:''; position:absolute;
+      width:18px; height:18px; border-radius:50%;
+      background:#fff; left:3px; bottom:3px;
+      transition:.25s;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    }
+    .gx-toggle input:checked + .gx-toggle-slider { background:#e65100; }
+    .gx-toggle input:checked + .gx-toggle-slider:before { transform:translateX(18px); }
+  </style>
+  <!-- EmailJS SDK (needed for email notifications) -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <style>
     /* ═══════════════════════════════════════════
        EXAM.HTML COLOR THEME — applied to admin
     ═══════════════════════════════════════════ */
@@ -1516,36 +1537,111 @@
      PANEL 3: NOTIFICATION CENTRE
      ══════════════════════════════════════════════════════════ -->
 <div class="admin-panel" id="panel-notifications">
- 
+
   <!-- Header -->
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
     <div>
       <h2 style="font-size:20px;font-weight:800;color:var(--primary);margin-bottom:4px;">
         <i class="fas fa-bell"></i> Notification Centre
       </h2>
-      <p style="font-size:13px;color:var(--text2);">Send push notifications to all or specific students.</p>
+      <p style="font-size:13px;color:var(--text2);">Send notifications and manage auto-notification triggers.</p>
     </div>
     <button class="btn btn-primary btn-sm" onclick="adminOpenNotifComposer()">
       <i class="fas fa-paper-plane"></i> Send Notification
     </button>
   </div>
- 
+
   <!-- Stats -->
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;">
     <div class="card" style="padding:16px;text-align:center;">
       <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--primary);" id="notif-stat-total">—</div>
-      <div style="font-size:12px;color:var(--text2);font-weight:600;">Total Sent</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;"><i class="fas fa-paper-plane" style="color:var(--primary);"></i> Total Sent</div>
     </div>
     <div class="card" style="padding:16px;text-align:center;">
       <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--success);" id="notif-stat-broadcast">—</div>
-      <div style="font-size:12px;color:var(--text2);font-weight:600;">📢 Broadcasts</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;"><i class="fas fa-bullhorn" style="color:var(--success);"></i> Broadcasts</div>
     </div>
     <div class="card" style="padding:16px;text-align:center;">
       <div style="font-size:28px;font-weight:800;font-family:'Rajdhani';color:var(--accent);" id="notif-stat-personal">—</div>
-      <div style="font-size:12px;color:var(--text2);font-weight:600;">👤 Personal</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:600;"><i class="fas fa-user" style="color:var(--accent);"></i> Personal</div>
     </div>
   </div>
- 
+
+  <!-- ── AUTO-NOTIFICATION SETTINGS ── -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--navy,#0a2540) 0%,var(--navy2,#0e3460) 100%);border-bottom:3px solid var(--accent2,#f57c00);">
+      <h3 style="font-size:15px;color:#fff;"><i class="fas fa-sliders-h" style="color:#f57c00;margin-right:6px;"></i> Auto-Notification Settings</h3>
+      <span style="font-size:12px;color:rgba(255,255,255,.6);">Triggers fire automatically on admin actions</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+
+      <!-- Column headers -->
+      <div style="display:grid;grid-template-columns:1fr 130px 130px;gap:0;padding:10px 20px;background:var(--gray-100,#f1f3f4);border-bottom:1px solid var(--border-col,#dadce0);">
+        <div style="font-size:11px;font-weight:700;color:var(--gray-600,#80868b);text-transform:uppercase;letter-spacing:.06em;">Trigger Event</div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-600,#80868b);text-transform:uppercase;letter-spacing:.06em;text-align:center;"><i class="fas fa-bell"></i> Site Notif</div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-600,#80868b);text-transform:uppercase;letter-spacing:.06em;text-align:center;"><i class="fas fa-envelope"></i> Email</div>
+      </div>
+
+      <!-- Row: New Exam Published -->
+      <div style="display:grid;grid-template-columns:1fr 130px 130px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border-col,#dadce0);">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-main,#202124);margin-bottom:2px;">
+            <i class="fas fa-play-circle" style="color:#1565c0;width:16px;"></i> New Exam Published
+          </div>
+          <div style="font-size:12px;color:var(--gray-600,#80868b);">Fires when admin publishes an exam — broadcast to all students</div>
+        </div>
+        <div style="text-align:center;"><label class="gx-toggle"><input type="checkbox" id="an-exam-site" checked><span class="gx-toggle-slider"></span></label></div>
+        <div style="text-align:center;"><label class="gx-toggle"><input type="checkbox" id="an-exam-email" checked><span class="gx-toggle-slider"></span></label></div>
+      </div>
+
+      <!-- Row: New Resource Added -->
+      <div style="display:grid;grid-template-columns:1fr 130px 130px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border-col,#dadce0);">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-main,#202124);margin-bottom:2px;">
+            <i class="fas fa-book" style="color:#2e7d32;width:16px;"></i> New Resource Added
+          </div>
+          <div style="font-size:12px;color:var(--gray-600,#80868b);">Fires when a new resource is added — broadcast to all students</div>
+        </div>
+        <div style="text-align:center;"><label class="gx-toggle"><input type="checkbox" id="an-resource-site" checked><span class="gx-toggle-slider"></span></label></div>
+        <div style="text-align:center;"><label class="gx-toggle"><input type="checkbox" id="an-resource-email" checked><span class="gx-toggle-slider"></span></label></div>
+      </div>
+
+      <!-- Row: Doubt Solved -->
+      <div style="display:grid;grid-template-columns:1fr 130px 130px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border-col,#dadce0);">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-main,#202124);margin-bottom:2px;">
+            <i class="fas fa-lightbulb" style="color:#d97706;width:16px;"></i> Doubt Marked Solved
+          </div>
+          <div style="font-size:12px;color:var(--gray-600,#80868b);">Fires when admin marks a doubt solved — personal notif to the author</div>
+        </div>
+        <div style="text-align:center;"><label class="gx-toggle"><input type="checkbox" id="an-doubt-site" checked><span class="gx-toggle-slider"></span></label></div>
+        <div style="text-align:center;"><label class="gx-toggle"><input type="checkbox" id="an-doubt-email" checked><span class="gx-toggle-slider"></span></label></div>
+      </div>
+
+      <!-- Row: Revaluation -->
+      <div style="display:grid;grid-template-columns:1fr 130px 130px;align-items:center;padding:14px 20px;">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-main,#202124);margin-bottom:2px;">
+            <i class="fas fa-sync-alt" style="color:#6a1b9a;width:16px;"></i> Revaluation Completed
+          </div>
+          <div style="font-size:12px;color:var(--gray-600,#80868b);">Fires after bulk revaluation — broadcast to all students</div>
+        </div>
+        <div style="text-align:center;"><label class="gx-toggle"><input type="checkbox" id="an-reval-site" checked><span class="gx-toggle-slider"></span></label></div>
+        <div style="text-align:center;"><label class="gx-toggle"><input type="checkbox" id="an-reval-email" checked><span class="gx-toggle-slider"></span></label></div>
+      </div>
+
+    </div>
+    <div style="padding:12px 20px;background:var(--gray-50,#f8f9fa);border-top:1px solid var(--border-col,#dadce0);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="font-size:12px;color:var(--gray-600,#80868b);">
+        <i class="fas fa-info-circle" style="color:#1565c0;"></i>
+        Email requires <a href="https://www.emailjs.com" target="_blank" style="color:#1565c0;">EmailJS</a> — set your keys in <code>admin.js</code>.
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveAutoNotifSettings()">
+        <i class="fas fa-save"></i> Save Settings
+      </button>
+    </div>
+  </div>
+
   <!-- Compose Notification -->
   <div class="card" id="notif-composer" style="display:none;margin-bottom:20px;border:2px solid var(--primary);">
     <div class="card-header" style="background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);">
@@ -1561,18 +1657,18 @@
         <div>
           <label class="form-label">Type</label>
           <select class="form-control" id="notif-f-type">
-            <option value="general">📢 General</option>
-            <option value="exam">📝 Exam</option>
-            <option value="resource">📚 Resource</option>
-            <option value="doubt">💡 Doubt</option>
-            <option value="system">⚙️ System</option>
+            <option value="general"><i class="fas fa-bullhorn"></i> General</option>
+            <option value="exam">Exam</option>
+            <option value="resource">Resource</option>
+            <option value="doubt">Doubt</option>
+            <option value="system">System</option>
           </select>
         </div>
         <div>
           <label class="form-label">Send To</label>
           <select class="form-control" id="notif-f-target" onchange="adminToggleTargetField()">
-            <option value="all">📢 All Students (Broadcast)</option>
-            <option value="user">👤 Specific Student</option>
+            <option value="all">All Students (Broadcast)</option>
+            <option value="user">Specific Student</option>
           </select>
         </div>
         <div>
@@ -1594,7 +1690,7 @@
       </div>
     </div>
   </div>
- 
+
   <!-- Notification History -->
   <div class="card">
     <div class="card-header">
@@ -1636,32 +1732,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="../js/firebase-config.js"></script>
 <script>
-const PANEL_LABELS = {
-  'dashboard':    ['Overview',   'Dashboard'],
-  'qbank':        ['Questions',  'Question Bank'],
-  'add-single':   ['Questions',  'Add Question'],
-  'add-bulk':     ['Questions',  'Bulk Upload PDF'],
-  'exams':        ['Exams',      'Manage Exams'],
-  'create-exam':  ['Exams',      'Create / Edit Exam'],
-  'attempts':     ['Analytics',  'All Attempts'],
-  'flagged':      ['Analytics',  'Flagged Attempts'],
-  'users':        ['Analytics',  'Users'],
-  'revaluation':  ['Tools',      'Revaluation Centre'],
-  'discussion':   ['Community',  'Discussion Moderation'],
-};
-window.addEventListener('load', () => {
-  const origSP = window.showPanel;
-  if (typeof origSP === 'function') {
-    window.showPanel = function(id) {
-      origSP(id);
-      const lbl = PANEL_LABELS[id] || ['Admin', id];
-      const bc = document.getElementById('panel-breadcrumb');
-      if (bc) bc.textContent = 'GeoExam Admin \u203a ' + lbl[0] + ' \u203a ' + lbl[1];
-    };
-  }
-});
 // All discussion + panel logic lives in js/admin.js
-
 </script>
 <script src="js/admin.js"></script>
 </body>
