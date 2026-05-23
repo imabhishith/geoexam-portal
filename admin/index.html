@@ -1310,58 +1310,7 @@
       </div>
     </div>
     <!-- ── END DISCUSSION ── -->
-
-  </div><!-- admin-content -->
-</div><!-- admin-main -->
-
-<!-- Question Edit Modal -->
-<div class="modal-overlay" id="edit-q-modal">
-  <div class="modal" style="max-width:720px;">
-    <div class="modal-header">
-      <h3>Edit Question</h3>
-      <button class="modal-close" onclick="closeModal('edit-q-modal')"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body" id="edit-q-body"></div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('edit-q-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="updateQuestion()">Save Changes</button>
-    </div>
-  </div>
-</div>
-
-<div id="toast-container"></div>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="../js/firebase-config.js"></script>
-<script>
-const PANEL_LABELS = {
-  'dashboard':    ['Overview',   'Dashboard'],
-  'qbank':        ['Questions',  'Question Bank'],
-  'add-single':   ['Questions',  'Add Question'],
-  'add-bulk':     ['Questions',  'Bulk Upload PDF'],
-  'exams':        ['Exams',      'Manage Exams'],
-  'create-exam':  ['Exams',      'Create / Edit Exam'],
-  'attempts':     ['Analytics',  'All Attempts'],
-  'flagged':      ['Analytics',  'Flagged Attempts'],
-  'users':        ['Analytics',  'Users'],
-  'revaluation':  ['Tools',      'Revaluation Centre'],
-  'discussion':   ['Community',  'Discussion Moderation'],
-};
-window.addEventListener('load', () => {
-  const origSP = window.showPanel;
-  if (typeof origSP === 'function') {
-    window.showPanel = function(id) {
-      origSP(id);
-      const lbl = PANEL_LABELS[id] || ['Admin', id];
-      const bc = document.getElementById('panel-breadcrumb');
-      if (bc) bc.textContent = 'GeoExam Admin \u203a ' + lbl[0] + ' \u203a ' + lbl[1];
-    };
-  }
-});
-// All discussion + panel logic lives in js/admin.js
-  <!-- ══════════════════════════════════════════════════════════
+      <!-- ══════════════════════════════════════════════════════════
      PANEL 1: DOUBT SOLVING ROOM
      ══════════════════════════════════════════════════════════ -->
 <div class="admin-panel" id="panel-doubts">
@@ -1662,6 +1611,57 @@ window.addEventListener('load', () => {
     </div>
   </div>
 </div>
+  </div><!-- admin-content -->
+</div><!-- admin-main -->
+
+<!-- Question Edit Modal -->
+<div class="modal-overlay" id="edit-q-modal">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-header">
+      <h3>Edit Question</h3>
+      <button class="modal-close" onclick="closeModal('edit-q-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="edit-q-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('edit-q-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="updateQuestion()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script>
+const PANEL_LABELS = {
+  'dashboard':    ['Overview',   'Dashboard'],
+  'qbank':        ['Questions',  'Question Bank'],
+  'add-single':   ['Questions',  'Add Question'],
+  'add-bulk':     ['Questions',  'Bulk Upload PDF'],
+  'exams':        ['Exams',      'Manage Exams'],
+  'create-exam':  ['Exams',      'Create / Edit Exam'],
+  'attempts':     ['Analytics',  'All Attempts'],
+  'flagged':      ['Analytics',  'Flagged Attempts'],
+  'users':        ['Analytics',  'Users'],
+  'revaluation':  ['Tools',      'Revaluation Centre'],
+  'discussion':   ['Community',  'Discussion Moderation'],
+};
+window.addEventListener('load', () => {
+  const origSP = window.showPanel;
+  if (typeof origSP === 'function') {
+    window.showPanel = function(id) {
+      origSP(id);
+      const lbl = PANEL_LABELS[id] || ['Admin', id];
+      const bc = document.getElementById('panel-breadcrumb');
+      if (bc) bc.textContent = 'GeoExam Admin \u203a ' + lbl[0] + ' \u203a ' + lbl[1];
+    };
+  }
+});
+// All discussion + panel logic lives in js/admin.js
+
 </script>
 <script src="js/admin.js"></script>
 </body>
