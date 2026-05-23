@@ -131,8 +131,8 @@
   <!-- Filters -->
   <div class="tab-row">
     <button class="tab-btn active" data-status="" onclick="setTab(this,'')">All Doubts</button>
-    <button class="tab-btn" data-status="open" onclick="setTab(this,'open')">⏳ Open</button>
-    <button class="tab-btn" data-status="solved" onclick="setTab(this,'solved')">✅ Solved</button>
+    <button class="tab-btn" data-status="open" onclick="setTab(this,'open')"><i class="fas fa-clock"></i> Open</button>
+    <button class="tab-btn" data-status="solved" onclick="setTab(this,'solved')"><i class="fas fa-check-circle"></i> Solved</button>
     <button class="tab-btn" data-status="mine" onclick="setTab(this,'mine')">My Doubts</button>
   </div>
   <div class="filter-bar">
@@ -219,7 +219,7 @@ function renderDoubts(list) {
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             <span class="name">${esc(d.userName||'Student')}</span>
             <span class="badge-topic" style="background:${TOPIC_COLORS[d.topic]||'#f1f5f9'}">${d.topic||'general'}</span>
-            ${solved?'<span class="badge badge-success" style="font-size:10px;">✅ Solved</span>':'<span class="badge badge-warning" style="font-size:10px;">⏳ Open</span>'}
+            ${solved?'<span class="badge badge-success" style="font-size:10px;"><i class="fas fa-check-circle"></i> Solved</span>':'<span class="badge badge-warning" style="font-size:10px;"><i class="fas fa-clock"></i> Open</span>'}
             <span style="font-size:11px;color:var(--text3);margin-left:auto;">${ts}</span>
           </div>
           <div class="doubt-text">${esc(d.text||'')}</div>
@@ -279,7 +279,7 @@ async function toggleReplies(doubtId) {
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
           <strong style="font-size:13px;color:${rd.isAdmin?'var(--primary)':'var(--text)'}">${esc(rd.userName||'Student')}</strong>
           ${rd.isAdmin?'<span class="badge" style="background:#7c3aed;color:#fff;font-size:9px;">MENTOR</span>':''}
-          ${rd.isAccepted?'<span class="badge badge-success" style="font-size:9px;">✅ Best Answer</span>':''}
+          ${rd.isAccepted?'<span class="badge badge-success" style="font-size:9px;"><i class="fas fa-star"></i> Best Answer</span>':''}
           <span style="font-size:11px;color:var(--text3);margin-left:auto;">${rt}</span>
         </div>
         <div style="font-size:13px;line-height:1.7;">${esc(rd.text||'')}</div>
