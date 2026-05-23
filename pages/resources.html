@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resource Library — GeoExam Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/global.css">
+  <style>
+    body { background: var(--bg); }
+    .page-wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px; }
+    .hero { background: linear-gradient(135deg,#059669 0%,#0891b2 100%); color:#fff; border-radius: var(--radius-lg); padding: 28px; margin-bottom: 24px; }
+    .hero h1 { font-size:22px; font-weight:800; margin-bottom:6px; }
+    .hero p  { font-size:13px; opacity:.85; margin-bottom:20px; }
+    .search-box { background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35); border-radius:10px; padding:10px 14px; display:flex; align-items:center; gap:10px; max-width:480px; }
+    .search-box input { background:transparent; border:none; outline:none; color:#fff; font-size:14px; flex:1; }
+    .search-box input::placeholder { color:rgba(255,255,255,.6); }
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius: var(--radius-lg); padding:16px; text-align:center; }
+    .stat-card .num { font-size:26px; font-weight:800; font-family:'Rajdhani'; color:var(--primary); }
+    .stat-card .lbl { font-size:12px; color:var(--text2); font-weight:600; }
+    .type-tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+    .type-tab { padding:8px 16px; border-radius:20px; border:1px solid var(--border); background:var(--surface); cursor:pointer; font-size:13px; font-weight:600; transition:.15s; display:flex; align-items:center; gap:6px; color:var(--text2); }
+    .type-tab.active { color:#fff; border-color:transparent; }
+    .type-tab.t-all    { }.type-tab.t-all.active    { background:#6366f1; }
+    .type-tab.t-pdf.active    { background:#dc2626; }
+    .type-tab.t-video.active  { background:#2563eb; }
+    .type-tab.t-notes.active  { background:#059669; }
+    .type-tab.t-pyq.active    { background:#d97706; }
+    .type-tab.t-link.active   { background:#7c3aed; }
+    .res-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+    .res-card { background:var(--surface); border:1px solid var(--border); border-radius: var(--radius-lg); overflow:hidden; transition: box-shadow .2s, transform .15s; }
+    .res-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+    .res-card-thumb { height:80px; display:flex; align-items:center; justify-content:center; font-size:36px; }
+    .res-card-body { padding:14px 16px; }
+    .res-card-body h3 { font-size:14px; font-weight:700; color:var(--text); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .res-card-body .desc { font-size:12px; color:var(--text2); margin-bottom:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .res-card-footer { padding:10px 16px; border-top:1px solid var(--border); display:flex; gap:8px; align-items:center; }
+    .subject-filter { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+    .empty { text-align:center; padding:60px 24px; color:var(--text2); grid-column:1/-1; }
+    .empty i { font-size:56px; opacity:.2; display:block; margin-bottom:16px; }
+    @media(max-width:600px){ .stats-row{grid-template-columns:repeat(2,1fr);} .res-grid{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span style="font-size:26px;"><i class="fas fa-gem"></i></span>
+    <div><h1>GeoExam Portal</h1><span>GATE · CSIR-NET Geology</span></div>
+  </div>
+  <div class="navbar-nav">
+    <a href="dashboard.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="doubt-room.html" class="nav-link"><i class="fas fa-lightbulb"></i> Doubts</a>
+    <a href="resources.html" class="nav-link active"><i class="fas fa-book"></i> Resources</a>
+    <button class="btn btn-ghost btn-sm" id="notif-bell-btn" onclick="toggleNotifPanel()" style="color:rgba(255,255,255,.8);position:relative;">
+      <i class="fas fa-bell"></i>
+      <span id="notif-bell-badge" style="display:none;position:absolute;top:2px;right:2px;background:var(--danger);color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;font-weight:700;"></span>
+    </button>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,.8)">Logout</button>
+  </div>
+</nav>
+
+<!-- Notification Panel -->
+<div id="notif-panel" style="display:none;position:fixed;top:64px;right:16px;width:340px;max-height:480px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:1000;overflow:hidden;flex-direction:column;">
+  <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+    <h3 style="font-size:15px;font-weight:700;"><i class="fas fa-bell"></i> Notifications</h3>
+    <button class="btn btn-ghost btn-sm" onclick="markAllNotifsRead()">Mark all read</button>
+  </div>
+  <div id="notif-list" style="overflow-y:auto;max-height:400px;"></div>
+</div>
+
+<div class="page-wrap">
+  <!-- Hero -->
+  <div class="hero">
+    <h1><i class="fas fa-book-open"></i> Resource Library</h1>
+    <p>PDFs, videos, notes and PYQs — all your study material in one place</p>
+    <div class="search-box">
+      <i class="fas fa-search" style="opacity:.6;"></i>
+      <input type="text" id="res-search" placeholder="Search resources…" oninput="filterResources()">
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="num" id="stat-total">—</div><div class="lbl">Total Resources</div></div>
+    <div class="stat-card"><div class="num" id="stat-pdf" style="color:#dc2626;">—</div><div class="lbl">📄 PDFs</div></div>
+    <div class="stat-card"><div class="num" id="stat-video" style="color:#2563eb;">—</div><div class="lbl">🎥 Videos</div></div>
+    <div class="stat-card"><div class="num" id="stat-pyq" style="color:#d97706;">—</div><div class="lbl">📋 PYQs</div></div>
+  </div>
+
+  <!-- Type Tabs -->
+  <div class="type-tabs">
+    <div class="type-tab t-all active" onclick="setType(this,'')">🔍 All</div>
+    <div class="type-tab t-pdf" onclick="setType(this,'pdf')">📄 PDFs</div>
+    <div class="type-tab t-video" onclick="setType(this,'video')">🎥 Videos</div>
+    <div class="type-tab t-notes" onclick="setType(this,'notes')">📝 Notes</div>
+    <div class="type-tab t-pyq" onclick="setType(this,'pyq')">📋 PYQs</div>
+    <div class="type-tab t-link" onclick="setType(this,'link')">🔗 Links</div>
+  </div>
+
+  <!-- Subject Filter -->
+  <div class="subject-filter">
+    <select class="form-control" style="max-width:220px;" id="res-subj" onchange="filterResources()">
+      <option value="">All Subjects</option>
+      <option>GATE Geology</option><option>CSIR-NET</option><option>General Geology</option>
+      <option>Geomorphology</option><option>Petrology</option><option>Mineralogy</option>
+      <option>Structural Geology</option><option>Stratigraphy</option><option>Economic Geology</option>
+      <option>Remote Sensing</option><option>Hydrogeology</option><option>Engineering Geology</option>
+    </select>
+    <span id="res-count" style="font-size:13px;color:var(--text2);"></span>
+  </div>
+
+  <div class="res-grid" id="res-grid">
+    <div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Loading resources…</p></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script>
+let currentUser=null, allResources=[], activeType='';
+const TYPE_EMOJIS  = {pdf:'📄',video:'🎥',notes:'📝',pyq:'📋',link:'🔗'};
+const TYPE_BG      = {pdf:'#fff1f2',video:'#eff6ff',notes:'#f0fdf4',pyq:'#fffbeb',link:'#f5f3ff'};
+const TYPE_ACCENT  = {pdf:'#dc2626',video:'#2563eb',notes:'#059669',pyq:'#d97706',link:'#7c3aed'};
+
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href='../index.html'; return; }
+  currentUser = user;
+  loadResources();
+  loadNotifications();
+});
+
+async function loadResources() {
+  try {
+    const snap = await db.collection('resources').where('visible','!=',false).orderBy('visible','desc').orderBy('createdAt','desc').get().catch(async () =>
+      db.collection('resources').orderBy('createdAt','desc').get()
+    );
+    allResources = snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.visible!==false);
+    document.getElementById('stat-total').textContent = allResources.length;
+    document.getElementById('stat-pdf').textContent   = allResources.filter(r=>r.type==='pdf').length;
+    document.getElementById('stat-video').textContent = allResources.filter(r=>r.type==='video').length;
+    document.getElementById('stat-pyq').textContent   = allResources.filter(r=>r.type==='pyq').length;
+    filterResources();
+  } catch(e) { Utils.toast('Error: '+e.message,'error'); }
+}
+
+function setType(tab, type) {
+  document.querySelectorAll('.type-tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  activeType = type;
+  filterResources();
+}
+
+function filterResources() {
+  const q    = document.getElementById('res-search').value.toLowerCase();
+  const subj = document.getElementById('res-subj').value;
+  let list = allResources;
+  if (activeType) list = list.filter(r=>r.type===activeType);
+  if (subj) list = list.filter(r=>r.subject===subj);
+  if (q) list = list.filter(r=>r.title?.toLowerCase().includes(q)||r.description?.toLowerCase().includes(q)||(r.tags||[]).some(t=>t.toLowerCase().includes(q)));
+  document.getElementById('res-count').textContent = `${list.length} resource${list.length!==1?'s':''}`;
+  renderResources(list);
+}
+
+function renderResources(list) {
+  const grid = document.getElementById('res-grid');
+  if (!list.length) {
+    grid.innerHTML='<div class="empty"><i class="fas fa-folder-open"></i><p>No resources found.</p></div>';
+    return;
+  }
+  grid.innerHTML = list.map(r => {
+    const emoji  = TYPE_EMOJIS[r.type]||'📁';
+    const bg     = TYPE_BG[r.type]||'#f3f4f6';
+    const accent = TYPE_ACCENT[r.type]||'var(--primary)';
+    const tags   = (r.tags||[]).slice(0,3).map(t=>`<span style="background:var(--bg2);font-size:11px;padding:1px 7px;border-radius:8px;color:var(--text2);">${esc(t)}</span>`).join(' ');
+    return `<div class="res-card">
+      <div class="res-card-thumb" style="background:${bg};">${emoji}</div>
+      <div class="res-card-body">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <span style="background:${bg};color:${accent};font-size:10px;padding:2px 8px;border-radius:8px;font-weight:700;">${(r.type||'link').toUpperCase()}</span>
+          ${r.subject?`<span style="font-size:11px;color:var(--text3);">${esc(r.subject)}</span>`:''}
+        </div>
+        <h3 title="${esc(r.title||'')}">${esc(r.title||'Untitled')}</h3>
+        <div class="desc">${esc(r.description||'No description.')}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">${tags}</div>
+        <div style="font-size:12px;color:var(--text3);"><i class="fas fa-download"></i> ${r.downloads||0} downloads</div>
+      </div>
+      <div class="res-card-footer">
+        <a href="${r.url||'#'}" target="_blank" class="btn btn-primary btn-sm" style="flex:1;text-align:center;" onclick="trackDownload('${r.id}')">
+          ${r.type==='video'?'<i class="fas fa-play"></i> Watch':'<i class="fas fa-external-link-alt"></i> Open'}
+        </a>
+        <button class="btn btn-ghost btn-sm" onclick="copyLink('${r.url||''}')" title="Copy link"><i class="fas fa-copy"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function trackDownload(id) {
+  db.collection('resources').doc(id).update({ downloads: firebase.firestore.FieldValue.increment(1) }).catch(()=>{});
+}
+
+function copyLink(url) {
+  if (!url) { Utils.toast('No URL.','error'); return; }
+  navigator.clipboard.writeText(url).then(()=>Utils.toast('Link copied!','success')).catch(()=>Utils.toast('Could not copy.','error'));
+}
+
+// ── Notifications ──
+let notifs=[];
+async function loadNotifications() {
+  const lastSeen = parseInt(localStorage.getItem('notifs_last_seen')||'0');
+  const snap = await db.collection('notifications').orderBy('createdAt','desc').limit(30).get().catch(()=>null);
+  if (!snap) return;
+  notifs = snap.docs.filter(d=>{const nd=d.data();return nd.global||nd.targetUserId===currentUser.uid;}).map(d=>({id:d.id,...d.data()}));
+  const unread = notifs.filter(n=>(n.createdAt?.seconds||0)>lastSeen).length;
+  const badge = document.getElementById('notif-bell-badge');
+  if (badge&&unread>0){badge.textContent=unread;badge.style.display='flex';}
+  renderNotifList();
+}
+function renderNotifList() {
+  const el=document.getElementById('notif-list');
+  if (!notifs.length){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">No notifications.</div>';return;}
+  const ICONS={exam:'fa-file-alt',resource:'fa-book',doubt:'fa-lightbulb',general:'fa-bell',system:'fa-cog'};
+  el.innerHTML=notifs.map(n=>{
+    const ts=n.createdAt?.toDate?.()?.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})||'';
+    return `<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas ${ICONS[n.type]||'fa-bell'}" style="color:var(--primary);font-size:14px;"></i></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:2px;">${esc(n.title||'')}</div>
+        <div style="font-size:12px;color:var(--text2);">${esc(n.body||'')}</div>
+        ${n.link?`<a href="${n.link}" style="font-size:11px;color:var(--primary);">View →</a>`:''}
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">${ts}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleNotifPanel(){const p=document.getElementById('notif-panel');p.style.display=p.style.display==='flex'?'none':'flex';p.style.flexDirection='column';}
+function markAllNotifsRead(){localStorage.setItem('notifs_last_seen',Math.floor(Date.now()/1000));document.getElementById('notif-bell-badge').style.display='none';Utils.toast('All read.','success');}
+document.addEventListener('click',e=>{const p=document.getElementById('notif-panel'),b=document.getElementById('notif-bell-btn');if(p&&!p.contains(e.target)&&!b.contains(e.target))p.style.display='none';});
+
+function esc(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+async function doLogout(){await auth.signOut();window.location.href='../index.html';}
+</script>
+</body>
+</html>
